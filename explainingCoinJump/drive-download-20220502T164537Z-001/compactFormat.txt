@@ -1,0 +1,131 @@
+cd /data/dataA/projects/explainingCoinJump/coinjump_learn/training
+
+export PYTHONPATH=/data/dataA/projects/explainingCoinJump
+
+python create_dataset.py -r ../../coinjump/recordings_500_max_score/ -s ../datasets/max_score -sfi format,count,ext
+python create_dataset.py -r ../../coinjump/recordings_collect_coins_250/ -s ../datasets/collect_coins -sfi format,count,ext
+python create_dataset.py -r ../../coinjump/recordings_collect_all_250/ -s ../datasets/collect_all -sfi format,count,ext
+
+
+
+[ #recordings
+  [ #recording0
+    [<step0_repr>, <step1_repr>, ...],
+    <file_name>
+  ],
+  [ #recording1
+    ...
+  ],
+  ...
+]
+
+
+ID | Name | description
+ID | Name | description
+0  | p_ID | PlayerID = 1
+1  | p_X  | x position
+2  | p_Y  | y position
+3  | p_VX | x velocity
+4  | p_VY | y velocity
+5  | p_E0 | is player powered up?
+6  | p_E1 | unused
+7  | p_E2 | unused
+8  | p_E3 | unused
+
+9   | f_ID | FlagID = 2
+10  | f_X  | x position
+11  | f_Y  | y position
+12  | f_VX | x velocity
+13  | f_VY | y velocity
+14  | f_E0 | unused
+15  | f_E1 | unused
+16  | f_E2 | unused
+17  | f_E3 | unused
+
+18  | pu_ID | PowerUpID = 4 (Zero if the power up is not generated)
+19  | pu_X  | x position
+20  | pu_Y  | y position
+21  | pu_VX | x velocity
+22  | pu_VY | y velocity
+23  | pu_E0 | unused
+24  | pu_E1 | unused
+25  | pu_E2 | unused
+26  | pu_E3 | unused
+
+27  | e_ID | EnemyID = 5 (Zero if the enemy is not generated)
+28  | e_X  | x position
+29  | e_Y  | y position
+30  | e_VX | x velocity
+31  | e_VY | y velocity
+32  | e_E0 | unused
+33  | e_E1 | unused
+34  | e_E2 | unused
+35  | e_E3 | unused
+
+36  | c0_ID | Left most coin id =3 (Zero if the coin is not generated)
+37  | c0_X  | x position
+38  | c0_Y  | y position
+39  | c0_VX | x velocity
+40  | c0_VY | y velocity
+41  | c0_E0 | unused
+42  | c0_E1 | unused
+43  | c0_E2 | unused
+44  | c0_E3 | unused
+
+45  | c1_ID | Other coin id =3 (Zero if the coin is not generated)
+46  | c1_X  | x position
+47  | c1_Y  | y position
+48  | c1_VX | x velocity
+49  | c1_VY | y velocity
+50  | c1_E0 | unused
+51  | c1_E1 | unused
+52  | c1_E2 | unused
+53  | c1_E3 | unused
+
+54 | reward        | reward in the current step
+55 | score         | score in the current step
+56 | terminated    | is level terminated?
+57 | lost          | is level lost?
+58 | exists_powerup | indicates that the object is present in the level (<=> ID!=0)
+59 | exists_enemy   | 
+60 | exists_coin0   | 
+61 | exists_coin1   |
+62 | dist_flag      | signed x distance to flag
+63 | dist_powerup   | signed x distance to powerup
+64 | dist_enemy     | signed x distance to enemy
+65 | dist_coin0     | signed x distance to coin0 (zero if not generated)
+66 | dist_coin1     | signed x distance to enem1 (zero if not generated)
+
+67 | near_flag    | distance to player is less than 3
+68 | near_powerup | distance to player is less than 3
+69 | near_enemy   | distance to player is less than 3
+70 | near_coin0   | distance to player is less than 3
+71 | near_coin1   | distance to player is less than 3
+
+72 | towards_flag    | Is player moving towards the Flag?
+73 | towards_powerup | Is player moving towards the PowerUp?
+74 | towards_enemy   | Is player moving towards the Enemy?
+75 | towards_coin0   | Is player moving towards Coin0?
+76 | towards_coin1   | Is player moving towards Coin1?
+
+77 | collisions_flag    | collided with Flag
+78 | collisions_powerUp | collided with PowerUp
+79 | collisions_enemy   | collided with Enemy
+80 | collisions_coin0   | collides with coin0
+81 | collisions_coin1   | collides with coin1
+
+82 | csequence_0      | encountered first collision id. (flag=0, pu=1, enemy=2, coin0=3, coin1=4, -1=None)
+83 | csequence_1      | encountered second collision
+84 | csequence_2      | encountered third collision
+85 | csequence_3      | encountered fourth collision
+86 | csequence_4      | encountered fifth collision
+
+87 | target_flag      | next collision with be the flag
+88 | target_powerUp   | next collision with be the power up
+89 | target_enemy     | next collision with be the enemy
+90 | target_coin0     | next collision with be coin0
+91 | target_coin1     | next collision with be coin1
+
+
+
+
