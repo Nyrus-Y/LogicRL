@@ -8,12 +8,12 @@ def extract_for_explaining(coin_jump):
     input: coin_jump instance
     output: extracted_state to be explained
 
-    x:agent, key, door, enemy1, enemy2, position_X, position_Y
-    y:obj1(agent), obj2(key), obj3(door)，obj4(enemy), obj5(enemy2)
+    x:agent, key, door, enemy1, position_X, position_Y
+    y:obj1(agent), obj2(key), obj3(door)，obj4(enemy)
     To be changed when using object-detection tech
     """
     # TODO
-    num_of_feature = 7
+    num_of_feature = 6
     repr = coin_jump.level.get_representation()
     extracted_states = []
     for i, entity in enumerate(repr["entities"]):

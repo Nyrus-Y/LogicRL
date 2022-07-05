@@ -256,6 +256,7 @@ def main():
     print("training environment name : " + env_name)
 
     env = gym.make(env_name, generator_args={"spawn_all_entities": False})
+
     env.seed(random_seed)
 
     # state space dimension
