@@ -6,8 +6,8 @@ from imageviewer import ImageViewer
 
 from coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
 from coinjump.coinjump import CoinJump
-
 from coinjump.actions import CoinJumpActions
+from coinjump.utility import extract_for_explaining
 
 KEY_SPACE = 32
 # KEY_SPACE = 32
@@ -47,6 +47,7 @@ def create_coinjump_instance():
 
 def run():
     coin_jump = create_coinjump_instance()
+    extracted_state = extract_for_explaining(coin_jump)
     viewer = setup_image_viewer(coin_jump)
 
     # frame rate limiting

@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.metrics import accuracy_score, confusion_matrix
 import torch
 from torch.utils.tensorboard import SummaryWriter
+import torch.nn as nn
 from tqdm import tqdm
 
 from nsfr_utils import denormalize_clevr, get_data_loader, get_prob, get_nsfr_model
