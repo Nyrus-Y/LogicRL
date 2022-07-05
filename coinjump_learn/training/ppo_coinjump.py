@@ -12,6 +12,7 @@ from coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS
 from coinjump_learn.env.coinJumpEnv import CoinJumpEnv
 from coinjump_learn.env.coinJumpEnvKD import CoinJumpEnvKD
 from coinjump_learn.env.coinJumpEnvDodge import CoinJumpEnvDodge
+from coinjump_learn.env.coinJumpEnvV1 import CoinJumpEnvV1
 import time
 import numpy as np
 
@@ -202,7 +203,8 @@ def main():
     # TODO choose env
     # env_name = "CoinJumpEnv-v0"
     # env_name = "CoinJumpEnvKD-v0"
-    env_name = "CoinJumpEnvDodge-v0"
+    #env_name = "CoinJumpEnvDodge-v0"
+    env_name = "CoinJumpEnv-v1"
 
     # max_ep_len = 1000  # max timesteps in one episode
     max_ep_len = 500  # max timesteps in one episode
@@ -379,8 +381,8 @@ def main():
             # simpler policy
             if action in [3, 5, 6]:
                 reward -= 0.15
-            elif action == 0:
-                reward += 0.1
+            # elif action == 0:
+            #     reward += 0.1
 
             # saving reward and is_terminals
             ppo_agent.buffer.rewards.append(reward)

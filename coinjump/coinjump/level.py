@@ -26,8 +26,9 @@ class Level:
             'coin': 1,
             'powerup': 1,
             'enemy': 1,
+            'door': 20,
             'lose': -20,
-            'key': 5,
+            'key': 10,
             'step_depletion': -0.1,  # with 10fps and no reward the score decays at a rate of 1.0 per second
         }
 

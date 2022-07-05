@@ -11,7 +11,7 @@ from .resource_loader import ResourceLoader
 class CoinJump:
 
     def __init__(self, render=True, resource_path=None, start_on_first_action=False, Dodge_model=False,
-                 Key_Door_model=False):
+                 Key_Door_model=False, V1=False):
         self.zoom = 32
 
         if resource_path is None:
@@ -26,6 +26,9 @@ class CoinJump:
         elif Key_Door_model:
             from .player_keydoor import Player
             self.score = 20.0
+        elif V1:
+            from .player_V1 import Player
+            self.score = 100.0
         else:
             from .player import Player
             self.score = 20.0

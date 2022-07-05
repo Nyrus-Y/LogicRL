@@ -197,6 +197,45 @@ def sample_to_model_input(sample, no_dict=False, include_score=False):
         "action": action
     }
 
+def sample_to_model_input_V1(sample, no_dict=False, include_score=False):
+    """
+    :param sample:  tuple: (representation (use extract_state), explicit_action (use unify_coin_jump_actions))
+    :return: {state: {base:[...], entities:[...]}, action:0..9}
+    """
+    state = sample[0]
+    action = sample[1]
+
+    # tr_entities = replace_bools(fixed_size_entity_representation(state))
+    tr_entity, swap_coins = fixed_size_entity_representation(state)
+    tr_entities, swap_coins = replace_bools(tr_entity, swap_coins)
+    if no_dict:
+        # ignores the action and returns a single [60] array
+        return [
+            0,
+            0,
+            state['level']['reward_key'],
+            state['level']['reward_powerup'],
+            state['level']['reward_enemy'],
+            state['score'] if include_score else 0,
+            *tr_entities
+        ]
+
+    tr_state = {
+        'base': np.array([
+            0,
+            0,
+            state['level']['reward_key'],
+            state['level']['reward_powerup'],
+            state['level']['reward_enemy'],
+            state['score'] if include_score else 0,
+        ]),
+        'entities': np.array(tr_entities)
+    }
+
+    return {
+        "state": tr_state,
+        "action": action
+    }
 
 def sample_to_model_input_KD(sample, no_dict=False, include_score=False):
     """
