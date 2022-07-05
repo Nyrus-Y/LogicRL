@@ -17,8 +17,8 @@ class GroundEnemy(Entity):
         self.size = (1.0, 0.5)
         self._update_bounding_box()
 
-        self.move_speed = 1
-        self.max_movement = 1
+        self.move_speed = 0.49
+        self.max_movement = 0.49
         self.sprites = self._load_sprites(resource_loader) if resource_loader is not None else None
 
         self.can_be_killed_by_jump = False

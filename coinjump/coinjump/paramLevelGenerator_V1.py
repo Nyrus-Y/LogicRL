@@ -43,11 +43,11 @@ class ParameterizedLevelGenerator_V1:
 
         positions = [
             (3, 2),
-            (6, 2),
-            (9, 2),
-            (12, 2),
+            (7, 2),
+            (11, 2),
             (15, 2),
-            (18, 2)
+            (19, 2),
+            (23, 2)
         ]
 
         rng.shuffle(positions)
@@ -57,6 +57,7 @@ class ParameterizedLevelGenerator_V1:
 
         level.entities.append(Key(level, positions[1][0] - 0.5, positions[1][1], resource_loader=resource_loader))
         level.entities.append(GroundEnemy(level, positions[2][0], positions[2][1], resource_loader=resource_loader))
+        level.entities.append(GroundEnemy(level, positions[4][0], positions[4][1], resource_loader=resource_loader))
         #level.entities.append(Door(level, 24, 2, resource_loader=resource_loader))
         level.entities.append(Door(level,positions[3][0], positions[3][1], resource_loader=resource_loader))
 
