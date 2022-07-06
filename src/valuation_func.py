@@ -2,6 +2,55 @@ import torch
 import torch.nn as nn
 from neural_utils import MLP, LogisticRegression
 
+class TypeValuationFunction(nn.Module):
+    """The function v_object-type
+    type(obj1, agent):0.98
+    type(obj2, enemy）：0.87
+    """
+
+    def __init__(self):
+        super(TypeValuationFunction, self).__init__()
+
+    def forward(self, z, a):
+        """
+        Args:
+            z (tensor): 2-d tensor B * d of object-centric representation.
+                [agent, key, door, enemy, x, y]
+            a (tensor): The one-hot tensor that is expanded to the batch size.
+
+        Returns:
+            A batch of probabilities.
+        """
+        # TODO
+        z_type = z[:, 0:4] #[0, 1, 0, 0] * [1.0, 0, 0, 0] .sum = 1.0  type(obj1, key):0.0
+        return (a * z_type).sum(dim=1)
+
+
+class ClosebyValuationFunction(nn.Module):
+    """The function v_closeby.
+    """
+
+    def __init__(self, device):
+        super(ClosebyValuationFunction, self).__init__()
+        self.device = device
+        self.logi = LogisticRegression(input_dim=1)
+        self.logi.to(device)
+
+    def forward(self, z_1, z_2):
+        """
+        Args:
+            z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
+             [agent, key, door, enemy, x, y]
+
+        Returns:
+            A batch of probabilities.
+        """
+        c_1 = z_1[:,4:]
+        c_2 = z_2[:,4:]
+        #print("c_1, c_2 norm", c_1, c_2,  torch.norm(c_1 - c_2, dim=1))
+        dist = torch.norm(c_1 - c_2, dim=1).unsqueeze(-1)
+        #print('v_closeby ourput ', self.logi(dist).squeeze(), self.logi(dist).squeeze().shape)
+        return self.logi(dist).squeeze()
 
 ################################
 # Valuation functions for YOLO #

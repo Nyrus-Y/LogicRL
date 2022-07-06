@@ -1,6 +1,4 @@
-goto(A,D):-has_key(A).
-jump(A):-closeby(A,E).
-go_left(A):-left(D,A),goto(A,D),is_door(D).
-go_right(A):-right(D,A),goto(A,D),is_door(D).
-go_left(A):-left(K,A),not_has_key(A),is_key(K).
-go_right(A):-right(K,A),not_has_key(A),is_key(K).
+jump(O1):-type(O1,agent),type(O2,enemy),closeby(O1,O2).
+
+jump1(O1):-type(O1,agent),type(O2,enemy),color(O2,red),closeby(O1,O2).
+jump2(O1):-type(O1,agent),type(O2,enemy),color(O2,blue),closeby(O1,O2).

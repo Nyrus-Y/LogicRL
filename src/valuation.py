@@ -44,6 +44,10 @@ class YOLOValuationModule(nn.Module):
         v_in = YOLOInValuationFunction()
         vfs['in'] = v_in
         layers.append(v_in)
+        v_type = TypeValuationFunction()
+        vfs['type'] = v_type
+        layers.append(v_type)
+        v_closeby = YOLOClosebyValuationFunction(device)
         v_closeby = YOLOClosebyValuationFunction(device)
         if dataset in ['closeby', 'red-triangle']:
             vfs['closeby'] = v_closeby
@@ -123,7 +127,7 @@ class YOLOValuationModule(nn.Module):
                 str(term) + ':' + term.dtype.name
 
 
-class SlotAttentionValuationModule(nn.Module):
+class RLValuationModule(nn.Module):
     """A module to call valuation functions.
         Attrs:
             lang (language): The language.
@@ -160,35 +164,18 @@ class SlotAttentionValuationModule(nn.Module):
         """
         layers = []
         vfs = {}  # pred name -> valuation function
-        v_color = SlotAttentionColorValuationFunction(device)
-        vfs['color'] = v_color
-        v_shape = SlotAttentionShapeValuationFunction(device)
-        vfs['shape'] = v_shape
-        v_in = SlotAttentionInValuationFunction(device)
-        vfs['in'] = v_in
-        v_size = SlotAttentionSizeValuationFunction(device)
-        vfs['size'] = v_size
-        v_material = SlotAttentionMaterialValuationFunction(device)
-        vfs['material'] = v_material
-        v_rightside = SlotAttentionRightSideValuationFunction(device)
-        vfs['rightside'] = v_rightside
-        v_leftside = SlotAttentionLeftSideValuationFunction(device)
-        vfs['leftside'] = v_leftside
-        v_front = SlotAttentionFrontValuationFunction(device)
-        vfs['front'] = v_front
+        v_type = TypeValuationFunction()
+        vfs['type'] = v_type
 
-        if pretrained:
-            vfs['rightside'].load_state_dict(torch.load(
-                'src/weights/neural_predicates/rightside_pretrain.pt', map_location=device))
-            vfs['rightside'].eval()
-            vfs['leftside'].load_state_dict(torch.load(
-                'src/weights/neural_predicates/leftside_pretrain.pt', map_location=device))
-            vfs['leftside'].eval()
-            vfs['front'].load_state_dict(torch.load(
-                'src/weights/neural_predicates/front_pretrain.pt', map_location=device))
-            vfs['front'].eval()
-            print('Pretrained  neural predicates have been loaded!')
-        return nn.ModuleList([v_color, v_shape, v_in, v_size, v_material, v_rightside, v_leftside, v_front]), vfs
+
+        v_closeby = ClosebyValuationFunction(device)
+        vfs['closeby'] = v_closeby
+        vfs['closeby'].load_state_dict(torch.load(
+            'src/weights/neural_predicates/closeby_pretrain.pt', map_location=device))
+        vfs['closeby'].eval()
+        layers.append(v_closeby)
+        print('Pretrained  neural predicate closeby have been loaded!')
+        return nn.ModuleList([v_type, v_closeby]), vfs
 
     def forward(self, zs, atom):
         """Convert the object-centric representation to a valuation tensor.
@@ -243,6 +230,8 @@ class SlotAttentionValuationModule(nn.Module):
             return self.to_onehot_batch(self.sizes.index(term.name), len(self.sizes), batch_size)
         elif term.dtype.name == 'side':
             return self.to_onehot_batch(self.sides.index(term.name), len(self.sides), batch_size)
+        elif term.dtype.name == 'type':
+            return self.to_onehot_batch(self.lang.term_index(term), len(self.lang.get_by_dtype_name(term.dtype.name)), batch_size)
         else:
             assert True, 'Invalid term: ' + str(term)
 

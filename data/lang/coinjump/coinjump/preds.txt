@@ -1,1 +1,1 @@
-kp:1:image
+jump1:1:object

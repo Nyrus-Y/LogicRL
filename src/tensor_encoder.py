@@ -37,7 +37,7 @@ class TensorEncoder(object):
         # call before computing S and L
         self.head_unifier_dic = self.build_head_unifier_dic()
         self.fact_index_dic = self.build_fact_index_dic()
-        self.S = self.get_max_subs_num(clauses)
+        self.S = max(1, self.get_max_subs_num(clauses))
         self.L = max([len(clause.body)
                       for clause in clauses] + [1])
 

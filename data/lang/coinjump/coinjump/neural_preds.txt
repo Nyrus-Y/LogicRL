@@ -1,3 +1,2 @@
-closeby:2:agent,object
-left:2:object,agent
-right:2:object,agent
+type:2:object,type
+closeby:2:object,object
