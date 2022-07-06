@@ -1,0 +1,6 @@
+goto(A,D):-has_key(A).
+jump(A):-closeby(A,E).
+go_left(A):-left(D,A),goto(A,D),is_door(D).
+go_right(A):-right(D,A),goto(A,D),is_door(D).
+go_left(A):-left(K,A),not_has_key(A),is_key(K).
+go_right(A):-right(K,A),not_has_key(A),is_key(K).

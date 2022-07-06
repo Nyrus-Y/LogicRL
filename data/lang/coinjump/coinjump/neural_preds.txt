@@ -1,0 +1,3 @@
+closeby:2:agent,object
+left:2:object,agent
+right:2:object,agent
