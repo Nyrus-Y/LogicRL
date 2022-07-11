@@ -17,7 +17,7 @@ import os
 
 def setup_image_viewer(coinjump):
     viewer = ImageViewer(
-        "coinjump",
+        "coinjump1",
         coinjump.camera.height,
         coinjump.camera.width,
         monitor_keyboard=True,
@@ -79,8 +79,8 @@ def run():
 
         # data = {
         #    'actions': actions, =[ACTION,, ...]
-        #    'meta': coinjump.level.get_representation(),
-        #    'score': coinjump.score
+        #    'meta': coinjump1.level.get_representation(),
+        #    'score': coinjump1.score
         # }
         with open(replay_file, 'rb') as f:
             data = pickle.load(f)

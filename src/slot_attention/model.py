@@ -6,7 +6,7 @@ import torch
 import torch.nn.functional as F
 import torchvision.models as models
 import numpy as np
-from torchsummary import summary
+#from torchsummary import summary
 
 
 class SlotAttention(nn.Module):
@@ -193,4 +193,4 @@ if __name__ == "__main__":
                               encoder_hidden_channels=64, attention_hidden_channels=128)
     output = net(x)
     print(output.shape)
-    summary(net, (3, 128, 128))
+    #summary(net, (3, 128, 128))

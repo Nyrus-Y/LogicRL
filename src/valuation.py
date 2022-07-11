@@ -102,7 +102,7 @@ class YOLOValuationModule(nn.Module):
             # call valuation function
             return self.vfs[atom.pred.name](*args)
         else:
-            return torch.zeros((zs.size(0), )).to(
+            return torch.zeros((zs.size(0),)).to(
                 torch.float32).to(self.device)
 
     def ground_to_tensor(self, term, zs):
@@ -124,7 +124,7 @@ class YOLOValuationModule(nn.Module):
             return None
         else:
             assert 0, "Invalid datatype of the given term: " + \
-                str(term) + ':' + term.dtype.name
+                      str(term) + ':' + term.dtype.name
 
 
 class RLValuationModule(nn.Module):
@@ -167,15 +167,32 @@ class RLValuationModule(nn.Module):
         v_type = TypeValuationFunction()
         vfs['type'] = v_type
 
-
+        # TODO
         v_closeby = ClosebyValuationFunction(device)
         vfs['closeby'] = v_closeby
         vfs['closeby'].load_state_dict(torch.load(
             'src/weights/neural_predicates/closeby_pretrain.pt', map_location=device))
         vfs['closeby'].eval()
         layers.append(v_closeby)
-        print('Pretrained  neural predicate closeby have been loaded!')
-        return nn.ModuleList([v_type, v_closeby]), vfs
+        # print('Pretrained  neural predicate closeby have been loaded!')
+
+        v_on_left = OnLeftValuationFunction()
+        vfs['on_left'] = v_on_left
+        layers.append(v_on_left)
+
+        v_on_right = OnRightValuationFunction()
+        vfs['on_right'] = v_on_right
+        layers.append(v_on_right)
+
+        v_have_key = HaveKeyValuationFunction()
+        vfs['have_key'] = v_have_key
+        layers.append(v_have_key)
+
+        v_not_have_key = NotHaveKeyValuationFunction()
+        vfs['not_have_key'] = v_not_have_key
+        layers.append(v_have_key)
+
+        return nn.ModuleList([v_type, v_closeby, v_on_left, v_on_right, v_have_key]), vfs
 
     def forward(self, zs, atom):
         """Convert the object-centric representation to a valuation tensor.
@@ -231,7 +248,8 @@ class RLValuationModule(nn.Module):
         elif term.dtype.name == 'side':
             return self.to_onehot_batch(self.sides.index(term.name), len(self.sides), batch_size)
         elif term.dtype.name == 'type':
-            return self.to_onehot_batch(self.lang.term_index(term), len(self.lang.get_by_dtype_name(term.dtype.name)), batch_size)
+            return self.to_onehot_batch(self.lang.term_index(term), len(self.lang.get_by_dtype_name(term.dtype.name)),
+                                        batch_size)
         else:
             assert True, 'Invalid term: ' + str(term)
 

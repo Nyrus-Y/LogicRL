@@ -1,2 +1,6 @@
 type:2:object,type
 closeby:2:object,object
+on_left:2:object,object
+on_right:2:object,object
+not_have_key:1:object
+have_key:1:object

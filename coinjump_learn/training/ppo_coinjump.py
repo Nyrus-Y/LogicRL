@@ -232,7 +232,7 @@ def main():
     eps_clip = 0.2  # clip parameter for PPO
     gamma = 0.99  # discount factor
     # gamma = 0.95
-    # gamma = 1.0  # the coinjump environment already has a time penality for its reward
+    # gamma = 1.0  # the coinjump1 environment already has a time penality for its reward
 
     # optimizer = torch.optim.Adam
     # lr_actor = 0.0003  # learning rate for actor network

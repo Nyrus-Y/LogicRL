@@ -1,1 +1,5 @@
-jump1:1:object
+jump:1:object
+left_go_get_key:1:object
+right_go_get_key:1:object
+left_go_to_door:1:object
+right_go_to_door:1:object

@@ -132,7 +132,6 @@ def get_clevr_loader(args):
     dataset_test = data_clevr.CLEVRHans(
         args.dataset, 'test'
     )
-
     train_loader = torch.utils.data.DataLoader(
         dataset_train,
         shuffle=False,

@@ -2,6 +2,12 @@ import torch
 import torch.nn as nn
 from neural_utils import MLP, LogisticRegression
 
+
+################################
+# Valuation functions for CoinJump #
+################################
+
+
 class TypeValuationFunction(nn.Module):
     """The function v_object-type
     type(obj1, agent):0.98
@@ -21,8 +27,7 @@ class TypeValuationFunction(nn.Module):
         Returns:
             A batch of probabilities.
         """
-        # TODO
-        z_type = z[:, 0:4] #[0, 1, 0, 0] * [1.0, 0, 0, 0] .sum = 1.0  type(obj1, key):0.0
+        z_type = z[:, 0:4]  # [0, 1, 0, 0] * [1.0, 0, 0, 0] .sum = 0.0  type(obj1, key):0.0
         return (a * z_type).sum(dim=1)
 
 
@@ -45,12 +50,113 @@ class ClosebyValuationFunction(nn.Module):
         Returns:
             A batch of probabilities.
         """
-        c_1 = z_1[:,4:]
-        c_2 = z_2[:,4:]
-        #print("c_1, c_2 norm", c_1, c_2,  torch.norm(c_1 - c_2, dim=1))
+        c_1 = z_1[:, 4:]
+        c_2 = z_2[:, 4:]
+        # print("c_1, c_2 norm", c_1, c_2,  torch.norm(c_1 - c_2, dim=1))
         dist = torch.norm(c_1 - c_2, dim=1).unsqueeze(-1)
-        #print('v_closeby ourput ', self.logi(dist).squeeze(), self.logi(dist).squeeze().shape)
+        # print('v_closeby ourput ', self.logi(dist).squeeze(), self.logi(dist).squeeze().shape)
         return self.logi(dist).squeeze()
+
+
+class OnLeftValuationFunction(nn.Module):
+    """The function v_closeby.
+    """
+
+    def __init__(self):
+        super(OnLeftValuationFunction, self).__init__()
+
+    def forward(self, z_1, z_2):
+        """
+        Args:
+            z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
+             [agent, key, door, enemy, x, y]
+
+        Returns:
+            A batch of probabilities.
+        """
+        c_1 = z_1[:, 5]
+        c_2 = z_2[:, 5]
+
+        if torch.tensor(c_2 - c_1) < 0:
+            on_left = torch.tensor(1)
+        else:
+            on_left = torch.tensor(0)
+
+        return on_left
+
+class OnRightValuationFunction(nn.Module):
+    """The function v_closeby.
+    """
+
+    def __init__(self):
+        super(OnRightValuationFunction, self).__init__()
+
+    def forward(self, z_1, z_2):
+        """
+        Args:
+            z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
+             [agent, key, door, enemy, x, y]
+
+        Returns:
+            A batch of probabilities.
+        """
+        c_1 = z_1[:, 5]
+        c_2 = z_2[:, 5]
+
+        if torch.tensor(c_2 - c_1) > 0:
+            on_right = torch.tensor(1)
+        else:
+            on_right = torch.tensor(0)
+
+        return on_right
+
+
+class HaveKeyValuationFunction(nn.Module):
+    """The function v_closeby.
+    """
+
+    def __init__(self):
+        super(HaveKeyValuationFunction, self).__init__()
+
+    def forward(self, z, a):
+        """
+        Args:
+            z (tensor): 2-d tensor B * d of object-centric representation.
+                [agent, key, door, enemy, x, y]
+            a (tensor): The one-hot tensor that is expanded to the batch size.
+
+        Returns:
+            A batch of probabilities.
+        """
+        # TODO
+        z_type = z[:, 0:4]  # [0, 1, 0, 0] * [1.0, 0, 0, 0] .sum = 0.0  type(obj1, key):0.0
+        # if
+        return (a * z_type).sum(dim=1)
+
+
+class NotHaveKeyValuationFunction(nn.Module):
+    """The function v_closeby.
+    """
+
+    def __init__(self):
+        super(NotHaveKeyValuationFunction, self).__init__()
+
+    def forward(self, z, a):
+        """
+        Args:
+            z (tensor): 2-d tensor B * d of object-centric representation.
+                [agent, key, door, enemy, x, y]
+            a (tensor): The one-hot tensor that is expanded to the batch size.
+
+        Returns:
+            A batch of probabilities.
+        """
+        # TODO
+        z_type = z[:, 0:4]  # [0, 1, 0, 0] * [1.0, 0, 0, 0] .sum = 0.0  type(obj1, key):0.0
+        # if
+        return (a * z_type).sum(dim=1)
+
+
 
 ################################
 # Valuation functions for YOLO #
@@ -168,7 +274,7 @@ class YOLOOnlineValuationFunction(nn.Module):
     def forward(self, z_1, z_2, z_3, z_4, z_5):
         """The function to compute the probability of the online predicate.
 
-        The closed form of the linear regression is computed.
+        The colosed form f the linear regression is computed.
         The error value is fed into the 1-d logistic regression function.
 
         Args:
@@ -180,9 +286,9 @@ class YOLOOnlineValuationFunction(nn.Module):
             A batch of probabilities.
         """
         X = torch.stack([self.to_center_x(z)
-                        for z in [z_1, z_2, z_3, z_4, z_5]], dim=1).unsqueeze(-1)
+                         for z in [z_1, z_2, z_3, z_4, z_5]], dim=1).unsqueeze(-1)
         Y = torch.stack([self.to_center_y(z)
-                        for z in [z_1, z_2, z_3, z_4, z_5]], dim=1).unsqueeze(-1)
+                         for z in [z_1, z_2, z_3, z_4, z_5]], dim=1).unsqueeze(-1)
         # add bias term
         X = torch.cat([torch.ones_like(X), X], dim=2)
         X_T = torch.transpose(X, 1, 2)
@@ -190,7 +296,7 @@ class YOLOOnlineValuationFunction(nn.Module):
         W = torch.matmul(torch.matmul(
             torch.inverse(torch.matmul(X_T, X)), X_T), Y)
         diff = torch.norm(Y - torch.sum(torch.transpose(W, 1, 2)
-                          * X, dim=2).unsqueeze(-1), dim=1)
+                                        * X, dim=2).unsqueeze(-1), dim=1)
         self.diff = diff
         return self.logi(diff).squeeze()
 
@@ -222,7 +328,7 @@ class SlotAttentionInValuationFunction(nn.Module):
                 obj_prob + coords + shape + size + material + color
                 [objectness, x, y, z, sphere, cube, cylinder, large, small, rubber,
                     metal, cyan, blue, yellow, purple, red, green, gray, brown]
-            x (none): A dummy argment to represent the input constant.
+            x (none): A dummy argument to represent the input constant.
 
         Returns:
             A batch of probabilities.

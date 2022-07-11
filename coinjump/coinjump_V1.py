@@ -7,7 +7,7 @@ from imageviewer import ImageViewer
 from coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
 from coinjump.coinjump import CoinJump
 from coinjump.actions import CoinJumpActions
-from coinjump.utility import extract_for_explaining
+from coinjump.util import extract_for_explaining
 
 KEY_SPACE = 32
 # KEY_SPACE = 32
@@ -20,7 +20,7 @@ KEY_r = 114
 
 def setup_image_viewer(coinjump):
     viewer = ImageViewer(
-        "coinjump",
+        "coinjump1",
         coinjump.camera.height,
         coinjump.camera.width,
         monitor_keyboard=True,

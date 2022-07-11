@@ -67,7 +67,7 @@ class ParameterizedLevelGenerator_KeyDoor:
                 neg_reward = ['coin', 'powerup', 'enemy'][rng.randint(0, 2)]
                 coinjump.level.reward_values[neg_reward] = -coinjump.level.reward_values[neg_reward]
         else:
-            # coinjump.level.reward_values['coin'] = 5
+            # coinjump1.level.reward_values['coin'] = 5
             coinjump.level.reward_values['coin'] = 3
             coinjump.level.reward_values['powerup'] = 1
             coinjump.level.reward_values['enemy'] = 9

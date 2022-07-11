@@ -23,7 +23,7 @@ KEY_r = 114
 
 def setup_image_viewer(coinjump):
     viewer = ImageViewer(
-        "coinjump",
+        "coinjump1",
         coinjump.camera.height,
         coinjump.camera.width,
         monitor_keyboard=True,

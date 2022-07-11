@@ -8,8 +8,9 @@ def extract_for_explaining(coin_jump):
     input: coin_jump instance
     output: extracted_state to be explained
 
-    x:agent, key, door, enemy1, position_X, position_Y
-    y:obj1(agent), obj2(key), obj3(door)，obj4(enemy)
+    x:  agent, key, door, enemy1, position_X, position_Y
+    y:  obj1(agent), obj2(key), obj3(door)，obj4(enemy)
+
     To be changed when using object-detection tech
     """
     # TODO

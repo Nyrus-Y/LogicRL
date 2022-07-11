@@ -99,7 +99,7 @@ class CoinJumpEnvKD(gym.Env):
         raise NotImplementedError("")
 
     #def _take_action(self, action):
-    #    self.coinjump.step(action)
+    #    self.coinjump1.step(action)
 
     def _get_reward(self):
         return self.coinjump.level.get_reward()

@@ -26,7 +26,7 @@ KEY_r = 114
 
 def setup_image_viewer(coinjump):
     viewer = ImageViewer(
-        "coinjump",
+        "coinjump1",
         coinjump.camera.height,
         coinjump.camera.width,
         monitor_keyboard=True,
@@ -152,8 +152,8 @@ def load_recording(replay_file):
     with open(replay_file, 'rb') as f:
         # data = {
         #    'actions': actions, =[ACTION,, ...]
-        #    'meta': coinjump.level.get_representation(),
-        #    'score': coinjump.score
+        #    'meta': coinjump1.level.get_representation(),
+        #    'score': coinjump1.score
         # }
         data = pickle.load(f)
         print("loading", data)

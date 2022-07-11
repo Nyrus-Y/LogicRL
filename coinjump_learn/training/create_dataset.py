@@ -16,9 +16,9 @@ import coinjump.coinjump.entityEncoding as cjEntityEncoding
 import coinjump.coinjump.coin as cjCoin
 from coinjump_learn.training.data_transform import extract_state, state_to_extended_repr, replace_bools
 
-sys.modules['coinjump.actions'] = cjActions
-sys.modules['coinjump.entityEncoding'] = cjEntityEncoding
-sys.modules['coinjump.coin'] = cjCoin
+sys.modules['coinjump1.actions'] = cjActions
+sys.modules['coinjump1.entityEncoding'] = cjEntityEncoding
+sys.modules['coinjump1.coin'] = cjCoin
 
 
 def create_coinjump_instance(seed=None):
@@ -124,7 +124,7 @@ def run():
 
     save_file_path = pathlib.Path(args.save_file)
     if "default" in args.save_file_info:
-        save_file_path = save_file_path.joinpath("coinjump")
+        save_file_path = save_file_path.joinpath("coinjump1")
     if "format" in args.save_file_info:
         save_file_path = save_file_path.parent / f"{save_file_path.name}_{data_format}"
     if "count" in args.save_file_info:
@@ -156,8 +156,8 @@ def load_recording(replay_file):
     with open(replay_file, 'rb') as f:
         #data = {
         #    'actions': actions, =[ACTION,, ...]
-        #    'meta': coinjump.level.get_representation(),
-        #    'score': coinjump.score
+        #    'meta': coinjump1.level.get_representation(),
+        #    'score': coinjump1.score
         #}
         data = pickle.load(f)
         print("loading", data)

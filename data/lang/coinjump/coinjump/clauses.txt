@@ -1,4 +1,5 @@
 jump(O1):-type(O1,agent),type(O2,enemy),closeby(O1,O2).
-
-jump1(O1):-type(O1,agent),type(O2,enemy),color(O2,red),closeby(O1,O2).
-jump2(O1):-type(O1,agent),type(O2,enemy),color(O2,blue),closeby(O1,O2).
+left_go_get_key(01):-type(01,agent),type(02,key),on_left(02,01),not_have_key(01).
+right_go_get_key(01):-type(01,agent),type(02,key),on_right(02,01),not_have_key(01).
+left_go_to_door(01):-type(01,agent),type(02,door),on_left(02,01),have_key(01).
+right_go_to_door(01):-type(01,agent),type(02,door),on_right(02,01),have_key(01).
