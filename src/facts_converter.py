@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from fol.logic import NeuralPredicate
+from src.fol.logic import NeuralPredicate
 from tqdm import tqdm
 
 

@@ -1,8 +1,8 @@
-from infer import InferModule
-from tensor_encoder import TensorEncoder
-from fol.logic import *
-from fol.data_utils import DataUtils
-from fol.language import DataType
+from src.infer import InferModule
+from src.tensor_encoder import TensorEncoder
+from src.fol.logic import *
+from src.fol.data_utils import DataUtils
+from src.fol.language import DataType
 
 
 p_ = Predicate('.', 1, [DataType('spec')])

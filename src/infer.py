@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from torch_utils import softor, weight_sum
+from src.torch_utils import softor, weight_sum
 
 
 class InferModule(nn.Module):

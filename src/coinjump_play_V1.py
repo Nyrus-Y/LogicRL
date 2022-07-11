@@ -4,11 +4,12 @@ from argparse import ArgumentParser
 import pathlib
 import pickle
 import torch
-
+from pathlib import Path
 import numpy as np
 
 from coinjump.coinjump.actions import coin_jump_actions_from_unified
 from coinjump.imageviewer import ImageViewer
+from src.util import extract_for_explaining, explaining_nsfr
 
 from coinjump.coinjump.paramLevelGenerator import ParameterizedLevelGenerator
 from coinjump.coinjump.paramLevelGenerator_keydoor import ParameterizedLevelGenerator_KeyDoor
@@ -16,9 +17,7 @@ from coinjump.coinjump.paramLevelGenerator_dodge import ParameterizedLevelGenera
 from coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
 from coinjump.coinjump.coinjump import CoinJump
 
-from coinjump_learn.models.mlpController import MLPController
-from coinjump_learn.training.data_transform import sample_to_model_input, sample_to_model_input_KD, \
-    sample_to_model_input_dodge, extract_state, for_each_tensor, sample_to_model_input_V1, collate
+from coinjump_learn.training.data_transform import extract_state, sample_to_model_input_V1, collate
 from coinjump_learn.training.ppo_coinjump import ActorCritic
 
 KEY_r = 114
@@ -68,9 +67,11 @@ def parse_args():
     if args.model_file is None:
         # read filename from stdin
         # model_file = f"../training/PPO_preTrained/CoinJumpEnv-v0/{input('Enter file name: ')}"
-        #model_file = f"../training/PPO_preTrained/CoinJumpEnvKD-v0/{input('Enter file name: ')}"
+        # model_file = f"../training/PPO_preTrained/CoinJumpEnvKD-v0/{input('Enter file name: ')}"
         # model_file = f"../training/PPO_preTrained/CoinJumpEnvDodge-v0/{input('Enter file name: ')}"
-        model_file = f"../training/PPO_preTrained/CoinJumpEnv-v1/{input('Enter file name: ')}"
+        # model_file = f"../training/PPO_preTrained/CoinJumpEnv-v1/{input('Enter file name: ')}"
+        model_file = f"../src/ppo_coinjump_model/{input('Enter file name: ')}"
+
     else:
         model_file = pathlib.Path(args.model_file)
 
@@ -108,6 +109,9 @@ def run():
     target_frame_duration = 1 / fps
     last_frame_time = 0
 
+    lark_path = '../src/lark/exp.lark'
+    lang_base_path = '../data/lang/'
+
     while True:
         # control framerate
         current_frame_time = time.time()
@@ -120,11 +124,15 @@ def run():
 
         # TODO change for reset env
         if KEY_r in viewer.pressed_keys:
-            #coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
+            # coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
             coin_jump = create_coinjump_instance(seed=seed, V1=True)
             # coin_jump = create_coinjump_instance(seed=seed,Dodge_model=True)
         # step game
         if not coin_jump.level.terminated:
+
+            # extract state for explaining
+            extracted_state = extract_for_explaining(coin_jump)
+            explaining_nsfr(extracted_state, lark_path, lang_base_path)
 
             # TODO change sample function of different envs
 

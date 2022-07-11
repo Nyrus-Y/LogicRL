@@ -3,10 +3,10 @@ import sys
 import torch
 import torch.nn as nn
 
-from yolov5.models.experimental import attempt_load
-from yolov5.utils.general import non_max_suppression
+from src.yolov5.models.experimental import attempt_load
+from src.yolov5.utils.general import non_max_suppression
 
-from slot_attention.model import SlotAttention_model
+from src.slot_attention.model import SlotAttention_model
 import sys
 sys.path.insert(0, 'src/yolov5')
 
@@ -29,13 +29,13 @@ class YOLOPerceptionModule(nn.Module):
         self.device = device
         self.train_ = train  # the parameters should be trained or not
         self.model = self.load_model(
-            path='src/weights/yolov5/best.pt', device=device)
+            path='../src/weights/yolov5/best.pt', device=device)
         # function to transform e * d shape, YOLO returns class labels,
         # it should be decomposed into attributes and the probabilities.
         self.preprocess = YOLOPreprocess(device)
 
     def load_model(self, path, device):
-        print("Loading YOLO model...")
+        # print("Loading YOLO model...")
         yolo_net = attempt_load(weights=path)
         yolo_net.to(device)
         if not self.train_:

@@ -1,7 +1,7 @@
 import itertools
 import torch
 
-from fol.logic_ops import unify, subs_list, subs
+from src.fol.logic_ops import unify, subs_list, subs
 
 
 class TensorEncoder(object):

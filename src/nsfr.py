@@ -1,7 +1,7 @@
 import numpy as np
 import torch.nn as nn
 import torch
-from logic_utils import get_index_by_predname
+from src.logic_utils import get_index_by_predname
 
 
 class NSFReasoner(nn.Module):
@@ -69,6 +69,7 @@ class NSFReasoner(nn.Module):
         """
         print('====== LEARNED PROGRAM ======')
         C = self.clauses
+        a = self.im.W
         Ws_softmaxed = torch.softmax(self.im.W, 1)
 
         for i, W_ in enumerate(Ws_softmaxed):
@@ -85,6 +86,16 @@ class NSFReasoner(nn.Module):
             for i in idxs:
                 if v[i] > 0.1:
                     print(i, self.atoms[i], ': ', round(v[i], 3))
+
+    def print_explaining(self, ):
+        C = self.clauses
+        a = self.im.W
+        Ws_softmaxed = torch.softmax(self.im.W, 1)
+
+        for i, W_ in enumerate(Ws_softmaxed):
+            max_i = np.argmax(W_.detach().cpu().numpy())
+            print('C_' + str(i) + ': ',
+                  C[max_i], W_[max_i].detach().cpu().item())
 
     def get_valuation_text(self, valuation):
         text_batch = ''  # texts for each batch

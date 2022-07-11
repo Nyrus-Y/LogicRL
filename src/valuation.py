@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from valuation_func import *
+from src.valuation_func import *
 
 
 class YOLOValuationModule(nn.Module):
@@ -171,7 +171,7 @@ class RLValuationModule(nn.Module):
         v_closeby = ClosebyValuationFunction(device)
         vfs['closeby'] = v_closeby
         vfs['closeby'].load_state_dict(torch.load(
-            'src/weights/neural_predicates/closeby_pretrain.pt', map_location=device))
+            '../src/weights/neural_predicates/closeby_pretrain.pt', map_location=device))
         vfs['closeby'].eval()
         layers.append(v_closeby)
         # print('Pretrained  neural predicate closeby have been loaded!')
@@ -222,7 +222,7 @@ class RLValuationModule(nn.Module):
         if term.dtype.name == 'object':
             return zs[:, term_index]
         elif term.dtype.name == 'image':
-            return None
+            return zs
         else:
             # other attributes
             return self.term_to_onehot(term, batch_size=zs.size(0))

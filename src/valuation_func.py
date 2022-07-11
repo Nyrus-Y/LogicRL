@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from neural_utils import MLP, LogisticRegression
+from src.neural_utils import MLP, LogisticRegression
 
 
 ################################
@@ -74,15 +74,16 @@ class OnLeftValuationFunction(nn.Module):
         Returns:
             A batch of probabilities.
         """
-        c_1 = z_1[:, 5]
-        c_2 = z_2[:, 5]
+        c_1 = z_1[:, 4]
+        c_2 = z_2[:, 4]
 
-        if torch.tensor(c_2 - c_1) < 0:
+        if c_2 - c_1 < 0:
             on_left = torch.tensor(1)
         else:
             on_left = torch.tensor(0)
 
         return on_left
+
 
 class OnRightValuationFunction(nn.Module):
     """The function v_closeby.
@@ -93,17 +94,17 @@ class OnRightValuationFunction(nn.Module):
 
     def forward(self, z_1, z_2):
         """
-        Args:
+        Args: x
             z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
              [agent, key, door, enemy, x, y]
 
         Returns:
             A batch of probabilities.
         """
-        c_1 = z_1[:, 5]
-        c_2 = z_2[:, 5]
+        c_1 = z_1[:, 4]
+        c_2 = z_2[:, 4]
 
-        if torch.tensor(c_2 - c_1) > 0:
+        if c_2 - c_1 > 0:
             on_right = torch.tensor(1)
         else:
             on_right = torch.tensor(0)
@@ -118,20 +119,17 @@ class HaveKeyValuationFunction(nn.Module):
     def __init__(self):
         super(HaveKeyValuationFunction, self).__init__()
 
-    def forward(self, z, a):
+    def forward(self, z):
         """
         Args:
             z (tensor): 2-d tensor B * d of object-centric representation.
                 [agent, key, door, enemy, x, y]
-            a (tensor): The one-hot tensor that is expanded to the batch size.
 
         Returns:
             A batch of probabilities.
         """
-        # TODO
-        z_type = z[:, 0:4]  # [0, 1, 0, 0] * [1.0, 0, 0, 0] .sum = 0.0  type(obj1, key):0.0
-        # if
-        return (a * z_type).sum(dim=1)
+        has_key = abs(1 - torch.sum(z[:, :, 1]))
+        return has_key
 
 
 class NotHaveKeyValuationFunction(nn.Module):
@@ -141,21 +139,17 @@ class NotHaveKeyValuationFunction(nn.Module):
     def __init__(self):
         super(NotHaveKeyValuationFunction, self).__init__()
 
-    def forward(self, z, a):
+    def forward(self, z):
         """
         Args:
             z (tensor): 2-d tensor B * d of object-centric representation.
                 [agent, key, door, enemy, x, y]
-            a (tensor): The one-hot tensor that is expanded to the batch size.
 
         Returns:
             A batch of probabilities.
         """
-        # TODO
-        z_type = z[:, 0:4]  # [0, 1, 0, 0] * [1.0, 0, 0, 0] .sum = 0.0  type(obj1, key):0.0
-        # if
-        return (a * z_type).sum(dim=1)
-
+        not_has_key = torch.sum(z[:, :, 1])
+        return not_has_key
 
 
 ################################

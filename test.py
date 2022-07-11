@@ -9,7 +9,7 @@ import numpy as np
 lark_path = 'src/lark/exp.lark'
 lang_base_path = 'data/lang/'
 lang, clauses, bk, atoms = get_lang(
-    lark_path, lang_base_path, 'coinjump1', 'coinjump1')
+    lark_path, lang_base_path, 'coinjump', 'coinjump')
 
 from percept import SlotAttentionPerceptionModule, YOLOPerceptionModule
 from facts_converter import FactsConverter
@@ -36,10 +36,7 @@ def get_nsfr_model(lang, clauses, atoms, bk, device):
 
 NSFR = get_nsfr_model(lang, clauses, atoms, bk, device=device)
 
-metric = [[0, 0, 0, 1, 0.21, 0.2],
-          [1, 0, 0, 0, 0.18, 0.22],
-          [0, 0, 1, 0, 0.9, 0.8],
-          [0, 1, 0, 0, 0.5, 0.5]]
+metric = [[1, 0, 0, 0, 11, 2], [0, 1, 0, 0, 14, 2], [0, 0, 1, 0, 14.1, 2], [0, 0, 0, 1, 20, 2]]
 x = torch.tensor(np.array(metric), dtype=torch.float32).unsqueeze(0)
 
 V_T = NSFR(x)
