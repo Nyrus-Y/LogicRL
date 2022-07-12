@@ -125,6 +125,7 @@ def run():
         if KEY_r in viewer.pressed_keys:
             # coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
             coin_jump = create_coinjump_instance(seed=seed, V1=True)
+            print("--------------------------     next game    --------------------------")
             # coin_jump = create_coinjump_instance(seed=seed,Dodge_model=True)
         # step game
         if not coin_jump.level.terminated:
@@ -154,6 +155,7 @@ def run():
             # prediction[0][0] = 0
             action = coin_jump_actions_from_unified(torch.argmax(prediction).cpu().item())
         else:
+
             action = []
         reward = coin_jump.step(action)
 

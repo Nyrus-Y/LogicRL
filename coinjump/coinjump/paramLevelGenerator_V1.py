@@ -10,7 +10,7 @@ from .groundEnemy import GroundEnemy
 
 class ParameterizedLevelGenerator_V1:
 
-    def __init__(self, print_seed=True):
+    def __init__(self, print_seed=False):
         self.print_seed = print_seed
 
     def generate(self, coinjump: CoinJump, seed=None, dynamic_reward=False, spawn_all_entities=False):
