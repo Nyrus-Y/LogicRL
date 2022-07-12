@@ -29,7 +29,7 @@ class NSFReasoner(nn.Module):
 
     def forward(self, x):
         # obtain the object-centric representation
-        #zs = self.pm(x)
+        # zs = self.pm(x)
         zs = x
         # convert to the valuation tensor
         V_0 = self.fc(zs, self.atoms, self.bk)
@@ -57,7 +57,7 @@ class NSFReasoner(nn.Module):
                 pred_str=predname, atoms=self.atoms)
             target_indices.append(target_index)
         prob = torch.cat([v[:, i].unsqueeze(-1)
-                         for i in target_indices], dim=1)
+                          for i in target_indices], dim=1)
         B = v.size(0)
         N = len(prednames)
         assert prob.size(0) == B and prob.size(
@@ -74,7 +74,7 @@ class NSFReasoner(nn.Module):
 
         for i, W_ in enumerate(Ws_softmaxed):
             max_i = np.argmax(W_.detach().cpu().numpy())
-            print('C_'+str(i)+': ',
+            print('C_' + str(i) + ': ',
                   C[max_i], W_[max_i].detach().cpu().item())
 
     def print_valuation_batch(self, valuation, n=40):
@@ -87,15 +87,10 @@ class NSFReasoner(nn.Module):
                 if v[i] > 0.1:
                     print(i, self.atoms[i], ': ', round(v[i], 3))
 
-    def print_explaining(self, ):
-        C = self.clauses
-        a = self.im.W
-        Ws_softmaxed = torch.softmax(self.im.W, 1)
-
-        for i, W_ in enumerate(Ws_softmaxed):
-            max_i = np.argmax(W_.detach().cpu().numpy())
-            print('C_' + str(i) + ': ',
-                  C[max_i], W_[max_i].detach().cpu().item())
+    def print_explaining(self, predicts):
+        clauses = self.clauses
+        index = np.argmax(predicts[0])
+        return clauses[index]
 
     def get_valuation_text(self, valuation):
         text_batch = ''  # texts for each batch

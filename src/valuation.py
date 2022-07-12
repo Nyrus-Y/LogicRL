@@ -192,7 +192,7 @@ class RLValuationModule(nn.Module):
         vfs['not_have_key'] = v_not_have_key
         layers.append(v_have_key)
 
-        return nn.ModuleList([v_type, v_closeby, v_on_left, v_on_right, v_have_key]), vfs
+        return nn.ModuleList([v_type, v_closeby, v_on_left, v_on_right, v_have_key,v_not_have_key]), vfs
 
     def forward(self, zs, atom):
         """Convert the object-centric representation to a valuation tensor.

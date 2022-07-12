@@ -77,8 +77,8 @@ class OnLeftValuationFunction(nn.Module):
         c_1 = z_1[:, 4]
         c_2 = z_2[:, 4]
 
-        if c_2 - c_1 < 0:
-            on_left = torch.tensor(1)
+        if c_2 - c_1 > 0:
+            on_left = torch.tensor(0.9)
         else:
             on_left = torch.tensor(0)
 
@@ -104,8 +104,8 @@ class OnRightValuationFunction(nn.Module):
         c_1 = z_1[:, 4]
         c_2 = z_2[:, 4]
 
-        if c_2 - c_1 > 0:
-            on_right = torch.tensor(1)
+        if c_2 - c_1 < 0:
+            on_right = torch.tensor(0.9)
         else:
             on_right = torch.tensor(0)
 
@@ -148,7 +148,7 @@ class NotHaveKeyValuationFunction(nn.Module):
         Returns:
             A batch of probabilities.
         """
-        not_has_key = torch.sum(z[:, :, 1])
+        not_has_key = torch.sum(z[:, :, 1]) * 0.9
         return not_has_key
 
 

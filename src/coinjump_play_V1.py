@@ -109,8 +109,7 @@ def run():
     target_frame_duration = 1 / fps
     last_frame_time = 0
 
-    lark_path = '../src/lark/exp.lark'
-    lang_base_path = '../data/lang/'
+    last_explaining = None
 
     while True:
         # control framerate
@@ -132,7 +131,14 @@ def run():
 
             # extract state for explaining
             extracted_state = extract_for_explaining(coin_jump)
-            explaining_nsfr(extracted_state, lark_path, lang_base_path)
+            explaining = explaining_nsfr(extracted_state)
+
+            if last_explaining is None:
+                print(explaining)
+                last_explaining = explaining
+            elif explaining != last_explaining:
+                print(explaining)
+                last_explaining = explaining
 
             # TODO change sample function of different envs
 
