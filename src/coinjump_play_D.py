@@ -8,12 +8,12 @@ import torch
 import numpy as np
 
 from src.coinjump.coinjump.actions import coin_jump_actions_from_unified
-from src.coinjump import ImageViewer
+from src.coinjump.imageviewer import ImageViewer
 
 from src.coinjump.coinjump.paramLevelGenerator import ParameterizedLevelGenerator
 from src.coinjump.coinjump.paramLevelGenerator_keydoor import ParameterizedLevelGenerator_KeyDoor
 from src.coinjump.coinjump.paramLevelGenerator_dodge import ParameterizedLevelGenerator_Dodge
-from src.coinjump.coinjump import CoinJump
+from src.coinjump.coinjump.coinjump import CoinJump
 
 from src.coinjump_learn.training.data_transform import sample_to_model_input_dodge, extract_state, collate
 from src.coinjump_learn.training.ppo_coinjump import ActorCritic
@@ -60,7 +60,7 @@ def parse_args():
 
     if args.model_file is None:
         # read filename from stdin
-        model_file = f"../training/PPO_preTrained/CoinJumpEnvDodge-v0/{input('Enter file name: ')}"
+        model_file = f"../src/ppo_coinjump_model/{input('Enter file name: ')}"
     else:
         model_file = pathlib.Path(args.model_file)
 
