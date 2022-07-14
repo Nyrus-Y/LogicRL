@@ -20,9 +20,13 @@ enemy and key_door:
 1. run src/coinjump_play_V1 
 2. input name of trained model: PPO_V1_enemy_door.pth 
 
+### something else:
 here to choose model:
+
 path of models: src/ppo_coinjump_model
 
+
 here to define FOL of the game:
+
 path of clasues: data/lang/coinjump  
 (coinjump1 is for testing)
