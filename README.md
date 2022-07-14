@@ -10,11 +10,11 @@ pip install -r requirements.txt
 ### PLAY
 key_door:
 1. run src/coinjump_play_KD 
-2. input name of trained model: PPO_key_door.pth   
+2. input name of trained model: PPO_Key_Door.pth   
 
 dodge_enemy:
 1. run src/coinjump_play_D 
-2. input name of trained model: PPO_enemy.pth   
+2. input name of trained model: PPO_Dodge.pth   
 
 enemy and key_door:
 1. run src/coinjump_play_V1 
