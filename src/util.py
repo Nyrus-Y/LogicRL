@@ -4,17 +4,17 @@ import sys
 
 from src.logic_utils import get_lang
 
-from percept import SlotAttentionPerceptionModule, YOLOPerceptionModule
-from facts_converter import FactsConverter
-from nsfr import NSFReasoner
-from logic_utils import build_infer_module, generate_atoms
-from valuation import RLValuationModule
+from src.percept import SlotAttentionPerceptionModule, YOLOPerceptionModule
+from src.facts_converter import FactsConverter
+from src.nsfr import NSFReasoner
+from src.logic_utils import build_infer_module, generate_atoms
+from src.valuation import RLValuationModule
+from src.coinjump.coinjump.actions import coin_jump_actions_from_unified, CoinJumpActions
 
 device = torch.device('cpu')
 
 
 def get_nsfr_model(lang, clauses, atoms, bk, device):
-
     PM = YOLOPerceptionModule(e=4, d=11, device=device)
     VM = RLValuationModule(
         lang=lang, device=device)
@@ -29,7 +29,6 @@ def get_nsfr_model(lang, clauses, atoms, bk, device):
 
 
 def explaining_nsfr(extracted_states):
-
     lark_path = '../src/lark/exp.lark'
     lang_base_path = '../data/lang/'
 
@@ -45,6 +44,33 @@ def explaining_nsfr(extracted_states):
     explaining = NSFR.print_explaining(predicts)
 
     return explaining
+
+
+def action_select(explaining):
+    """
+    CJA_NOOP: Final[int] = 0
+    CJA_MOVE_LEFT: Final[int] = 1
+    CJA_MOVE_RIGHT: Final[int] = 2
+    CJA_MOVE_UP: Final[int] = 3
+    CJA_MOVE_DOWN: Final[int] = 4
+    CJA_MOVE_LEFT_UP: Final[int] = 5
+    CJA_MOVE_RIGHT_UP: Final[int] = 6
+    CJA_MOVE_LEFT_DOWN: Final[int] = 7
+    CJA_MOVE_RIGHT_DOWN: Final[int]= 8
+    CJA_NUM_EXPLICIT_ACTIONS = 9
+    """
+    action = CoinJumpActions.NOOP
+
+    full_name = explaining.head.pred.name
+
+    if 'left' in full_name:
+        action = coin_jump_actions_from_unified(1)
+    elif 'right' in full_name:
+        action = coin_jump_actions_from_unified(2)
+    elif 'jump' in full_name:
+        action = coin_jump_actions_from_unified(3)
+
+    return action
 
 
 def extract_for_explaining(coin_jump):

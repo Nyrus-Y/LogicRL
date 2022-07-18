@@ -7,17 +7,17 @@ import torch
 import numpy as np
 
 from src.coinjump.coinjump.actions import coin_jump_actions_from_unified
-from src.coinjump import ImageViewer
+from src.coinjump.imageviewer import ImageViewer
 from src.util import extract_for_explaining, explaining_nsfr
 
 from src.coinjump.coinjump.paramLevelGenerator import ParameterizedLevelGenerator
 from src.coinjump.coinjump.paramLevelGenerator_keydoor import ParameterizedLevelGenerator_KeyDoor
 from src.coinjump.coinjump.paramLevelGenerator_dodge import ParameterizedLevelGenerator_Dodge
-from src.coinjump.coinjump import ParameterizedLevelGenerator_V1
-from src.coinjump.coinjump import CoinJump
+from src.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
+from src.coinjump.coinjump.coinjump import CoinJump
 
-from src.coinjump_learn import extract_state, sample_to_model_input_V1, collate
-from src.coinjump_learn import ActorCritic
+from src.coinjump_learn.training.data_transform import extract_state, sample_to_model_input_V1, collate
+from src.coinjump_learn.training.ppo_coinjump import ActorCritic
 
 KEY_r = 114
 
@@ -152,6 +152,7 @@ def run():
             # model_input = for_each_tensor(model_input, lambda tensor: tensor.unsqueeze(0).cuda())
             prediction = model(model_input['state'])
             # prediction[0][0] = 0
+            num =torch.argmax(prediction).cpu().item()
             action = coin_jump_actions_from_unified(torch.argmax(prediction).cpu().item())
         else:
 

@@ -70,6 +70,15 @@ class Player(Entity):
         self.ax = 0
         self.ay = 0
         self.use_support = True
+        up = CoinJumpActions.MOVE_UP
+        down = CoinJumpActions.MOVE_DOWN
+        left= CoinJumpActions.MOVE_LEFT
+        right = CoinJumpActions.MOVE_RIGHT
+        action = self.action[0]
+        print(up ==action)
+        print(down ==action)
+        print(left==action)
+        print(right==action)
         if CoinJumpActions.MOVE_LEFT in self.action:
             self.ax -= self.move_speed
         if CoinJumpActions.MOVE_RIGHT in self.action:

@@ -1,7 +1,6 @@
 from enum import Enum
 from typing import List, Final
 
-
 class CoinJumpActions(Enum):
 
     NOOP = 0
