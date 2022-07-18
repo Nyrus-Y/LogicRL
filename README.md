@@ -7,7 +7,7 @@ The packages are specified in [requirements.txt](./requirements.txt). Please ins
 pip install -r requirements.txt
 ```
 
-### PLAY
+### PLAY with trained PPO agent
 key_door:
 1. run src/coinjump_play_KD 
 2. input name of trained model: PPO_Key_Door.pth   
@@ -20,13 +20,16 @@ enemy and key_door:
 1. run src/coinjump_play_V1 
 2. input name of trained model: PPO_V1_enemy_door.pth 
 
+### PLAY with FOL
+
+1. run src/coinjump_V1.py
+
 ### something else:
 here to choose model:
 
 path of models: src/ppo_coinjump_model
 
 
-here to define FOL of the game:
+here to define FOL:
 
-path of clasues: data/lang/coinjump  
-(coinjump1 is for testing)
+path of clasues: data/lang/coinjump
