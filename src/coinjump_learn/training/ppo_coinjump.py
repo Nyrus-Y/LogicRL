@@ -11,6 +11,7 @@ import gym
 from src.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS
 import time
 import numpy as np
+import src.coinjump_learn.env
 
 # Original source: https://github.com/nikhilbarhate99/PPO-PyTorch/blob/master/PPO.py
 from src.coinjump_learn.models.mlpController import MLPController
@@ -196,11 +197,12 @@ def main():
         # torch.use_deterministic_algorithms(True)
         np.random.seed(random_seed)
         random.seed(random_seed)
+
     # TODO choose env
     # env_name = "CoinJumpEnv-v0"
-    # env_name = "CoinJumpEnvKD-v0"
-    #env_name = "CoinJumpEnvDodge-v0"
-    env_name = "CoinJumpEnv-v1"
+    env_name = "CoinJumpEnvKD-v0"
+    # env_name = "CoinJumpEnvDodge-v0"
+    # env_name = "CoinJumpEnv-v1"
 
     # max_ep_len = 1000  # max timesteps in one episode
     max_ep_len = 500  # max timesteps in one episode

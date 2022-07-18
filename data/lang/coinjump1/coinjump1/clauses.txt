@@ -1,1 +1,0 @@
-jump(O1):-type(O1,agent),type(O2,enemy),closeby(O1,O2).

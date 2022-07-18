@@ -25,7 +25,7 @@ class CoinJump:
             self.score = 0
         elif Key_Door_model:
             from .player_keydoor import Player
-            self.score = 20.0
+            self.score = 50.0
         elif V1:
             from .player_V1 import Player
             self.score = 100.0

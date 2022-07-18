@@ -48,7 +48,6 @@ class YOLOValuationModule(nn.Module):
         vfs['type'] = v_type
         layers.append(v_type)
         v_closeby = YOLOClosebyValuationFunction(device)
-        v_closeby = YOLOClosebyValuationFunction(device)
         if dataset in ['closeby', 'red-triangle']:
             vfs['closeby'] = v_closeby
             vfs['closeby'].load_state_dict(torch.load(
@@ -142,13 +141,6 @@ class RLValuationModule(nn.Module):
         super().__init__()
         self.lang = lang
         self.device = device
-        self.colors = ["cyan", "blue", "yellow",
-                       "purple", "red", "green", "gray", "brown"]
-        self.shapes = ["sphere", "cube", "cylinder"]
-        self.sizes = ["large", "small"]
-        self.materials = ["rubber", "metal"]
-        self.sides = ["left", "right"]
-
         self.layers, self.vfs = self.init_valuation_functions(
             device, pretrained)
 
@@ -170,9 +162,9 @@ class RLValuationModule(nn.Module):
         # TODO
         v_closeby = ClosebyValuationFunction(device)
         vfs['closeby'] = v_closeby
-        vfs['closeby'].load_state_dict(torch.load(
-            '../src/weights/neural_predicates/closeby_pretrain.pt', map_location=device))
-        vfs['closeby'].eval()
+        # vfs['closeby'].load_state_dict(torch.load(
+        #     '../src/weights/neural_predicates/closeby_pretrain.pt', map_location=device))
+        # vfs['closeby'].eval()
         layers.append(v_closeby)
         # print('Pretrained  neural predicate closeby have been loaded!')
 
@@ -192,7 +184,7 @@ class RLValuationModule(nn.Module):
         vfs['not_have_key'] = v_not_have_key
         layers.append(v_have_key)
 
-        return nn.ModuleList([v_type, v_closeby, v_on_left, v_on_right, v_have_key,v_not_have_key]), vfs
+        return nn.ModuleList([v_type, v_closeby, v_on_left, v_on_right, v_have_key, v_not_have_key]), vfs
 
     def forward(self, zs, atom):
         """Convert the object-centric representation to a valuation tensor.

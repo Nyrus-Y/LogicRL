@@ -1,0 +1,3 @@
+object:obj1,obj2
+type:agent,enemy
+image:img

@@ -38,8 +38,6 @@ class ClosebyValuationFunction(nn.Module):
     def __init__(self, device):
         super(ClosebyValuationFunction, self).__init__()
         self.device = device
-        self.logi = LogisticRegression(input_dim=1)
-        self.logi.to(device)
 
     def forward(self, z_1, z_2):
         """
@@ -52,18 +50,14 @@ class ClosebyValuationFunction(nn.Module):
         """
         c_1 = z_1[:, 4:]
         c_2 = z_2[:, 4:]
-        # c_1 = z_1[:, 4]
-        # c_2 = z_2[:, 4]
 
-        # print("c_1, c_2 norm", c_1, c_2,  torch.norm(c_1 - c_2, dim=1))
-        dist = torch.norm(c_1 - c_2, dim=1).unsqueeze(-1)
-        # print('v_closeby ourput ', self.logi(dist).squeeze(), self.logi(dist).squeeze().shape)
+        # if abs(c_1[:, 1] - c_2[:, 1]) <=0.1:
+        #     return torch.tensor(0)
 
-        # if abs(c_1-c_2) < 3:
-        #     return torch.tensor(0.9)
-        # else:
-            # return torch.tensor(0)
-        return self.logi(dist).squeeze()
+        if abs(c_1[:, 0] - c_2[:, 0]) < 2.5 and abs(c_1[:, 1] - c_2[:, 1]) <= 0.1:
+            return torch.tensor(0.9)
+        else:
+            return torch.tensor(0)
 
 
 class OnLeftValuationFunction(nn.Module):

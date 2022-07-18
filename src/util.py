@@ -28,18 +28,22 @@ def get_nsfr_model(lang, clauses, atoms, bk, device):
     return NSFR
 
 
-def explaining_nsfr(extracted_states):
+def explaining_nsfr(extracted_states, env):
     lark_path = '../src/lark/exp.lark'
     lang_base_path = '../data/lang/'
 
     device = torch.device('cpu')
     lang, clauses, bk, atoms = get_lang(
-        lark_path, lang_base_path, 'coinjump', 'coinjump')
+        lark_path, lang_base_path, env, 'coinjump')
     NSFR = get_nsfr_model(lang, clauses, atoms, bk, device)
 
     V_T = NSFR(extracted_states)
     predicts = NSFR.predict_multi(
-        v=V_T, prednames=['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door', 'right_go_to_door'])
+        v=V_T, prednames=['jump','left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+                          'right_go_to_door'])
+
+    # predicts = NSFR.predict_multi(
+    #     v=V_T, prednames=['jump', 'left', 'right'])
 
     explaining = NSFR.print_explaining(predicts)
 
@@ -94,19 +98,19 @@ def extract_for_explaining(coin_jump):
             extracted_states[0][0] = 1
             extracted_states[0][-2:] = entity[1:3]
             # 27 is the width of map, this is normalization
-            extracted_states[0][-2:] /= 27
+            # extracted_states[0][-2:] /= 27
         elif entity[0].name == 'KEY':
             extracted_states[1][1] = 1
             extracted_states[1][-2:] = entity[1:3]
-            extracted_states[1][-2:] /= 27
+            # extracted_states[1][-2:] /= 27
         elif entity[0].name == 'DOOR':
             extracted_states[2][2] = 1
             extracted_states[2][-2:] = entity[1:3]
-            extracted_states[2][-2:] /= 27
+            # extracted_states[2][-2:] /= 27
         elif entity[0].name == 'GROUND_ENEMY':
             extracted_states[3][3] = 1
             extracted_states[3][-2:] = entity[1:3]
-            extracted_states[3][-2:] /= 27
+            # extracted_states[3][-2:] /= 27
 
     states = torch.tensor(np.array(extracted_states), dtype=torch.float32).unsqueeze(0)
     return states
