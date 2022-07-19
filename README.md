@@ -22,7 +22,9 @@ enemy and key_door:
 
 ### PLAY with FOL
 
-1. run src/coinjump_V1.py
+run src/coinjump_V1.py 
+or  src/coinjump_D.py
+or  src/coinjump_KD.py
 
 ### something else:
 here to choose model:
