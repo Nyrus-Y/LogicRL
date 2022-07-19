@@ -54,7 +54,7 @@ class ClosebyValuationFunction(nn.Module):
         # if abs(c_1[:, 1] - c_2[:, 1]) <=0.1:
         #     return torch.tensor(0)
 
-        if abs(c_1[:, 0] - c_2[:, 0]) < 2.5 and abs(c_1[:, 1] - c_2[:, 1]) <= 0.1:
+        if abs(c_1[:, 0] - c_2[:, 0]) < 2 and abs(c_1[:, 1] - c_2[:, 1]) <= 0.1:
             return torch.tensor(0.9)
         else:
             return torch.tensor(0)
@@ -152,6 +152,34 @@ class NotHaveKeyValuationFunction(nn.Module):
         """
         not_has_key = torch.sum(z[:, :, 1]) * 0.9
         return not_has_key
+
+
+class SafeValuationFunction(nn.Module):
+    """The function v_closeby.
+    """
+
+    def __init__(self):
+        super(SafeValuationFunction, self).__init__()
+
+    def forward(self, z_1, z_2):
+        """
+        Args:
+            z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
+             [agent, key, door, enemy, x, y]
+
+        Returns:
+            A batch of probabilities.
+        """
+        c_1 = z_1[:, 4:]
+        c_2 = z_2[:, 4:]
+
+        # if abs(c_1[:, 1] - c_2[:, 1]) <=0.1:
+        #     return torch.tensor(0)
+
+        if abs(c_1[:, 0] - c_2[:, 0]) > 2:
+            return torch.tensor(0.9)
+        else:
+            return torch.tensor(0)
 
 
 ################################

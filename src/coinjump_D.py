@@ -4,7 +4,7 @@ import time
 import numpy as np
 from coinjump.imageviewer import ImageViewer
 
-from src.coinjump.coinjump.paramLevelGenerator_keydoor import ParameterizedLevelGenerator_KeyDoor
+from src.coinjump.coinjump.paramLevelGenerator_dodge import ParameterizedLevelGenerator_Dodge
 from src.coinjump.coinjump.coinjump import CoinJump
 from src.util import extract_for_explaining, explaining_nsfr, action_select
 
@@ -31,11 +31,11 @@ def setup_image_viewer(coinjump):
 def create_coinjump_instance():
     seed = random.random()
 
-    coin_jump = CoinJump(start_on_first_action=True, Key_Door_model=True)
+    coin_jump = CoinJump(start_on_first_action=False, Dodge_model=True)
     # level_generator = DummyGenerator()
 
     # change generator to choose env
-    level_generator = ParameterizedLevelGenerator_KeyDoor()
+    level_generator = ParameterizedLevelGenerator_Dodge()
 
     level_generator.generate(coin_jump, seed=seed)
     # level_generator.generate(coin_jump, seed=seed)
@@ -70,13 +70,13 @@ def run():
         if KEY_r in viewer.pressed_keys:
             coin_jump = create_coinjump_instance()
             print("--------------------------     next game    --------------------------")
+
         if not coin_jump.level.terminated:
 
             # extract state for explaining
-            prednames = ['left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-                         'right_go_to_door']
+            prednames = ['jump', 'stay']
             extracted_state = extract_for_explaining(coin_jump)
-            explaining = explaining_nsfr(extracted_state, 'coinjump_KD',prednames)
+            explaining = explaining_nsfr(extracted_state, 'coinjump_D', prednames)
             action = action_select(explaining)
 
             if last_explaining is None:

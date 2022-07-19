@@ -41,10 +41,12 @@ class ParameterizedLevelGenerator_KeyDoor:
             level.add_block(level.width - 2, y, solidBlock)
 
         positions = [
-            (4, 2),
-            (8, 2),
+            (3, 2),
+            (7, 2),
             (11, 2),
-            (17, 2)
+            (15, 2),
+            (19, 2),
+            (23, 2)
         ]
 
         rng.shuffle(positions)
@@ -53,7 +55,7 @@ class ParameterizedLevelGenerator_KeyDoor:
         coinjump.player.y = positions[0][1]
 
         level.entities.append(Key(level, positions[1][0] - 0.5, positions[1][1], resource_loader=resource_loader))
-        level.entities.append(Door(level, 24, 2, resource_loader=resource_loader))
+        level.entities.append(Door(level, positions[2][0], positions[2][1], resource_loader=resource_loader))
 
         # setup rewards
         if dynamic_reward:

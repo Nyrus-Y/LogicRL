@@ -6,7 +6,7 @@ from coinjump.imageviewer import ImageViewer
 
 from src.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
 from src.coinjump.coinjump.coinjump import CoinJump
-from src.util import extract_for_explaining, explaining_nsfr, action_select
+from src.util import extract_for_explaining, explaining_nsfr, action_select,explaining_nsfr_combine
 
 KEY_SPACE = 32
 # KEY_SPACE = 32
@@ -74,8 +74,11 @@ def run():
         if not coin_jump.level.terminated:
 
             # extract state for explaining
+            prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+                         'right_go_to_door']
             extracted_state = extract_for_explaining(coin_jump)
-            explaining = explaining_nsfr(extracted_state, 'coinjump1')
+            explaining = explaining_nsfr(extracted_state, 'coinjump1', prednames)
+            # explaining = explaining_nsfr_combine(extracted_state,'coinjump_D','coinjump_KD')
             action = action_select(explaining)
 
             if last_explaining is None:

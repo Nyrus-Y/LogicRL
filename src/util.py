@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-import sys
+import torch.nn as nn
 
 from src.logic_utils import get_lang
 
@@ -8,7 +8,7 @@ from src.percept import SlotAttentionPerceptionModule, YOLOPerceptionModule
 from src.facts_converter import FactsConverter
 from src.nsfr import NSFReasoner
 from src.logic_utils import build_infer_module, generate_atoms
-from src.valuation import RLValuationModule
+from src.valuation import RLValuationModule, RLValuationModule_D, RLValuationModule_KD
 from src.coinjump.coinjump.actions import coin_jump_actions_from_unified, CoinJumpActions
 
 device = torch.device('cpu')
@@ -28,7 +28,36 @@ def get_nsfr_model(lang, clauses, atoms, bk, device):
     return NSFR
 
 
-def explaining_nsfr(extracted_states, env):
+def get_2_nsfr_model(lang, clauses, atoms, bk, device):
+    PM = YOLOPerceptionModule(e=4, d=11, device=device)
+    VM_D = RLValuationModule_D(
+        lang=lang, device=device)
+    VM_KD = RLValuationModule_KD(
+        lang=lang, device=device
+    )
+
+    def combine(VM_D, VM_KD):
+        #TODO
+        for module in VM_KD.layers:
+            if module not in VM_D.layers:
+                print(module == VM_D.layers[0])
+                VM_D.layers.append(module)
+
+        return VM_D
+
+    VM = combine(VM_D, VM_KD)
+    FC = FactsConverter(lang=lang, perception_module=PM,
+                        valuation_module=VM, device=device)
+    IM = build_infer_module(clauses, atoms, lang,
+                            m=len(clauses), infer_step=2, device=device)
+    # Neuro-Symbolic Forward Reasoner
+    NSFR = NSFReasoner(perception_module=PM, facts_converter=FC,
+                       infer_module=IM, atoms=atoms, bk=bk, clauses=clauses)
+
+    return NSFR
+
+
+def explaining_nsfr(extracted_states, env, prednames):
     lark_path = '../src/lark/exp.lark'
     lang_base_path = '../data/lang/'
 
@@ -39,7 +68,53 @@ def explaining_nsfr(extracted_states, env):
 
     V_T = NSFR(extracted_states)
     predicts = NSFR.predict_multi(
-        v=V_T, prednames=['jump','left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+        v=V_T, prednames=prednames)
+
+    # predicts = NSFR.predict_multi(
+    #     v=V_T, prednames=['jump', 'left', 'right'])
+
+    explaining = NSFR.print_explaining(predicts)
+
+    return explaining
+
+
+def explaining_nsfr_combine(extracted_states, env1, env2):
+    lark_path = '../src/lark/exp.lark'
+    lang_base_path = '../data/lang/'
+
+    device = torch.device('cpu')
+
+    def combine(data1, data2):
+        lang = data1['lang']
+        for pred in data2['lang'].preds:
+            if pred not in data1['lang'].preds:
+                lang.preds.append(pred)
+        clauses = data1['clauses']
+        for clause in data2['clauses']:
+            if clause not in data1['clauses']:
+                clauses.append(clause)
+        bks = data1['bk']
+        for bk in data2['bk']:
+            if bk not in data1['bk']:
+                bks.append(bk)
+        atoms = data1['atoms']
+        for atom in data2['atoms']:
+            if atom not in data1['bk']:
+                atoms.append(atom)
+        return lang, clauses, bks, atoms
+
+    lang1, clauses1, bk1, atoms1 = get_lang(
+        lark_path, lang_base_path, env1, 'coinjump')
+    lang2, clauses2, bk2, atoms2 = get_lang(
+        lark_path, lang_base_path, env2, 'coinjump')
+    data1 = {'lang': lang1, 'clauses': clauses1, 'bk': bk1, 'atoms': atoms1}
+    data2 = {'lang': lang2, 'clauses': clauses2, 'bk': bk2, 'atoms': atoms2}
+    lang, clauses, bk, atoms = combine(data1, data2)
+    NSFR = get_2_nsfr_model(lang, clauses, atoms, bk, device)
+
+    V_T = NSFR(extracted_states)
+    predicts = NSFR.predict_multi(
+        v=V_T, prednames=['left_go_get_key', 'right_go_get_key', 'left_go_to_door',
                           'right_go_to_door'])
 
     # predicts = NSFR.predict_multi(
@@ -73,7 +148,8 @@ def action_select(explaining):
         action = coin_jump_actions_from_unified(2)
     elif 'jump' in full_name:
         action = coin_jump_actions_from_unified(3)
-
+    elif 'stay' in full_name:
+        action = coin_jump_actions_from_unified(0)
     return action
 
 
