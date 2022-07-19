@@ -22,9 +22,11 @@ enemy and key_door:
 
 ### PLAY with FOL
 
-run src/coinjump_V1.py 
-or  src/coinjump_D.py
-or  src/coinjump_KD.py
+env include enemy,key and door: run src/coinjump_V1.py 
+
+env include enemy :src/coinjump_D.py
+
+env include key and door :  src/coinjump_KD.py
 
 ### something else:
 here to choose model:
