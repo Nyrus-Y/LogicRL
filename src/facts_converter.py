@@ -11,8 +11,10 @@ class FactsConverter(nn.Module):
 
     def __init__(self, lang, perception_module, valuation_module, device=None):
         super(FactsConverter, self).__init__()
-        self.e = perception_module.e
-        self.d = perception_module.d
+        # self.e = perception_module.e
+        self.e = 0
+        #self.d = perception_module.d
+        self.d =0
         self.lang = lang
         self.vm = valuation_module  # valuation functions
         self.device = device

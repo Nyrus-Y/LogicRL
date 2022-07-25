@@ -10,8 +10,7 @@ from src.coinjump_learn.training.data_transform import extract_state, sample_to_
 
 
 class CoinJumpEnvV1(gym.Env):
-
-    #metadata = {'render.modes': ['human']}
+    # metadata = {'render.modes': ['human']}
     metadata = {'render.modes': []}
 
     def __init__(self, generator_args=None, **kwargs):
@@ -23,8 +22,8 @@ class CoinJumpEnvV1(gym.Env):
 
         self.action_space = spaces.Discrete(CJA_NUM_EXPLICIT_ACTIONS)
         # Example for using image as input:
-        #self.observation_space = spaces.Box(low=0, high=255, shape=(HEIGHT, WIDTH, N_CHANNELS), dtype=np.uint8)
-        #{
+        # self.observation_space = spaces.Box(low=0, high=255, shape=(HEIGHT, WIDTH, N_CHANNELS), dtype=np.uint8)
+        # {
         #    'base': [
         #        platform_start,
         #        platform_end,
@@ -34,12 +33,12 @@ class CoinJumpEnvV1(gym.Env):
         #        score
         #    ],
         #    'entities': entities_param_array
-        #}
+        # }
         self.observation_space = spaces.Box(low=0, high=50, shape=(60,), dtype=np.float),
-        #self.observation_space = gym.spaces.Dict({
+        # self.observation_space = gym.spaces.Dict({
         #    "base": spaces.Box(low=0, high=50, shape=(6,), dtype=np.float),
         #    "entities": spaces.Box(low=0, high=30, shape=(54,), dtype=np.float),
-        #})
+        # })
 
     def step(self, action):
         """
@@ -70,9 +69,9 @@ class CoinJumpEnvV1(gym.Env):
                  However, official evaluations of your agent are not allowed to
                  use this for learning.
         """
-        #self._take_action(action)
+        # self._take_action(action)
         reward = self.coinjump.step(coin_jump_actions_from_unified(action))
-        #reward = self._get_reward()
+        # reward = self._get_reward()
         ob = self.observe_state()
         episode_over = self.coinjump.level.terminated
         return ob, reward, episode_over, {}
@@ -80,7 +79,7 @@ class CoinJumpEnvV1(gym.Env):
     def observe_state(self):
         # transform to model input with no action specified
         ob = sample_to_model_input_V1((extract_state(self.coinjump), None), no_dict=True)
-        #if no_dict=False: we get a dict with ob['base'] and ob['entities'] entries
+        # if no_dict=False: we get a dict with ob['base'] and ob['entities'] entries
         return ob
 
     def create_new_coinjump(self):
@@ -98,8 +97,10 @@ class CoinJumpEnvV1(gym.Env):
             return
         raise NotImplementedError("")
 
-    #def _take_action(self, action):
+    # def _take_action(self, action):
     #    self.coinjump1.step(action)
+    def get_coinjump(self):
+        return self.coinjump
 
     def _get_reward(self):
         return self.coinjump.level.get_reward()
@@ -109,7 +110,7 @@ class CoinJumpEnvV1(gym.Env):
 
 
 gym.envs.register(
-     id='CoinJumpEnv-v1',
-     entry_point='src.coinjump_learn.env.coinJumpEnvV1:CoinJumpEnvV1',
-     max_episode_steps=300,
+    id='CoinJumpEnv-v1',
+    entry_point='src.coinjump_learn.env.coinJumpEnvV1:CoinJumpEnvV1',
+    max_episode_steps=300,
 )

@@ -57,7 +57,7 @@ class ClosebyValuationFunction(nn.Module):
         if abs(c_1[:, 0] - c_2[:, 0]) < 2 and abs(c_1[:, 1] - c_2[:, 1]) <= 0.1:
             return torch.tensor(0.9)
         else:
-            return torch.tensor(0)
+            return torch.tensor(0.01)
 
 
 class OnLeftValuationFunction(nn.Module):
@@ -82,7 +82,7 @@ class OnLeftValuationFunction(nn.Module):
         if c_2 - c_1 > 0:
             on_left = torch.tensor(0.9)
         else:
-            on_left = torch.tensor(0)
+            on_left = torch.tensor(0.01)
 
         return on_left
 
@@ -109,7 +109,7 @@ class OnRightValuationFunction(nn.Module):
         if c_2 - c_1 < 0:
             on_right = torch.tensor(0.9)
         else:
-            on_right = torch.tensor(0)
+            on_right = torch.tensor(0.01)
 
         return on_right
 
@@ -179,7 +179,7 @@ class SafeValuationFunction(nn.Module):
         if abs(c_1[:, 0] - c_2[:, 0]) > 2:
             return torch.tensor(0.9)
         else:
-            return torch.tensor(0)
+            return torch.tensor(0.01)
 
 
 ################################

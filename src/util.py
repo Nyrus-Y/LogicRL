@@ -15,7 +15,8 @@ device = torch.device('cpu')
 
 
 def get_nsfr_model(lang, clauses, atoms, bk, device):
-    PM = YOLOPerceptionModule(e=4, d=11, device=device)
+    # PM = YOLOPerceptionModule(e=4, d=11, device=device)
+    PM = None
     VM = RLValuationModule(
         lang=lang, device=device)
     FC = FactsConverter(lang=lang, perception_module=PM,
@@ -37,7 +38,7 @@ def get_2_nsfr_model(lang, clauses, atoms, bk, device):
     )
 
     def combine(VM_D, VM_KD):
-        #TODO
+        # TODO
         for module in VM_KD.layers:
             if module not in VM_D.layers:
                 print(module == VM_D.layers[0])
@@ -76,6 +77,22 @@ def explaining_nsfr(extracted_states, env, prednames):
     explaining = NSFR.print_explaining(predicts)
 
     return explaining
+
+
+def get_predictions(extracted_states, env, prednames):
+    lark_path = 'E:\\Github\\Use Knowledge Representation and Reasoning for the policy\\src\\lark\\exp.lark'
+    lang_base_path = 'E:\\Github\\Use Knowledge Representation and Reasoning for the policy\\data\\lang\\'
+
+    device = torch.device('cpu')
+    lang, clauses, bk, atoms = get_lang(
+        lark_path, lang_base_path, env, 'coinjump')
+    NSFR = get_nsfr_model(lang, clauses, atoms, bk, device)
+
+    V_T = NSFR(extracted_states)
+    predicts = NSFR.predict_multi(
+        v=V_T, prednames=prednames)
+
+    return predicts
 
 
 def explaining_nsfr_combine(extracted_states, env1, env2):
@@ -153,6 +170,25 @@ def action_select(explaining):
     return action
 
 
+def num_action_select(action):
+    """
+    0:jump
+    1:left_go_get_key
+    2:right_go_get_key
+    3:left_go_to_door
+    4:right_go_to_door
+    5:stay
+    """
+    if action == 0:
+        return 3
+    elif action == 1 or 3:
+        return 1
+    elif action == 2 or 4:
+        return 2
+    elif action == 5:
+        return 0
+
+
 def extract_for_explaining(coin_jump):
     """
     extract state to metric
@@ -190,3 +226,7 @@ def extract_for_explaining(coin_jump):
 
     states = torch.tensor(np.array(extracted_states), dtype=torch.float32).unsqueeze(0)
     return states
+
+
+def reward_shaping(reward, last_coinjump, action):
+    return reward

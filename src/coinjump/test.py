@@ -1,5 +1,16 @@
 import torch
+import torch.nn as nn
 
-a = torch.tensor([[[-1,1,0,6],[-5,2,0,0],[0,3,0,0],[0,4,0,11]]])
-b = torch.sum(a, 1)
-print(a)
+
+class MyDense(nn.Module):
+    def __init__(self):
+        super(MyDense, self).__init__()
+        self.params = nn.ParameterList([nn.Parameter(torch.randn(4, 1))])
+
+    def forward(self, x):
+        for i in range(len(self.params)):
+            x = torch.mm(x, self.params[i])
+        return x
+
+net = MyDense()
+print(net)
