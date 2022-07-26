@@ -89,7 +89,7 @@ class NSFReasoner(nn.Module):
 
     def print_explaining(self, predicts):
         clauses = self.clauses
-        predicts = predicts.detach().numpy()
+        predicts = predicts.detach().cpu().numpy()
         index = np.argmax(predicts[0])
         return clauses[index]
 

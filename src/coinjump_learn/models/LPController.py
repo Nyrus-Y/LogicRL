@@ -23,10 +23,10 @@ class LPController(torch.nn.Module):
         self.mlp = torch.nn.Sequential(*modules)
 
     def forward(self, state):
-        if not hasattr(self, "as_dict") or self.as_dict:
-            features = torch.cat([state['base'], state['entities']], dim=1)
-        else:
-            features = state
+        # if not hasattr(self, "as_dict") or self.as_dict:
+        #     features = torch.cat([state['base'], state['entities']], dim=1)
+        # else:
+        features = state
         y = self.mlp(features)
         """
         if self.special:
@@ -64,7 +64,6 @@ class LPController(torch.nn.Module):
 class NSFRLayer(nn.Module):
     def __init__(self):
         super(NSFRLayer, self).__init__()
-        # self.params = nn.ParameterList([nn.Parameter(torch.randn(1, 6))])
         self.params = self.initialize_parameter()
 
     def forward(self, x):

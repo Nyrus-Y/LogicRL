@@ -62,7 +62,7 @@ def explaining_nsfr(extracted_states, env, prednames):
     lark_path = '../src/lark/exp.lark'
     lang_base_path = '../data/lang/'
 
-    device = torch.device('cpu')
+    device = torch.device('cuda:0')
     lang, clauses, bk, atoms = get_lang(
         lark_path, lang_base_path, env, 'coinjump')
     NSFR = get_nsfr_model(lang, clauses, atoms, bk, device)
@@ -79,18 +79,20 @@ def explaining_nsfr(extracted_states, env, prednames):
     return explaining
 
 
-def get_predictions(extracted_states, env, prednames):
+def get_nsfr(env):
     lark_path = 'E:\\Github\\Use Knowledge Representation and Reasoning for the policy\\src\\lark\\exp.lark'
     lang_base_path = 'E:\\Github\\Use Knowledge Representation and Reasoning for the policy\\data\\lang\\'
 
-    device = torch.device('cpu')
+    device = torch.device('cuda:0')
     lang, clauses, bk, atoms = get_lang(
         lark_path, lang_base_path, env, 'coinjump')
     NSFR = get_nsfr_model(lang, clauses, atoms, bk, device)
+    return NSFR
 
+
+def get_predictions(extracted_states, NSFR, prednames):
     V_T = NSFR(extracted_states)
-    predicts = NSFR.predict_multi(
-        v=V_T, prednames=prednames)
+    predicts = NSFR.predict_multi(v=V_T, prednames=prednames)
 
     return predicts
 
@@ -178,12 +180,23 @@ def num_action_select(action):
     3:left_go_to_door
     4:right_go_to_door
     5:stay
+
+    CJA_NOOP: Final[int] = 0
+    CJA_MOVE_LEFT: Final[int] = 1
+    CJA_MOVE_RIGHT: Final[int] = 2
+    CJA_MOVE_UP: Final[int] = 3
+    CJA_MOVE_DOWN: Final[int] = 4
+    CJA_MOVE_LEFT_UP: Final[int] = 5
+    CJA_MOVE_RIGHT_UP: Final[int] = 6
+    CJA_MOVE_LEFT_DOWN: Final[int] = 7
+    CJA_MOVE_RIGHT_DOWN: Final[int]= 8
+    CJA_NUM_EXPLICIT_ACTIONS = 9
     """
     if action == 0:
         return 3
-    elif action == 1 or 3:
+    elif action == 1 or action == 3:
         return 1
-    elif action == 2 or 4:
+    elif action == 2 or action == 4:
         return 2
     elif action == 5:
         return 0
@@ -224,9 +237,67 @@ def extract_for_explaining(coin_jump):
             extracted_states[3][-2:] = entity[1:3]
             # extracted_states[3][-2:] /= 27
 
-    states = torch.tensor(np.array(extracted_states), dtype=torch.float32).unsqueeze(0)
+    states = torch.tensor(np.array(extracted_states), dtype=torch.float32, device="cuda").unsqueeze(0)
     return states
 
 
-def reward_shaping(reward, last_coinjump, action):
+def reward_shaping(reward, last_extracted_state, action):
+    """
+    last_extracted_state:
+    x:agent,key,door,enemy,x,y
+    y:agent,key,door,enemy
+    action: nsfr action
+            0:jump
+            1:left_go_get_key
+            2:right_go_get_key
+            3:left_go_to_door
+            4:right_go_to_door
+            5:stay
+    """
+    last_extracted_state = torch.squeeze(last_extracted_state)
+    p_agent = last_extracted_state[0][-2:]
+    p_key = last_extracted_state[1][-2:]
+    p_door = last_extracted_state[2][-2:]
+    p_enemy = last_extracted_state[3][-2:]
+    # jump
+    if action == 0:
+        # if abs(p_enemy[0] - p_agent[0]) < 2 and abs(p_enemy[1] - p_agent[1] < 0.1):
+        #     reward += 0.1
+        # else:
+        #     reward -= 0.05
+        reward -= 0.1
+        return reward
+    # left_go_get_key
+    if action == 1:
+        if p_key[0] - p_agent[0] < 0 and p_key[0] >= 1:
+            reward += 0.1
+        else:
+            reward -= 0.1
+        return reward
+    # right_go_get_key
+    if action == 2:
+        if p_key[0] - p_agent[0] > 0 and p_key[0] >= 1:
+            reward += 0.1
+        else:
+            reward -= 0.1
+        return reward
+    # left_go_to_door
+    if action == 3:
+        if p_door[0] - p_agent[0] < 0 and p_key[0] < 1:
+            reward += 0.1
+        else:
+            reward -= 0.1
+        return reward
+    # right_go_to_door
+    if action == 4:
+        if p_door[0] - p_agent[0] > 0 and p_key[0] < 1:
+            reward += 0.1
+        else:
+            reward -= 0.1
+        return reward
+    # stay
+    if action == 5:
+        reward -= 0.1
+        return reward
+
     return reward

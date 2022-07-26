@@ -13,7 +13,7 @@ def create_coinjump_instance(seed=None, print_seed=False, generator_args=None, *
         generator_args = {}
 
     # coin_jump = CoinJump(Dodge_mode=True, **kwargs)
-    coin_jump = CoinJump(Key_Door_model=True, **kwargs)
+    coin_jump = CoinJump(V1=True, **kwargs)
 
     level_generator = ParameterizedLevelGenerator_V1(print_seed=print_seed)
     #level_generator = ParameterizedLevelGenerator_Dodge(print_seed=print_seed)

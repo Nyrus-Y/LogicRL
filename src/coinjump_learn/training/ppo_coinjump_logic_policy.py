@@ -13,7 +13,7 @@ import src.coinjump_learn.env
 
 # Original source: https://github.com/nikhilbarhate99/PPO-PyTorch/blob/master/PPO.py
 from src.coinjump_learn.models.nsfrController import NSFRController
-from src.util import extract_for_explaining, get_predictions
+from src.util import extract_for_explaining, get_nsfr
 
 device = torch.device('cuda:0')
 
@@ -387,7 +387,7 @@ def main():
             prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
                          'right_go_to_door', 'stay']
             extracted_state = extract_for_explaining(coinjump)
-            predictions = get_predictions(extracted_state, 'coinjump1', prednames)
+            predictions = get_nsfr(extracted_state, 'coinjump1', prednames)
 
             action = ppo_agent.select_action(state, predictions, epsilon=epsilon)
             state, reward, done, _ = env.step(action)

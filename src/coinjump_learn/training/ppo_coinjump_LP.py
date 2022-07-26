@@ -15,7 +15,7 @@ import src.coinjump_learn.env
 
 # Original source: https://github.com/nikhilbarhate99/PPO-PyTorch/blob/master/PPO.py
 from src.coinjump_learn.models.LPController import LPController
-from src.util import extract_for_explaining, num_action_select, get_predictions, reward_shaping
+from src.util import extract_for_explaining, num_action_select, get_nsfr, get_predictions, reward_shaping
 
 device = torch.device('cuda:0')
 
@@ -44,7 +44,7 @@ class ActorCritic(nn.Module):
         self.rng = random.Random() if rng is None else rng
         self.num_actions = 6
         self.uniform = Categorical(
-            torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
+            torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda:0"))
 
         self.actor = LPController(has_softmax=True)
         # self.actor = nn.Sequential(
@@ -55,7 +55,7 @@ class ActorCritic(nn.Module):
         #                nn.Linear(64, 9),
         #                nn.Softmax(dim=-1)
         #            )
-        self.critic = LPController(has_softmax=False, out_size=1, special=True)
+        self.critic = LPController(has_softmax=False, out_size=1, critic=True, special=True)
         # self.critic = nn.Sequential(
         #                nn.Linear(60, 64),
         #                nn.Tanh(),
@@ -116,11 +116,14 @@ class PPO:
 
         # select random action with epsilon probability and policy probiability with 1-epsilon
         with torch.no_grad():
-            state = torch.FloatTensor(state).to(device)
+            #state = torch.FloatTensor(state).to(device)
+            # state = torch.FloatTensor(state)
             action, action_logprob = self.policy_old.act(state, epsilon=epsilon)
 
         self.buffer.states.append(state)
+        action = torch.squeeze(action)
         self.buffer.actions.append(action)
+        action_logprob = torch.squeeze(action_logprob)
         self.buffer.logprobs.append(action_logprob)
 
         return action.item()
@@ -207,14 +210,16 @@ def main():
     env_name = "CoinJumpEnv-v1"
 
     # max_ep_len = 1000  # max timesteps in one episode
-    max_ep_len = 500  # max timesteps in one episode
+    # max_ep_len = 500  # max timesteps in one episode
+    max_ep_len = 300  # max timesteps in one episode
     # max_training_timesteps = int(1e5)  # break training loop if timeteps > max_training_timesteps
     max_training_timesteps = 100000000  # break training loop if timeteps > max_training_timesteps
 
     print_freq = max_ep_len * 10  # print avg reward in the interval (in num timesteps)
     log_freq = max_ep_len * 5  # log avg reward in the interval (in num timesteps)
     # save_model_freq = int(2e4)  # save model frequency (in num timesteps)
-    save_model_freq = 500000  # save model frequency (in num timesteps)
+    # save_model_freq = 500000  # save model frequency (in num timesteps)
+    save_model_freq = 50000  # save model frequency (in num timesteps)
 
     #####################################################
 
@@ -224,7 +229,8 @@ def main():
 
     # update_timestep = max_ep_len * 4  # update policy every n episodes
     # update_timestep = max_ep_len * 10  # update policy every n episodes
-    update_timestep = max_ep_len * 5  # debug update policy every n episodes
+    # update_timestep = max_ep_len * 5  # debug update policy every n episodes
+    update_timestep = max_ep_len * 5
     # update_timestep = 2  # update policy every n episodes
     # K_epochs = 80  # update policy for K epochs (= # update steps)
     K_epochs = 20  # update policy for K epochs (= # update steps)
@@ -247,7 +253,8 @@ def main():
     # epsilon = 1.0  # 1.0=completely random, 0.0=pure policy actions
     # epsilon = lambda episode: 0.0
     # epsilon = math.exp(-i_episode/2000) #i=200: 0.90, i=500: 0.77, i=1000: 0.60, i=2000:0.36, i=4000: 0.13, i=6000:0.04, i=10k:0.006
-    epsilon_func = lambda episode: math.exp(-episode / 500)
+    # epsilon_func = lambda episode: math.exp(-episode / 500)
+    epsilon_func = lambda episode: math.exp(-episode / 300)
     # epsilon = max(math.exp(-i_episode/2000), 0.02)
     # epsilon = math.exp(-i_episode/2000) + 0.025+math.cos(i_episode*(2*math.pi)/5000)*0.025
 
@@ -344,7 +351,9 @@ def main():
 
     # initialize a PPO agent
     ppo_agent = PPO(lr_actor, lr_critic, optimizer, gamma, K_epochs, eps_clip)
-
+    prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+                 'right_go_to_door', 'stay']
+    NSFR = get_nsfr('coinjump1')
     # track total training time
     start_time = time.time()
     print("Started training at (GMT) : ", start_time)
@@ -369,31 +378,29 @@ def main():
     while time_step <= max_training_timesteps:
 
         state = env.reset()
-        last_coinjump = env.get_coinjump()
+        coinjump = env.get_coinjump()
         current_ep_reward = 0
 
         epsilon = epsilon_func(i_episode)
 
-        prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-                     'right_go_to_door', 'stay']
-        extracted_state = extract_for_explaining(last_coinjump)
-        state = get_predictions(extracted_state, 'coinjump1', prednames)
+        last_extracted_state = extract_for_explaining(coinjump)
+        state = get_predictions(last_extracted_state, NSFR, prednames)
 
         for t in range(1, max_ep_len + 1):
 
             # select action with policy
 
             action = ppo_agent.select_action(state, epsilon=epsilon)
-            action = num_action_select(action)
-            state, reward, done, _ = env.step(action)
-            curr_coinjump = env.get_coinjump()
+            normal_action = num_action_select(action)
+            state, reward, done, _ = env.step(normal_action)
+            coinjump = env.get_coinjump()
 
-            # nsfr
-            extracted_state = extract_for_explaining(curr_coinjump)
-            state = get_predictions(extracted_state, 'coinjump1', prednames)
-
-            reward = reward_shaping(reward, last_coinjump, action)
-            last_coinjump = curr_coinjump
+            # creat nsfr explaining
+            curr_extracted_state = extract_for_explaining(coinjump)
+            state = get_predictions(curr_extracted_state, NSFR, prednames)
+            # reward shaping for FOL
+            reward = reward_shaping(reward, last_extracted_state, action)
+            last_extracted_state = curr_extracted_state
             # saving reward and is_terminals
             ppo_agent.buffer.rewards.append(reward)
             ppo_agent.buffer.is_terminals.append(done)
