@@ -6,16 +6,13 @@ from gym import spaces
 
 from src.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS, coin_jump_actions_from_unified
 from src.coinjump.coinjump.helpers import create_coinjump_instance
-from src.coinjump_learn.training.data_transform import extract_state, sample_to_model_input_V1
+from src.util import extract_for_explaining
 
-
-class CoinJumpEnvV1(gym.Env):
-
+class CoinJumpEnvV2(gym.Env):
     """
-    Coinjump:include enemy, key and door.
-    trained with mlp
+        Coinjump:include enemy, key and door.
+        trained with NSFRReasoner and mlp
     """
-
     # metadata = {'render.modes': ['human']}
     metadata = {'render.modes': []}
 
@@ -25,26 +22,8 @@ class CoinJumpEnvV1(gym.Env):
         self._kwargs = kwargs
         self.coinjump = None
         self.create_new_coinjump()
-
         self.action_space = spaces.Discrete(CJA_NUM_EXPLICIT_ACTIONS)
-        # Example for using image as input:
-        # self.observation_space = spaces.Box(low=0, high=255, shape=(HEIGHT, WIDTH, N_CHANNELS), dtype=np.uint8)
-        # {
-        #    'base': [
-        #        platform_start,
-        #        platform_end,
-        #        reward_coin,
-        #        reward_powerup,
-        #        reward_enemy,
-        #        score
-        #    ],
-        #    'entities': entities_param_array
-        # }
-        self.observation_space = spaces.Box(low=0, high=50, shape=(60,), dtype=np.float),
-        # self.observation_space = gym.spaces.Dict({
-        #    "base": spaces.Box(low=0, high=50, shape=(6,), dtype=np.float),
-        #    "entities": spaces.Box(low=0, high=30, shape=(54,), dtype=np.float),
-        # })
+        self.observation_space = spaces.Box(low=0, high=50, shape=(60,), dtype=np.float)
 
     def step(self, action):
         """
@@ -83,9 +62,9 @@ class CoinJumpEnvV1(gym.Env):
         return ob, reward, episode_over, {}
 
     def observe_state(self):
-        # transform to model input with no action specified
-        ob = sample_to_model_input_V1((extract_state(self.coinjump), None), no_dict=True)
-        # if no_dict=False: we get a dict with ob['base'] and ob['entities'] entries
+
+        ob = extract_for_explaining(self.coinjump)
+
         return ob
 
     def create_new_coinjump(self):
@@ -116,7 +95,7 @@ class CoinJumpEnvV1(gym.Env):
 
 
 gym.envs.register(
-    id='CoinJumpEnv-v1',
-    entry_point='src.coinjump_learn.env.coinJumpEnvV1:CoinJumpEnvV1',
+    id='CoinJumpEnv-v2',
+    entry_point='src.coinjump_learn.env.coinJumpEnvV1:CoinJumpEnvV2',
     max_episode_steps=300,
 )

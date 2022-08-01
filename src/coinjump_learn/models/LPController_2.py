@@ -1,41 +1,29 @@
 import torch
 import torch.nn as nn
+from src.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS
 
 
-class NSFRController(torch.nn.Module):
+class LPController_2(torch.nn.Module):
 
-    def __init__(self, predictions, has_softmax=False, out_size=6, as_dict=False, special=False,
-                 critic=False):
+    def __init__(self, has_softmax=False, out_size=6, as_dict=False, special=False):
         super().__init__()
         self.as_dict = as_dict
-        encoding_base_features = 6
-        encoding_entity_features = 9
-        encoding_max_entities = 6
-        self.predictions = [1, 1, 1, 1, 1, 1]
-        self.num_in_features = encoding_base_features + encoding_entity_features * encoding_max_entities  # 60
 
         modules = [
-            torch.nn.Linear(self.num_in_features, 40),
-            torch.nn.ReLU(inplace=True),
-            torch.nn.Linear(40, out_size),
-            NsfrLayer(self.predictions)
+            torch.nn.Linear(6, out_size)
         ]
-
         self.special = special
 
         if has_softmax:
             modules.append(torch.nn.Softmax(dim=-1))
-        if critic:
-            modules.append(torch.nn.Linear(out_size, 1))
 
         self.mlp = torch.nn.Sequential(*modules)
 
     def forward(self, state):
-        self.get_predictions(state)
-        if not hasattr(self, "as_dict") or self.as_dict:
-            features = torch.cat([state['base'], state['entities']], dim=1)
-        else:
-            features = state
+        # if not hasattr(self, "as_dict") or self.as_dict:
+        #     features = torch.cat([state['base'], state['entities']], dim=1)
+        # else:
+        features = state
         y = self.mlp(features)
         """
         if self.special:
@@ -68,17 +56,3 @@ class NSFRController(torch.nn.Module):
             y += r.unsqueeze(-1)
         """
         return y
-
-    def get_predictions(self, state):
-        self.predictions = state
-
-
-class NsfrLayer(nn.Module):
-    def __init__(self, predictions):
-        super(NsfrLayer, self).__init__()
-        self.predictions = predictions
-
-    def forward(self, x):
-        x = [x * y for x, y in zip(x, self.predictions)]
-        x = torch.tensor(x)
-        return x
