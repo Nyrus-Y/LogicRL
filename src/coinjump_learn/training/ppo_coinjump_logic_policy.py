@@ -92,7 +92,7 @@ class NSFR_ActorCritic(nn.Module):
         PM = None
         VM = RLValuationModule(lang=lang, device=device)
         FC = FactsConverter(lang=lang, perception_module=PM, valuation_module=VM, device=device)
-        IM = build_infer_module(clauses, atoms, lang, m=len(clauses), infer_step=2, device=device)
+        IM = build_infer_module(clauses, atoms, lang, m=len(clauses), infer_step=2, train=True, device=device)
         # Neuro-Symbolic Forward Reasoner
         NSFR = NSFReasoner(perception_module=PM, facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk,
                            clauses=clauses, train=True)
