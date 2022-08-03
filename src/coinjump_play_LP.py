@@ -8,11 +8,8 @@ import numpy as np
 
 from src.coinjump.coinjump.actions import coin_jump_actions_from_unified
 from src.coinjump.imageviewer import ImageViewer
-from src.util import extract_for_explaining, num_action_select
+from src.util import extract_for_explaining, num_action_select, show_explaining
 
-from src.coinjump.coinjump.paramLevelGenerator import ParameterizedLevelGenerator
-from src.coinjump.coinjump.paramLevelGenerator_keydoor import ParameterizedLevelGenerator_KeyDoor
-from src.coinjump.coinjump.paramLevelGenerator_dodge import ParameterizedLevelGenerator_Dodge
 from src.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
 from src.coinjump.coinjump.coinjump import CoinJump
 
@@ -33,22 +30,12 @@ def setup_image_viewer(coinjump):
     return viewer
 
 
-def create_coinjump_instance(seed=None, Dodge_model=False, Key_Door_model=False, V1=False):
+def create_coinjump_instance(seed=None, V1=False):
     seed = random.randint(0, 100000000) if seed is None else seed
 
     # level_generator = DummyGenerator()
-    if Dodge_model:
-        coin_jump = CoinJump(start_on_first_action=True, Dodge_model=True)
-        level_generator = ParameterizedLevelGenerator_Dodge()
-    elif Key_Door_model:
-        coin_jump = CoinJump(start_on_first_action=True, Key_Door_model=True)
-        level_generator = ParameterizedLevelGenerator_KeyDoor()
-    elif V1:
-        coin_jump = CoinJump(start_on_first_action=True, V1=True)
-        level_generator = ParameterizedLevelGenerator_V1()
-    else:
-        coin_jump = CoinJump(start_on_first_action=True)
-        level_generator = ParameterizedLevelGenerator()
+    coin_jump = CoinJump(start_on_first_action=True, V1=True)
+    level_generator = ParameterizedLevelGenerator_V1()
 
     level_generator.generate(coin_jump, seed=seed)
     coin_jump.render()
@@ -144,8 +131,9 @@ def run():
 
             prediction = model(extracted_state)
             # prediction[0][0] = 0
+            print(show_explaining(prediction))
             num = torch.argmax(prediction).cpu().item()
-            action =num_action_select(num)
+            action = num_action_select(num)
             action = coin_jump_actions_from_unified(action)
         else:
 

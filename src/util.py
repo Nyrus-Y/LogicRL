@@ -228,7 +228,11 @@ def extract_for_explaining(coin_jump):
     states = torch.tensor(np.array(extracted_states), dtype=torch.float32, device="cuda").unsqueeze(0)
     return states
 
-
+def show_explaining(prediction):
+    prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+                 'right_go_to_door', 'stay']
+    pred = prednames[torch.argmax(prediction).cpu().item()]
+    return pred
 # def reward_shaping(reward, last_extracted_state, action):
 #     """
 #     last_extracted_state:
