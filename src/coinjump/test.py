@@ -1,16 +1,13 @@
 import torch
 import torch.nn as nn
+import numpy as np
 
+# a = []
+# b = np.array([1])
+# c = np.array([2])
+# a.append(b)
+# print(a)
+# a = a.numpy()
 
-class MyDense(nn.Module):
-    def __init__(self):
-        super(MyDense, self).__init__()
-        self.params = nn.ParameterList([nn.Parameter(torch.randn(4, 1))])
-
-    def forward(self, x):
-        for i in range(len(self.params)):
-            x = torch.mm(x, self.params[i])
-        return x
-
-net = MyDense()
-print(net)
+a = np.array([[1], [2], [3]])
+print(a.shape)

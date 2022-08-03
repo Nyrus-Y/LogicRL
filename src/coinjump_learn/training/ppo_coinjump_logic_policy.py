@@ -14,10 +14,9 @@ import src.coinjump_learn.env
 from src.valuation import RLValuationModule
 from src.facts_converter import FactsConverter
 from src.logic_utils import build_infer_module, get_lang
-
-from src.nsfr import NSFReasoner
+from src.util import num_action_select
+from src.nsfr_training import NSFReasoner
 from src.coinjump_learn.models.mlpCriticController import MLPCriticController
-from src.util import extract_for_explaining, get_nsfr, get_nsfr_model
 
 device = torch.device('cuda:0')
 
@@ -51,7 +50,7 @@ class NSFR_ActorCritic(nn.Module):
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
 
         self.actor = self.get_nsfr_model()
-        self.critic = MLPCriticController()
+        self.critic = MLPCriticController(out_size=1)
 
     def forward(self):
         raise NotImplementedError
@@ -72,33 +71,31 @@ class NSFR_ActorCritic(nn.Module):
 
         return action.detach(), action_logprob.detach()
 
-    def evaluate(self, state, action, predictions):
-        action_probs = self.actor(state, predictions)
+    def evaluate(self, state, action):
+        action_probs = self.actor(state)
         dist = Categorical(action_probs)
         action_logprobs = dist.log_prob(action)
         dist_entropy = dist.entropy()
-        state_values = self.critic(state, predictions)
+        state_values = self.critic(state)
 
         return action_logprobs, state_values, dist_entropy
 
     def get_nsfr_model(self):
-        lark_path = '/src/lark/exp.lark'
-        lang_base_path = '/data/lang/'
+
+        lark_path = 'E:\\Github\\Use Knowledge Representation and Reasoning for the policy\\src\\lark\\exp.lark'
+        lang_base_path = 'E:\\Github\\Use Knowledge Representation and Reasoning for the policy\\data\\lang\\'
 
         device = torch.device('cuda:0')
         lang, clauses, bk, atoms = get_lang(
-            lark_path, lang_base_path, 'coinjump', 'coinjump')
+            lark_path, lang_base_path, 'coinjump1', 'coinjump')
 
         PM = None
-        VM = RLValuationModule(
-            lang=lang, device=device)
-        FC = FactsConverter(lang=lang, perception_module=PM,
-                            valuation_module=VM, device=device)
-        IM = build_infer_module(clauses, atoms, lang,
-                                m=len(clauses), infer_step=2, device=device)
+        VM = RLValuationModule(lang=lang, device=device)
+        FC = FactsConverter(lang=lang, perception_module=PM, valuation_module=VM, device=device)
+        IM = build_infer_module(clauses, atoms, lang, m=len(clauses), infer_step=2, device=device)
         # Neuro-Symbolic Forward Reasoner
-        NSFR = NSFReasoner(perception_module=PM, facts_converter=FC,
-                           infer_module=IM, atoms=atoms, bk=bk, clauses=clauses)
+        NSFR = NSFReasoner(perception_module=PM, facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk,
+                           clauses=clauses, train=True)
         return NSFR
 
 
@@ -112,7 +109,7 @@ class PPO:
         self.buffer = RolloutBuffer()
         self.policy = NSFR_ActorCritic().to(device)
         self.optimizer = optimizer([
-            {'params': self.policy.actor.parameters(), 'lr': lr_actor},
+            {'params': self.policy.actor.get_params(), 'lr': lr_actor},
             {'params': self.policy.critic.parameters(), 'lr': lr_critic}
         ])
 
@@ -124,11 +121,13 @@ class PPO:
     def select_action(self, state, epsilon=0.0):
         # select random action with epsilon probability and policy probiability with 1-epsilon
         with torch.no_grad():
-            state = torch.FloatTensor(state).to(device)
+            # state = torch.FloatTensor(state).to(device)
             action, action_logprob = self.policy_old.act(state, epsilon=epsilon)
 
         self.buffer.states.append(state)
+        action = torch.squeeze(action)
         self.buffer.actions.append(action)
+        action_logprob = torch.squeeze(action_logprob)
         self.buffer.logprobs.append(action_logprob)
 
         return action.item()
@@ -216,7 +215,7 @@ def main():
     # env_name = "CoinJumpEnv-v0"
     # env_name = "CoinJumpEnvKD-v0"
     # env_name = "CoinJumpEnvDodge-v0"
-    env_name = "CoinJumpEnv-v1"
+    env_name = "CoinJumpEnv-v2"
 
     # max_ep_len = 1000  # max timesteps in one episode
     max_ep_len = 500  # max timesteps in one episode
@@ -226,8 +225,8 @@ def main():
     print_freq = max_ep_len * 10  # print avg reward in the interval (in num timesteps)
     log_freq = max_ep_len * 5  # log avg reward in the interval (in num timesteps)
     # save_model_freq = int(2e4)  # save model frequency (in num timesteps)
-    save_model_freq = 500000  # save model frequency (in num timesteps)
-
+    # save_model_freq = 500000  # save model frequency (in num timesteps)
+    save_model_freq = 50000  # save model frequency (in num timesteps)
     #####################################################
 
     ## Note : print/log frequencies should be > than max_ep_len
@@ -239,7 +238,8 @@ def main():
     update_timestep = max_ep_len * 5  # debug update policy every n episodes
     # update_timestep = 2  # update policy every n episodes
     # K_epochs = 80  # update policy for K epochs (= # update steps)
-    K_epochs = 20  # update policy for K epochs (= # update steps)
+    # K_epochs = 20
+    K_epochs = 5  # update policy for K epochs (= # update steps)
     # eps_clip = 0.2  # clip parameter for PPO
     eps_clip = 0.2  # clip parameter for PPO
     gamma = 0.99  # discount factor
@@ -380,7 +380,7 @@ def main():
     # training loop
     while time_step <= max_training_timesteps:
 
-        state, coinjump = env.reset()
+        state = env.reset()
         current_ep_reward = 0
 
         epsilon = epsilon_func(i_episode)
@@ -389,12 +389,11 @@ def main():
 
             # select action with policy
             # extract state for explaining
-            prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-                         'right_go_to_door', 'stay']
-            extracted_state = extract_for_explaining(coinjump)
-            predictions = get_nsfr(extracted_state, 'coinjump1', prednames)
+            # prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+            #              'right_go_to_door', 'stay']
 
-            action = ppo_agent.select_action(state, predictions, epsilon=epsilon)
+            action = ppo_agent.select_action(state, epsilon=epsilon)
+            action = num_action_select(action)
             state, reward, done, _ = env.step(action)
 
             # simpler policy

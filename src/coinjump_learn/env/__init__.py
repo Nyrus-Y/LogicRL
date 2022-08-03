@@ -27,6 +27,6 @@ gym.envs.register(
 
 gym.envs.register(
     id='CoinJumpEnv-v2',
-    entry_point='src.coinjump_learn.env.coinJumpEnvV1:CoinJumpEnvV2',
+    entry_point='src.coinjump_learn.env.coinJumpEnvV2:CoinJumpEnvV2',
     max_episode_steps=300,
 )

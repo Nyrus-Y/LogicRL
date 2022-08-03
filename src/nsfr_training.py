@@ -2,6 +2,7 @@ import numpy as np
 import torch.nn as nn
 import torch
 from src.logic_utils import get_index_by_predname
+from src.util import num_action_select
 
 
 class NSFReasoner(nn.Module):
@@ -23,6 +24,8 @@ class NSFReasoner(nn.Module):
         self.bk = bk
         self.clauses = clauses
         self._train = train
+        self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+                          'right_go_to_door', 'stay']
 
     def get_params(self):
         return self.im.get_params()  # + self.fc.get_params()
@@ -30,13 +33,28 @@ class NSFReasoner(nn.Module):
     def forward(self, x):
         # obtain the object-centric representation
         # zs = self.pm(x)
-        zs = x
-        # convert to the valuation tensor
-        V_0 = self.fc(zs, self.atoms, self.bk)
-        # perform T-step forward-chaining reasoning
-        V_T = self.im(V_0)
+        if len(x) == 1:
+            zs = x
+            # convert to the valuation tensor
+            V_0 = self.fc(zs, self.atoms, self.bk)
+            # perform T-step forward-chaining reasoning
+            V_T = self.im(V_0)
+            predictions = self.get_predictions(V_T, prednames=self.prednames)
+        else:
+            predictions = torch.empty(0, device="cuda:0")
+            for state in x:
+                zs = torch.unsqueeze(state,0)
+                # convert to the valuation tensor
+                V_0 = self.fc(zs, self.atoms, self.bk)
+                # perform T-step forward-chaining reasoning
+                V_T = self.im(V_0)
+                prediction = self.get_predictions(V_T, prednames=self.prednames)
+                # torch.cat((predictions, prediction), 0)
+                predictions = torch.cat((predictions, prediction), 0)
+                # print(predictions)
 
-        return V_T
+        # action = torch.argmax(predictions)
+        return predictions
 
     def predict(self, v, predname):
         """Extracting a value from the valuation tensor using a given predicate.
@@ -117,3 +135,7 @@ class NSFReasoner(nn.Module):
         for atom in atoms:
             text += str(atom) + ', '
         return text
+
+    def get_predictions(self, V_T, prednames):
+        predicts = self.predict_multi(v=V_T, prednames=prednames)
+        return predicts

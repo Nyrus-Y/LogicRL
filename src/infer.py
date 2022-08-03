@@ -78,6 +78,8 @@ class InferModule(nn.Module):
         R = softor(H, dim=0, gamma=self.gamma)
         return R
 
+    def get_params(self):
+        return self.W
 
 class ClauseFunction(nn.Module):
     """

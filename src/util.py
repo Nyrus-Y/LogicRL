@@ -4,10 +4,10 @@ import torch.nn as nn
 
 from src.logic_utils import get_lang
 
-from src.percept import SlotAttentionPerceptionModule, YOLOPerceptionModule
+from src.percept import YOLOPerceptionModule
 from src.facts_converter import FactsConverter
 from src.nsfr import NSFReasoner
-from src.logic_utils import build_infer_module, generate_atoms
+from src.logic_utils import build_infer_module
 from src.valuation import RLValuationModule, RLValuationModule_D, RLValuationModule_KD
 from src.coinjump.coinjump.actions import coin_jump_actions_from_unified, CoinJumpActions
 
@@ -22,7 +22,7 @@ def get_nsfr_model(lang, clauses, atoms, bk, device):
     FC = FactsConverter(lang=lang, perception_module=PM,
                         valuation_module=VM, device=device)
     IM = build_infer_module(clauses, atoms, lang,
-                            m=len(clauses), infer_step=2, device=device)
+                            m=len(clauses), infer_step=2,train=True,device=device)
     # Neuro-Symbolic Forward Reasoner
     NSFR = NSFReasoner(perception_module=PM, facts_converter=FC,
                        infer_module=IM, atoms=atoms, bk=bk, clauses=clauses)
@@ -68,8 +68,7 @@ def explaining_nsfr(extracted_states, env, prednames):
     NSFR = get_nsfr_model(lang, clauses, atoms, bk, device)
 
     V_T = NSFR(extracted_states)
-    predicts = NSFR.predict_multi(
-        v=V_T, prednames=prednames)
+    predicts = NSFR.predict_multi(v=V_T, prednames=prednames)
 
     # predicts = NSFR.predict_multi(
     #     v=V_T, prednames=['jump', 'left', 'right'])
@@ -77,17 +76,6 @@ def explaining_nsfr(extracted_states, env, prednames):
     explaining = NSFR.print_explaining(predicts)
 
     return explaining
-
-
-def get_nsfr(env):
-    lark_path = 'E:\\Github\\Use Knowledge Representation and Reasoning for the policy\\src\\lark\\exp.lark'
-    lang_base_path = 'E:\\Github\\Use Knowledge Representation and Reasoning for the policy\\data\\lang\\'
-
-    device = torch.device('cuda:0')
-    lang, clauses, bk, atoms = get_lang(
-        lark_path, lang_base_path, env, 'coinjump')
-    NSFR = get_nsfr_model(lang, clauses, atoms, bk, device)
-    return NSFR
 
 
 def get_predictions(extracted_states, NSFR, prednames):
@@ -199,7 +187,7 @@ def num_action_select(action):
     elif action == 2 or action == 4:
         return 2
     elif action == 5:
-        return 0
+        return 4
 
 
 def extract_for_explaining(coin_jump):
@@ -241,63 +229,63 @@ def extract_for_explaining(coin_jump):
     return states
 
 
-def reward_shaping(reward, last_extracted_state, action):
-    """
-    last_extracted_state:
-    x:agent,key,door,enemy,x,y
-    y:agent,key,door,enemy
-    action: nsfr action
-            0:jump
-            1:left_go_get_key
-            2:right_go_get_key
-            3:left_go_to_door
-            4:right_go_to_door
-            5:stay
-    """
-    last_extracted_state = torch.squeeze(last_extracted_state)
-    p_agent = last_extracted_state[0][-2:]
-    p_key = last_extracted_state[1][-2:]
-    p_door = last_extracted_state[2][-2:]
-    p_enemy = last_extracted_state[3][-2:]
-    # jump
-    if action == 0:
-        # if abs(p_enemy[0] - p_agent[0]) < 2 and abs(p_enemy[1] - p_agent[1] < 0.1):
-        #     reward += 0.1
-        # else:
-        #     reward -= 0.05
-        reward -= 0.1
-        return reward
-    # left_go_get_key
-    if action == 1:
-        if p_key[0] - p_agent[0] < 0 and p_key[0] >= 1:
-            reward += 0.1
-        else:
-            reward -= 0.1
-        return reward
-    # right_go_get_key
-    if action == 2:
-        if p_key[0] - p_agent[0] > 0 and p_key[0] >= 1:
-            reward += 0.1
-        else:
-            reward -= 0.1
-        return reward
-    # left_go_to_door
-    if action == 3:
-        if p_door[0] - p_agent[0] < 0 and p_key[0] < 1:
-            reward += 0.1
-        else:
-            reward -= 0.1
-        return reward
-    # right_go_to_door
-    if action == 4:
-        if p_door[0] - p_agent[0] > 0 and p_key[0] < 1:
-            reward += 0.1
-        else:
-            reward -= 0.1
-        return reward
-    # stay
-    if action == 5:
-        reward -= 0.1
-        return reward
-
-    return reward
+# def reward_shaping(reward, last_extracted_state, action):
+#     """
+#     last_extracted_state:
+#     x:agent,key,door,enemy,x,y
+#     y:agent,key,door,enemy
+#     action: nsfr action
+#             0:jump
+#             1:left_go_get_key
+#             2:right_go_get_key
+#             3:left_go_to_door
+#             4:right_go_to_door
+#             5:stay
+#     """
+#     last_extracted_state = torch.squeeze(last_extracted_state)
+#     p_agent = last_extracted_state[0][-2:]
+#     p_key = last_extracted_state[1][-2:]
+#     p_door = last_extracted_state[2][-2:]
+#     p_enemy = last_extracted_state[3][-2:]
+#     # jump
+#     if action == 0:
+#         # if abs(p_enemy[0] - p_agent[0]) < 2 and abs(p_enemy[1] - p_agent[1] < 0.1):
+#         #     reward += 0.1
+#         # else:
+#         #     reward -= 0.05
+#         reward -= 0.1
+#         return reward
+#     # left_go_get_key
+#     if action == 1:
+#         if p_key[0] - p_agent[0] < 0 and p_key[0] >= 1:
+#             reward += 0.1
+#         else:
+#             reward -= 0.1
+#         return reward
+#     # right_go_get_key
+#     if action == 2:
+#         if p_key[0] - p_agent[0] > 0 and p_key[0] >= 1:
+#             reward += 0.1
+#         else:
+#             reward -= 0.1
+#         return reward
+#     # left_go_to_door
+#     if action == 3:
+#         if p_door[0] - p_agent[0] < 0 and p_key[0] < 1:
+#             reward += 0.1
+#         else:
+#             reward -= 0.1
+#         return reward
+#     # right_go_to_door
+#     if action == 4:
+#         if p_door[0] - p_agent[0] > 0 and p_key[0] < 1:
+#             reward += 0.1
+#         else:
+#             reward -= 0.1
+#         return reward
+#     # stay
+#     if action == 5:
+#         reward -= 0.1
+#         return reward
+#
+#     return reward
