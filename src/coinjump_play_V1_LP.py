@@ -21,6 +21,7 @@ from src.coinjump_learn.training.ppo_coinjump_LP import ActorCritic
 KEY_r = 114
 
 device = torch.device('cuda:0')
+# device = torch.device('cpu')
 
 def setup_image_viewer(coinjump):
     viewer = ImageViewer(

@@ -89,7 +89,7 @@ def explaining_nsfr_combine(extracted_states, env1, env2):
     lark_path = '../src/lark/exp.lark'
     lang_base_path = '../data/lang/'
 
-    device = torch.device('cpu')
+    device = torch.device('cuda:0')
 
     def combine(data1, data2):
         lang = data1['lang']
@@ -225,7 +225,7 @@ def extract_for_explaining(coin_jump):
             extracted_states[3][-2:] = entity[1:3]
             # extracted_states[3][-2:] /= 27
 
-    states = torch.tensor(np.array(extracted_states), dtype=torch.float32, device="cuda").unsqueeze(0)
+    states = torch.tensor(np.array(extracted_states), dtype=torch.float32, device="cuda:0").unsqueeze(0)
     return states
 
 def show_explaining(prediction):

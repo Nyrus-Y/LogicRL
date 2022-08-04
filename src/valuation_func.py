@@ -78,13 +78,14 @@ class OnLeftValuationFunction(nn.Module):
         """
         c_1 = z_1[:, 4]
         c_2 = z_2[:, 4]
-
-        if c_2 - c_1 > 0:
-            on_left = torch.tensor(0.9)
-        else:
-            on_left = torch.tensor(0.01)
-
-        return on_left
+        diff = c_1 - c_2
+        return torch.where(diff > 0, 0.9, 0.01)
+        # if c_2 - c_1 > 0:
+        #     on_left = torch.tensor(0.9)
+        # else:
+        #     on_left = torch.tensor(0.01)
+        #
+        # return on_left
 
 
 class OnRightValuationFunction(nn.Module):

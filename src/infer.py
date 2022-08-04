@@ -22,6 +22,7 @@ class InferModule(nn.Module):
         super(InferModule, self).__init__()
         self.I = I
         self.infer_step = infer_step
+        # m is num of clauses
         self.m = m
         self.C = self.I.size(0)
         self.G = self.I.size(1)

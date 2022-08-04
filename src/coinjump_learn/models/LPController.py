@@ -9,7 +9,6 @@ class LPController(torch.nn.Module):
                  critic=False):
         super().__init__()
         self.as_dict = as_dict
-
         modules = [
             NSFRLayer()
         ]

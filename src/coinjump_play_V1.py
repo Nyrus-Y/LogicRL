@@ -131,7 +131,9 @@ def run():
 
             # extract state for explaining
             extracted_state = extract_for_explaining(coin_jump)
-            explaining = explaining_nsfr(extracted_state)
+            explaining = explaining_nsfr(extracted_state, "coinjump",
+                                         prednames=['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+                                                    'right_go_to_door', 'stay'])
 
             if last_explaining is None:
                 print(explaining)
@@ -139,6 +141,7 @@ def run():
             elif explaining != last_explaining:
                 print(explaining)
                 last_explaining = explaining
+            # print(explaining)
 
             # TODO change sample function of different envs
 
@@ -152,7 +155,7 @@ def run():
             # model_input = for_each_tensor(model_input, lambda tensor: tensor.unsqueeze(0).cuda())
             prediction = model(model_input['state'])
             # prediction[0][0] = 0
-            num =torch.argmax(prediction).cpu().item()
+            num = torch.argmax(prediction).cpu().item()
             action = coin_jump_actions_from_unified(torch.argmax(prediction).cpu().item())
         else:
 
