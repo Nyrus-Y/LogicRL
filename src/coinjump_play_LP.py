@@ -131,6 +131,7 @@ def run():
 
             prediction = model(extracted_state)
             # prediction[0][0] = 0
+            # print(model.state_dict())
             print(show_explaining(prediction))
             num = torch.argmax(prediction).cpu().item()
             action = num_action_select(num)

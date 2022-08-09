@@ -24,8 +24,15 @@ class NSFReasoner(nn.Module):
         self.bk = bk
         self.clauses = clauses
         self._train = train
+        # TODO change possible action here
+
+        # 6 C
+        # self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+        #                  'right_go_to_door', 'stay']
+        # 10 C
         self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-                          'right_go_to_door', 'stay']
+                          'right_go_to_door', 'stay', 'jump_over_door', 'left_for_nothing', 'right_go_to_enemy',
+                          'stay_for_nothing']
 
     def get_params(self):
         return self.im.get_params()  # + self.fc.get_params()
@@ -33,28 +40,33 @@ class NSFReasoner(nn.Module):
     def forward(self, x):
         # obtain the object-centric representation
         # zs = self.pm(x)
-        if len(x) == 1:
-            zs = x
-            # convert to the valuation tensor
-            V_0 = self.fc(zs, self.atoms, self.bk)
-            # perform T-step forward-chaining reasoning
-            V_T = self.im(V_0)
-            predictions = self.get_predictions(V_T, prednames=self.prednames)
-        else:
-            predictions = torch.empty(0, device="cuda:0")
-            for state in x:
-                zs = torch.unsqueeze(state,0)
-                # convert to the valuation tensor
-                V_0 = self.fc(zs, self.atoms, self.bk)
-                # perform T-step forward-chaining reasoning
-                V_T = self.im(V_0)
-                prediction = self.get_predictions(V_T, prednames=self.prednames)
-                # torch.cat((predictions, prediction), 0)
-                predictions = torch.cat((predictions, prediction), 0)
-                # print(predictions)
-
+        # if len(x) == 1:
+        #     zs = x
+        #     # convert to the valuation tensor
+        #     V_0 = self.fc(zs, self.atoms, self.bk)
+        #     # perform T-step forward-chaining reasoning
+        #     V_T = self.im(V_0)
+        #     predictions = self.get_predictions(V_T, prednames=self.prednames)
+        # else:
+        #     predictions = torch.empty(0, device="cuda:0")
+        #     for state in x:
+        #         zs = torch.unsqueeze(state,0)
+        #         # convert to the valuation tensor
+        #         V_0 = self.fc(zs, self.atoms, self.bk)
+        #         # perform T-step forward-chaining reasoning
+        #         V_T = self.im(V_0)
+        #         prediction = self.get_predictions(V_T, prednames=self.prednames)
+        #         # torch.cat((predictions, prediction), 0)
+        #         predictions = torch.cat((predictions, prediction), 0)
+        #         # print(predictions)
+        zs = x
+        # convert to the valuation tensor
+        V_0 = self.fc(zs, self.atoms, self.bk)
+        # perform T-step forward-chaining reasoning
+        V_T = self.im(V_0)
+        actions = self.get_predictions(V_T, prednames=self.prednames)
         # action = torch.argmax(predictions)
-        return predictions
+        return actions
 
     def predict(self, v, predname):
         """Extracting a value from the valuation tensor using a given predicate.

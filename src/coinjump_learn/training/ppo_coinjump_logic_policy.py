@@ -87,12 +87,16 @@ class NSFR_ActorCritic(nn.Module):
 
         device = torch.device('cuda:0')
         lang, clauses, bk, atoms = get_lang(
-            lark_path, lang_base_path, 'coinjump1', 'coinjump')
+            lark_path, lang_base_path, 'coinjump', 'coinjump')
 
         PM = None
         VM = RLValuationModule(lang=lang, device=device)
         FC = FactsConverter(lang=lang, perception_module=PM, valuation_module=VM, device=device)
-        IM = build_infer_module(clauses, atoms, lang, m=len(clauses), infer_step=2, train=True, device=device)
+        # TODO change m
+
+        m = len(clauses)
+        # m = 6
+        IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=True, device=device)
         # Neuro-Symbolic Forward Reasoner
         NSFR = NSFReasoner(perception_module=PM, facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk,
                            clauses=clauses, train=True)
@@ -239,7 +243,7 @@ def main():
     # update_timestep = 2  # update policy every n episodes
     # K_epochs = 80  # update policy for K epochs (= # update steps)
     # K_epochs = 20
-    K_epochs = 5  # update policy for K epochs (= # update steps)
+    K_epochs = 20  # update policy for K epochs (= # update steps)
     # eps_clip = 0.2  # clip parameter for PPO
     eps_clip = 0.2  # clip parameter for PPO
     gamma = 0.99  # discount factor
@@ -414,16 +418,16 @@ def main():
                 ppo_agent.update()
 
             # log in logging file
-            if time_step % log_freq == 0:
-                # log average reward till last episode
-                log_avg_reward = log_running_reward / log_running_episodes
-                log_avg_reward = round(log_avg_reward, 4)
-
-                log_f.write('{},{},{}\n'.format(i_episode, time_step, log_avg_reward))
-                log_f.flush()
-
-                log_running_reward = 0
-                log_running_episodes = 0
+            # if time_step % log_freq == 0:
+            #     # log average reward till last episode
+            #     log_avg_reward = log_running_reward / log_running_episodes
+            #     log_avg_reward = round(log_avg_reward, 4)
+            #
+            #     log_f.write('{},{},{}\n'.format(i_episode, time_step, log_avg_reward))
+            #     log_f.flush()
+            #
+            #     log_running_reward = 0
+            #     log_running_episodes = 0
 
             # printing average reward
             if time_step % print_freq == 0:

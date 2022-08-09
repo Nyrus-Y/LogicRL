@@ -53,11 +53,21 @@ class ClosebyValuationFunction(nn.Module):
 
         # if abs(c_1[:, 1] - c_2[:, 1]) <=0.1:
         #     return torch.tensor(0)
+        dis_x = abs(c_1[:, 0] - c_2[:, 0])
+        # if len(dis_x) == 1:
+        #     dis_x = torch.unsqueeze(dis_x, 0)
+        dis_y = abs(c_1[:, 1] - c_2[:, 1])
+        # if len(dis_y) == 1:
+        #     dis_y = torch.unsqueeze(dis_y, 0)
 
-        if abs(c_1[:, 0] - c_2[:, 0]) < 2 and abs(c_1[:, 1] - c_2[:, 1]) <= 0.1:
-            return torch.tensor(0.9)
-        else:
-            return torch.tensor(0.01)
+        result = []
+        for x, y in zip(dis_x, dis_y):
+            if x < 2 and y <= 0.1:
+                result.append(0.9)
+            else:
+                result.append(0.01)
+        # result = torch.where((dis_x < 2 and dis_y <= 0.1), 0.9, 0.01)
+        return torch.tensor(result)
 
 
 class OnLeftValuationFunction(nn.Module):
@@ -78,8 +88,9 @@ class OnLeftValuationFunction(nn.Module):
         """
         c_1 = z_1[:, 4]
         c_2 = z_2[:, 4]
-        diff = c_1 - c_2
-        return torch.where(diff > 0, 0.9, 0.01)
+        diff = c_2 - c_1
+        result = torch.where(diff > 0, 0.9, 0.01)
+        return result
         # if c_2 - c_1 > 0:
         #     on_left = torch.tensor(0.9)
         # else:
@@ -106,13 +117,15 @@ class OnRightValuationFunction(nn.Module):
         """
         c_1 = z_1[:, 4]
         c_2 = z_2[:, 4]
-
-        if c_2 - c_1 < 0:
-            on_right = torch.tensor(0.9)
-        else:
-            on_right = torch.tensor(0.01)
-
-        return on_right
+        diff = c_2 - c_1
+        result = torch.where(diff < 0, 0.9, 0.01)
+        return result
+        # if c_2 - c_1 < 0:
+        #     on_right = torch.tensor(0.9)
+        # else:
+        #     on_right = torch.tensor(0.01)
+        #
+        # return on_right
 
 
 class HaveKeyValuationFunction(nn.Module):
@@ -131,8 +144,14 @@ class HaveKeyValuationFunction(nn.Module):
         Returns:
             A batch of probabilities.
         """
-        has_key = abs(1 - torch.sum(z[:, :, 1]))
-        return has_key
+        has_key = []
+        for i, y in enumerate(z):
+            a = abs(1 - torch.sum(y[:, 1]))
+            has_key.append(a)
+        # has_key = abs(1 - torch.sum(z[:, :, 1]))
+        result = torch.tensor(has_key)
+
+        return result
 
 
 class NotHaveKeyValuationFunction(nn.Module):
@@ -151,8 +170,12 @@ class NotHaveKeyValuationFunction(nn.Module):
         Returns:
             A batch of probabilities.
         """
-        not_has_key = torch.sum(z[:, :, 1]) * 0.9
-        return not_has_key
+        not_has_key = []
+        for i, y in enumerate(z):
+            a = torch.sum(y[:, 1]) * 0.9
+            not_has_key.append(a)
+        result = torch.tensor(not_has_key)
+        return result
 
 
 class SafeValuationFunction(nn.Module):
@@ -176,11 +199,13 @@ class SafeValuationFunction(nn.Module):
 
         # if abs(c_1[:, 1] - c_2[:, 1]) <=0.1:
         #     return torch.tensor(0)
-
-        if abs(c_1[:, 0] - c_2[:, 0]) > 2:
-            return torch.tensor(0.9)
-        else:
-            return torch.tensor(0.01)
+        dis_x = abs(c_1[:, 0] - c_2[:, 0])
+        result = torch.where(dis_x > 2, 0.9, 0.01)
+        return result
+        # if abs(c_1[:, 0] - c_2[:, 0]) > 2:
+        #     return torch.tensor(0.9)
+        # else:
+        #     return torch.tensor(0.01)
 
 
 ################################

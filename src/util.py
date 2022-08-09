@@ -22,7 +22,7 @@ def get_nsfr_model(lang, clauses, atoms, bk, device):
     FC = FactsConverter(lang=lang, perception_module=PM,
                         valuation_module=VM, device=device)
     IM = build_infer_module(clauses, atoms, lang,
-                            m=len(clauses), infer_step=2,train=True,device=device)
+                            m=len(clauses), infer_step=2, train=True, device=device)
     # Neuro-Symbolic Forward Reasoner
     NSFR = NSFReasoner(perception_module=PM, facts_converter=FC,
                        infer_module=IM, atoms=atoms, bk=bk, clauses=clauses)
@@ -168,6 +168,10 @@ def num_action_select(action):
     3:left_go_to_door
     4:right_go_to_door
     5:stay
+    6:jump_over_door
+    7:left_for_nothing
+    8:right_go_to_enemy
+    9:stay_for_nothing
 
     CJA_NOOP: Final[int] = 0
     CJA_MOVE_LEFT: Final[int] = 1
@@ -180,13 +184,13 @@ def num_action_select(action):
     CJA_MOVE_RIGHT_DOWN: Final[int]= 8
     CJA_NUM_EXPLICIT_ACTIONS = 9
     """
-    if action == 0:
+    if action in [0, 6]:
         return 3
-    elif action == 1 or action == 3:
+    elif action in [1, 3, 7]:
         return 1
-    elif action == 2 or action == 4:
+    elif action in [2, 4, 8]:
         return 2
-    elif action == 5:
+    elif action in [5, 9]:
         return 4
 
 
@@ -227,6 +231,7 @@ def extract_for_explaining(coin_jump):
 
     states = torch.tensor(np.array(extracted_states), dtype=torch.float32, device="cuda:0").unsqueeze(0)
     return states
+
 
 def show_explaining(prediction):
     prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
