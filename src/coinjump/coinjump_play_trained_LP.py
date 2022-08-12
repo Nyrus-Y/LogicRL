@@ -5,16 +5,15 @@ import pathlib
 import pickle
 import torch
 import numpy as np
-
-from src.CoinJump.coinjump.coinjump import coin_jump_actions_from_unified
-from src.coinjump.imageviewer import ImageViewer
+import os
+from src.CoinJump.coinjump.coinjump.actions import coin_jump_actions_from_unified
+from src.CoinJump.coinjump.imageviewer import ImageViewer
 from src.util import extract_for_explaining, num_action_select, show_explaining
 
-from src.CoinJump.coinjump.coinjump import ParameterizedLevelGenerator_V1
-from src.CoinJump.coinjump.coinjump import CoinJump
+from src.CoinJump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
+from src.CoinJump.coinjump.coinjump.coinjump import CoinJump
 
-from src.coinjump_learn.training.data_transform import extract_state, sample_to_model_input_V1, collate
-from src.coinjump_learn.training.ppo_coinjump_logic_policy import NSFR_ActorCritic
+from src.CoinJump.coinjump_learn.training.ppo_coinjump_logic_policy import NSFR_ActorCritic
 
 KEY_r = 114
 
@@ -52,7 +51,9 @@ def parse_args():
     # TODO change path of model
     if args.model_file is None:
         # read filename from stdin
-        model_file = f"../src/nsfr_coinjump_model/{input('Enter file name: ')}"
+        current_path = os.path.dirname(__file__)
+        model_name = input('Enter file name: ')
+        model_file = os.path.join(current_path, 'nsfr_coinjump_model', model_name)
 
     else:
         model_file = pathlib.Path(args.model_file)
@@ -81,8 +82,6 @@ def run():
 
     seed = random.seed() if args.seed is None else int(args.seed)
     # TODO input parameter to change mode
-    # coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
-    # coin_jump = create_coinjump_instance(seed=seed, Dodge_model=True)
     coin_jump = create_coinjump_instance(seed=seed, V1=True)
     viewer = setup_image_viewer(coin_jump)
 

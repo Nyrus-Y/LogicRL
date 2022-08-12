@@ -4,17 +4,21 @@ from argparse import ArgumentParser
 import pathlib
 import pickle
 import torch
+import os
 import numpy as np
 
-from src.CoinJump.coinjump.coinjump import coin_jump_actions_from_unified
-from src.coinjump.imageviewer import ImageViewer
-from src.util import extract_for_explaining, num_action_select, show_explaining
+from src.CoinJump.coinjump.coinjump.actions import coin_jump_actions_from_unified
+from src.CoinJump.coinjump.imageviewer import ImageViewer
+from src.util import extract_for_explaining, explaining_nsfr
 
-from src.CoinJump.coinjump.coinjump import ParameterizedLevelGenerator_V1
-from src.CoinJump.coinjump.coinjump import CoinJump
+from src.CoinJump.coinjump.coinjump.paramLevelGenerator import ParameterizedLevelGenerator
+from src.CoinJump.coinjump.coinjump.paramLevelGenerator_keydoor import ParameterizedLevelGenerator_KeyDoor
+from src.CoinJump.coinjump.coinjump.paramLevelGenerator_dodge import ParameterizedLevelGenerator_Dodge
+from src.CoinJump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
+from src.CoinJump.coinjump.coinjump.coinjump import CoinJump
 
-from src.coinjump_learn.training.data_transform import extract_state, sample_to_model_input_V1, collate
-from src.coinjump_learn.training.ppo_coinjump_logic_policy import NSFR_ActorCritic
+from src.CoinJump.coinjump_learn.training.data_transform import extract_state, sample_to_model_input_dodge, collate
+from src.CoinJump.coinjump_learn.training.ppo_coinjump import ActorCritic
 
 KEY_r = 114
 
@@ -30,12 +34,19 @@ def setup_image_viewer(coinjump):
     return viewer
 
 
-def create_coinjump_instance(seed=None, V1=False):
+def create_coinjump_instance(seed=None, Dodge_model=False, Key_Door_model=False):
     seed = random.randint(0, 100000000) if seed is None else seed
 
     # level_generator = DummyGenerator()
-    coin_jump = CoinJump(start_on_first_action=True, V1=True)
-    level_generator = ParameterizedLevelGenerator_V1()
+    if Dodge_model:
+        coin_jump = CoinJump(start_on_first_action=True, Dodge_model=True)
+        level_generator = ParameterizedLevelGenerator_Dodge()
+    elif Key_Door_model:
+        coin_jump = CoinJump(start_on_first_action=True, Key_Door_model=True)
+        level_generator = ParameterizedLevelGenerator_KeyDoor()
+    else:
+        coin_jump = CoinJump(start_on_first_action=True)
+        level_generator = ParameterizedLevelGenerator()
 
     level_generator.generate(coin_jump, seed=seed)
     coin_jump.render()
@@ -49,11 +60,11 @@ def parse_args():
     parser.add_argument("-s", "--seed", dest="seed", type=int)
     args = parser.parse_args()
 
-    # TODO change path of model
     if args.model_file is None:
         # read filename from stdin
-        model_file = f"../src/nsfr_coinjump_model/{input('Enter file name: ')}"
-
+        current_path = os.path.dirname(__file__)
+        model_name = input('Enter file name: ')
+        model_file = os.path.join(current_path, 'ppo_coinjump_model', model_name)
     else:
         model_file = pathlib.Path(args.model_file)
 
@@ -64,7 +75,7 @@ def load_model(model_path, set_eval=True):
     with open(model_path, "rb") as f:
         model = torch.load(f)
 
-    if isinstance(model, NSFR_ActorCritic):
+    if isinstance(model, ActorCritic):
         model = model.actor
         model.as_dict = True
 
@@ -80,18 +91,13 @@ def run():
     model = load_model(model_file)
 
     seed = random.seed() if args.seed is None else int(args.seed)
-    # TODO input parameter to change mode
-    # coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
-    # coin_jump = create_coinjump_instance(seed=seed, Dodge_model=True)
-    coin_jump = create_coinjump_instance(seed=seed, V1=True)
+    coin_jump = create_coinjump_instance(seed=seed, Dodge_model=True)
     viewer = setup_image_viewer(coin_jump)
 
     # frame rate limiting
     fps = 10
     target_frame_duration = 1 / fps
     last_frame_time = 0
-
-    last_explaining = None
 
     while True:
         # control framerate
@@ -103,37 +109,22 @@ def run():
             continue
         last_frame_time = current_frame_time  # save frame start time for next iteration
 
-        # TODO change for reset env
+
         if KEY_r in viewer.pressed_keys:
-            # coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
-            coin_jump = create_coinjump_instance(seed=seed, V1=True)
-            print("--------------------------     next game    --------------------------")
-            # coin_jump = create_coinjump_instance(seed=seed,Dodge_model=True)
+            coin_jump = create_coinjump_instance(seed=seed,Dodge_model=True)
         # step game
         if not coin_jump.level.terminated:
 
-            # extract state for explaining
-            extracted_state = extract_for_explaining(coin_jump)
-            # explaining = explaining_nsfr(extracted_state)
-            #
-            # if last_explaining is None:
-            #     print(explaining)
-            #     last_explaining = explaining
-            # elif explaining != last_explaining:
-            #     print(explaining)
-            #     last_explaining = explaining
 
-            # TODO change sample function of different envs
+            model_input = sample_to_model_input_dodge((extract_state(coin_jump), []))
 
-            prediction = model(extracted_state)
+            model_input = collate([model_input])
+            # model_input = torch.utils.data._utils.collate.default_collate([model_input])
+            # model_input = for_each_tensor(model_input, lambda tensor: tensor.unsqueeze(0).cuda())
+            prediction = model(model_input['state'])
             # prediction[0][0] = 0
-            # print(model.state_dict())
-            print(show_explaining(prediction))
-            num = torch.argmax(prediction).cpu().item()
-            action = num_action_select(num)
-            action = coin_jump_actions_from_unified(action)
+            action = coin_jump_actions_from_unified(torch.argmax(prediction).cpu().item())
         else:
-
             action = []
         reward = coin_jump.step(action)
 

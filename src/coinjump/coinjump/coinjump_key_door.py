@@ -2,11 +2,12 @@ import random
 import time
 
 import numpy as np
-from coinjump.imageviewer import ImageViewer
+from imageviewer import ImageViewer
 
 from src.CoinJump.coinjump.coinjump import ParameterizedLevelGenerator_KeyDoor
 from src.CoinJump.coinjump.coinjump import CoinJump
-from src.util import extract_for_explaining, explaining_nsfr, action_select
+
+from src.CoinJump.coinjump.coinjump import CoinJumpActions
 
 KEY_SPACE = 32
 # KEY_SPACE = 32
@@ -31,7 +32,7 @@ def setup_image_viewer(coinjump):
 def create_coinjump_instance():
     seed = random.random()
 
-    coin_jump = CoinJump(start_on_first_action=True, Key_Door_model=True)
+    coin_jump = CoinJump(start_on_first_action=True, Key_Door_mode=True)
     # level_generator = DummyGenerator()
 
     # change generator to choose env
@@ -52,7 +53,6 @@ def run():
     fps = 10
     target_frame_duration = 1 / fps
     last_frame_time = 0
-    last_explaining = None
 
     while True:
         # control framerate
@@ -66,35 +66,17 @@ def run():
 
         # step game
         action = []
-
         if KEY_r in viewer.pressed_keys:
             coin_jump = create_coinjump_instance()
-            print("--------------------------     next game    --------------------------")
-        if not coin_jump.level.terminated:
-
-            # extract state for explaining
-            prednames = ['left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-                         'right_go_to_door']
-            extracted_state = extract_for_explaining(coin_jump)
-            explaining = explaining_nsfr(extracted_state, 'coinjump_KD',prednames)
-            action = action_select(explaining)
-
-            if last_explaining is None:
-                print(explaining)
-                last_explaining = explaining
-            elif explaining != last_explaining:
-                print(explaining)
-                last_explaining = explaining
-
-        # else:
-        #     if KEY_a in viewer.pressed_keys:
-        #         action.append(CoinJumpActions.MOVE_LEFT)
-        #     if KEY_d in viewer.pressed_keys:
-        #         action.append(CoinJumpActions.MOVE_RIGHT)
-        #     if (KEY_SPACE in viewer.pressed_keys) or (KEY_w in viewer.pressed_keys):
-        #         action.append(CoinJumpActions.MOVE_UP)
-        #     if KEY_s in viewer.pressed_keys:
-        #         action.append(CoinJumpActions.MOVE_DOWN)
+        else:
+            if KEY_a in viewer.pressed_keys:
+                action.append(CoinJumpActions.MOVE_LEFT)
+            if KEY_d in viewer.pressed_keys:
+                action.append(CoinJumpActions.MOVE_RIGHT)
+            if (KEY_SPACE in viewer.pressed_keys) or (KEY_w in viewer.pressed_keys):
+                action.append(CoinJumpActions.MOVE_UP)
+            if KEY_s in viewer.pressed_keys:
+                action.append(CoinJumpActions.MOVE_DOWN)
 
         reward = coin_jump.step(action)
         score = coin_jump.get_score()
@@ -102,8 +84,8 @@ def run():
         viewer.show(np_img[:, :, :3])
 
         terminated = coin_jump.level.terminated
-        # if terminated:
-        #     print("score = ", score)
+        if terminated:
+            print("score = ", score)
         if viewer.is_escape_pressed:
             break
 

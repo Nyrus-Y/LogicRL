@@ -1,7 +1,6 @@
 import torch
 import numpy as np
-import torch.nn as nn
-
+import os
 from src.logic_utils import get_lang
 
 from src.percept import YOLOPerceptionModule
@@ -9,7 +8,7 @@ from src.facts_converter import FactsConverter
 from src.nsfr import NSFReasoner
 from src.logic_utils import build_infer_module
 from src.valuation import RLValuationModule, RLValuationModule_D, RLValuationModule_KD
-from src.coinjump.coinjump.actions import coin_jump_actions_from_unified, CoinJumpActions
+from src.CoinJump.coinjump.coinjump.actions import coin_jump_actions_from_unified, CoinJumpActions
 
 device = torch.device('cpu')
 
@@ -59,8 +58,9 @@ def get_2_nsfr_model(lang, clauses, atoms, bk, device):
 
 
 def explaining_nsfr(extracted_states, env, prednames):
-    lark_path = '../src/lark/exp.lark'
-    lang_base_path = '../data/lang/'
+    current_path = os.getcwd()
+    lark_path = os.path.join(current_path, 'lark/exp.lark')
+    lang_base_path = os.path.join(current_path, 'data/lang/')
 
     device = torch.device('cuda:0')
     lang, clauses, bk, atoms = get_lang(

@@ -4,9 +4,9 @@ import time
 import numpy as np
 from src.coinjump.imageviewer import ImageViewer
 
-from src.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
-from src.coinjump.coinjump.coinjump import CoinJump
-from src.util import extract_for_explaining, explaining_nsfr, action_select,explaining_nsfr_combine
+from src.CoinJump.coinjump.coinjump import ParameterizedLevelGenerator_V1
+from src.CoinJump.coinjump.coinjump import CoinJump
+from src.util import extract_for_explaining, explaining_nsfr, action_select
 
 KEY_SPACE = 32
 # KEY_SPACE = 32
