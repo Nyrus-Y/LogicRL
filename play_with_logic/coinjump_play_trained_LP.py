@@ -52,10 +52,6 @@ def parse_args():
     # TODO change path of model
     if args.model_file is None:
         # read filename from stdin
-        # model_file = f"../training/PPO_preTrained/CoinJumpEnv-v0/{input('Enter file name: ')}"
-        # model_file = f"../training/PPO_preTrained/CoinJumpEnvKD-v0/{input('Enter file name: ')}"
-        # model_file = f"../training/PPO_preTrained/CoinJumpEnvDodge-v0/{input('Enter file name: ')}"
-        # model_file = f"../training/PPO_preTrained/CoinJumpEnv-v1/{input('Enter file name: ')}"
         model_file = f"../src/nsfr_coinjump_model/{input('Enter file name: ')}"
 
     else:

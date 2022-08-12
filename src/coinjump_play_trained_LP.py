@@ -8,19 +8,16 @@ import numpy as np
 
 from src.coinjump.coinjump.actions import coin_jump_actions_from_unified
 from src.coinjump.imageviewer import ImageViewer
-from src.util import extract_for_explaining, get_predictions, get_nsfr, num_action_select
+from src.util import extract_for_explaining, num_action_select, show_explaining
 
-from src.coinjump.coinjump.paramLevelGenerator import ParameterizedLevelGenerator
-from src.coinjump.coinjump.paramLevelGenerator_keydoor import ParameterizedLevelGenerator_KeyDoor
-from src.coinjump.coinjump.paramLevelGenerator_dodge import ParameterizedLevelGenerator_Dodge
 from src.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
 from src.coinjump.coinjump.coinjump import CoinJump
 
-from src.coinjump_learn.training.ppo_coinjump_LP import ActorCritic
+from src.coinjump_learn.training.data_transform import extract_state, sample_to_model_input_V1, collate
+from src.coinjump_learn.training.ppo_coinjump_logic_policy import NSFR_ActorCritic
 
 KEY_r = 114
 
-device = torch.device('cuda:0')
 
 def setup_image_viewer(coinjump):
     viewer = ImageViewer(
@@ -33,22 +30,12 @@ def setup_image_viewer(coinjump):
     return viewer
 
 
-def create_coinjump_instance(seed=None, Dodge_model=False, Key_Door_model=False, V1=False):
+def create_coinjump_instance(seed=None, V1=False):
     seed = random.randint(0, 100000000) if seed is None else seed
 
     # level_generator = DummyGenerator()
-    if Dodge_model:
-        coin_jump = CoinJump(start_on_first_action=True, Dodge_model=True)
-        level_generator = ParameterizedLevelGenerator_Dodge()
-    elif Key_Door_model:
-        coin_jump = CoinJump(start_on_first_action=True, Key_Door_model=True)
-        level_generator = ParameterizedLevelGenerator_KeyDoor()
-    elif V1:
-        coin_jump = CoinJump(start_on_first_action=True, V1=True)
-        level_generator = ParameterizedLevelGenerator_V1()
-    else:
-        coin_jump = CoinJump(start_on_first_action=True)
-        level_generator = ParameterizedLevelGenerator()
+    coin_jump = CoinJump(start_on_first_action=True, V1=True)
+    level_generator = ParameterizedLevelGenerator_V1()
 
     level_generator.generate(coin_jump, seed=seed)
     coin_jump.render()
@@ -65,11 +52,7 @@ def parse_args():
     # TODO change path of model
     if args.model_file is None:
         # read filename from stdin
-        # model_file = f"../training/PPO_preTrained/CoinJumpEnv-v0/{input('Enter file name: ')}"
-        # model_file = f"../training/PPO_preTrained/CoinJumpEnvKD-v0/{input('Enter file name: ')}"
-        # model_file = f"../training/PPO_preTrained/CoinJumpEnvDodge-v0/{input('Enter file name: ')}"
-        # model_file = f"../training/PPO_preTrained/CoinJumpEnv-v1/{input('Enter file name: ')}"
-        model_file = f"../src/ppo_coinjump_model/{input('Enter file name: ')}"
+        model_file = f"../src/nsfr_coinjump_model/{input('Enter file name: ')}"
 
     else:
         model_file = pathlib.Path(args.model_file)
@@ -81,7 +64,7 @@ def load_model(model_path, set_eval=True):
     with open(model_path, "rb") as f:
         model = torch.load(f)
 
-    if isinstance(model, ActorCritic):
+    if isinstance(model, NSFR_ActorCritic):
         model = model.actor
         model.as_dict = True
 
@@ -100,17 +83,16 @@ def run():
     # TODO input parameter to change mode
     # coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
     # coin_jump = create_coinjump_instance(seed=seed, Dodge_model=True)
-    coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
+    coin_jump = create_coinjump_instance(seed=seed, V1=True)
     viewer = setup_image_viewer(coin_jump)
 
     # frame rate limiting
     fps = 10
     target_frame_duration = 1 / fps
     last_frame_time = 0
-    prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-                 'right_go_to_door', 'stay']
-    NSFR = get_nsfr('coinjump1')
+
     last_explaining = None
+
     while True:
         # control framerate
         current_frame_time = time.time()
@@ -124,7 +106,7 @@ def run():
         # TODO change for reset env
         if KEY_r in viewer.pressed_keys:
             # coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
-            coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
+            coin_jump = create_coinjump_instance(seed=seed, V1=True)
             print("--------------------------     next game    --------------------------")
             # coin_jump = create_coinjump_instance(seed=seed,Dodge_model=True)
         # step game
@@ -132,23 +114,26 @@ def run():
 
             # extract state for explaining
             extracted_state = extract_for_explaining(coin_jump)
-            state = get_predictions(extracted_state, NSFR, prednames)
+            # explaining = explaining_nsfr(extracted_state)
+            #
+            # if last_explaining is None:
+            #     print(explaining)
+            #     last_explaining = explaining
+            # elif explaining != last_explaining:
+            #     print(explaining)
+            #     last_explaining = explaining
 
-            prediction = model(state)
+            # TODO change sample function of different envs
 
-            # num = torch.argmax(prediction).cpu().item()
+            prediction = model(extracted_state)
+            # prediction[0][0] = 0
+            # print(model.state_dict())
+            print(show_explaining(prediction))
             num = torch.argmax(prediction).cpu().item()
-            explaining = NSFR.print_explaining(prediction)
-            if last_explaining is None:
-                print(explaining)
-                last_explaining = explaining
-            elif explaining != last_explaining:
-                print(explaining)
-                last_explaining = explaining
-
             action = num_action_select(num)
             action = coin_jump_actions_from_unified(action)
         else:
+
             action = []
         reward = coin_jump.step(action)
 

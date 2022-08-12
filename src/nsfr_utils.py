@@ -3,8 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 
-import src.data_clevr
-import src.data_kandinsky
 from src.percept import SlotAttentionPerceptionModule, YOLOPerceptionModule
 from src.facts_converter import FactsConverter
 from src.nsfr import NSFReasoner

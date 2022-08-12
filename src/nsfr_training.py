@@ -38,27 +38,7 @@ class NSFReasoner(nn.Module):
         return self.im.get_params()  # + self.fc.get_params()
 
     def forward(self, x):
-        # obtain the object-centric representation
-        # zs = self.pm(x)
-        # if len(x) == 1:
-        #     zs = x
-        #     # convert to the valuation tensor
-        #     V_0 = self.fc(zs, self.atoms, self.bk)
-        #     # perform T-step forward-chaining reasoning
-        #     V_T = self.im(V_0)
-        #     predictions = self.get_predictions(V_T, prednames=self.prednames)
-        # else:
-        #     predictions = torch.empty(0, device="cuda:0")
-        #     for state in x:
-        #         zs = torch.unsqueeze(state,0)
-        #         # convert to the valuation tensor
-        #         V_0 = self.fc(zs, self.atoms, self.bk)
-        #         # perform T-step forward-chaining reasoning
-        #         V_T = self.im(V_0)
-        #         prediction = self.get_predictions(V_T, prednames=self.prednames)
-        #         # torch.cat((predictions, prediction), 0)
-        #         predictions = torch.cat((predictions, prediction), 0)
-        #         # print(predictions)
+
         zs = x
         # convert to the valuation tensor
         V_0 = self.fc(zs, self.atoms, self.bk)
