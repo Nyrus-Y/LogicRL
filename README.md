@@ -8,25 +8,41 @@ pip install -r requirements.txt
 ```
 
 ### PLAY with trained PPO agent
+Run the file in src/CoinJump/:
+
 key_door:
-1. run src/coinjump_play_KD 
-2. input name of trained model: PPO_Key_Door.pth   
+1. **run** coinjump_play_KD 
+2. input model: PPO_Key_Door.pth   
 
 dodge_enemy:
-1. run src/coinjump_play_D 
-2. input name of trained model: PPO_Dodge.pth   
+1. **run** coinjump_play_D 
+2. input model: PPO_Dodge.pth   
 
 enemy and key_door:
-1. run src/coinjump_play_V1 
-2. input name of trained model: PPO_V1_enemy_door.pth 
+1. **run** coinjump_play_V1 
+2. input model: PPO_V1_enemy_door.pth 
 
-### PLAY with FOL
+### PLAY with pure Logic Policy
 
-env include enemy,key and door: run src/coinjump_V1.py 
+env include enemy,key and door: 
 
-env include enemy :src/coinjump_D.py
+**run** src/CoinJump/coinjump_play_V1_logic.py 
 
-env include key and door :  src/coinjump_KD.py
+env include enemy:
+
+**run** src/CoinJump/coinjump_D_logic.py
+
+env include key and door :
+
+**run** src/CoinJump/coinjump_KD_logic.py
+
+
+### PLAY with trained Logic Policy
+env include enemy,key and door: 
+
+1. **run** src/CoinJump/coinjump_play_trained_LP.py
+2. input model coinjump_LP_10clauses.pth
+
 
 ### something else:
 here to choose model:
