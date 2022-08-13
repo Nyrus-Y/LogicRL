@@ -15,9 +15,8 @@ class NSFReasoner(nn.Module):
         atoms (list(atom)): The set of ground atoms (facts).
     """
 
-    def __init__(self, perception_module, facts_converter, infer_module, atoms, bk, clauses, train=False):
+    def __init__(self, facts_converter, infer_module, atoms, bk, clauses, train=False):
         super().__init__()
-        self.pm = perception_module
         self.fc = facts_converter
         self.im = infer_module
         self.atoms = atoms
@@ -27,12 +26,12 @@ class NSFReasoner(nn.Module):
         # TODO change possible action here
 
         # 6 C
-        # self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-        #                  'right_go_to_door', 'stay']
-        # 10 C
         self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-                          'right_go_to_door', 'stay', 'jump_over_door', 'left_for_nothing', 'right_go_to_enemy',
-                          'stay_for_nothing']
+                         'right_go_to_door', 'stay']
+        # 10 C
+        # self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+        #                   'right_go_to_door', 'stay', 'jump_over_door', 'left_for_nothing', 'right_go_to_enemy',
+        #                   'stay_for_nothing']
 
     def get_params(self):
         return self.im.get_params()  # + self.fc.get_params()

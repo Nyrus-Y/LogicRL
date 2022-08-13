@@ -128,6 +128,7 @@ def run():
             # prediction[0][0] = 0
             # print(model.state_dict())
             print(show_explaining(prediction))
+            #print(model.state_dict())
             num = torch.argmax(prediction).cpu().item()
             action = num_action_select(num)
             action = coin_jump_actions_from_unified(action)
