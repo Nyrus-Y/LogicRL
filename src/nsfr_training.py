@@ -24,10 +24,14 @@ class NSFReasoner(nn.Module):
         self.clauses = clauses
         self._train = train
         # TODO change possible action here
-
+        # 2 C
+        self.prednames = ['jump', 'stay']
+        # 4 C
+        # self.prednames = ['left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+        #                  'right_go_to_door']
         # 6 C
-        self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-                         'right_go_to_door', 'stay']
+        # self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+        #                  'right_go_to_door', 'stay']
         # 10 C
         # self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
         #                   'right_go_to_door', 'stay', 'jump_over_door', 'left_for_nothing', 'right_go_to_enemy',

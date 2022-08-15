@@ -45,7 +45,8 @@ class NSFR_ActorCritic(nn.Module):
         super(NSFR_ActorCritic, self).__init__()
 
         self.rng = random.Random() if rng is None else rng
-        self.num_actions = 6
+        # TODO change num of action
+        self.num_actions = 2
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
 
@@ -84,16 +85,14 @@ class NSFR_ActorCritic(nn.Module):
         current_path = os.getcwd()
         lark_path = os.path.join(current_path, '../..', 'lark/exp.lark')
         lang_base_path = os.path.join(current_path, '../..', 'data/lang/')
-
+        #TODO
         device = torch.device('cuda:0')
         lang, clauses, bk, atoms = get_lang(
-            lark_path, lang_base_path, 'coinjump1', 'coinjump')
+            lark_path, lang_base_path, 'coinjump_D', 'coinjump')
 
         PM = None
         VM = RLValuationModule(lang=lang, device=device)
         FC = FactsConverter(lang=lang, perception_module=PM, valuation_module=VM, device=device)
-        # TODO change m
-
         m = len(clauses)
         # m = 6
         IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=True, device=device)
@@ -217,8 +216,8 @@ def main():
     # TODO choose env
     # env_name = "CoinJumpEnv-v0"
     # env_name = "CoinJumpEnvKD-v0"
-    # env_name = "CoinJumpEnvDodge-v0"
-    env_name = "CoinJumpEnv-v2"
+    env_name = "CoinJumpEnvDodge-v0"
+    # env_name = "CoinJumpEnv-v2"
 
     # max_ep_len = 1000  # max timesteps in one episode
     max_ep_len = 500  # max timesteps in one episode
@@ -396,7 +395,9 @@ def main():
             #              'right_go_to_door', 'stay']
 
             action = ppo_agent.select_action(state, epsilon=epsilon)
-            action = num_action_select(action)
+            # TODO
+            action = num_action_select(action, Dodge=True)
+            # action = num_action_select(action)
             state, reward, done, _ = env.step(action)
 
             # simpler policy

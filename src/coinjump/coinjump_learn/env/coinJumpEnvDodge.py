@@ -6,6 +6,7 @@ from gym import spaces
 
 from src.CoinJump.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS, coin_jump_actions_from_unified
 from src.CoinJump.coinjump.coinjump.helpers import create_coinjump_instance
+from src.util import extract_for_explaining
 from src.CoinJump.coinjump_learn.training.data_transform import extract_state, sample_to_model_input_dodge
 
 
@@ -79,7 +80,8 @@ class CoinJumpEnvDodge(gym.Env):
 
     def observe_state(self):
         # transform to model input with no action specified
-        ob = sample_to_model_input_dodge((extract_state(self.coinjump), None), no_dict=True)
+        # ob = sample_to_model_input_dodge((extract_state(self.coinjump), None), no_dict=True)
+        ob = extract_for_explaining(self.coinjump)
         #if no_dict=False: we get a dict with ob['base'] and ob['entities'] entries
         return ob
 

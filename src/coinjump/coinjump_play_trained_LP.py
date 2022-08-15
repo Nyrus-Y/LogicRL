@@ -10,6 +10,8 @@ from src.CoinJump.coinjump.coinjump.actions import coin_jump_actions_from_unifie
 from src.CoinJump.coinjump.imageviewer import ImageViewer
 from src.util import extract_for_explaining, num_action_select, show_explaining
 
+from src.CoinJump.coinjump.coinjump.paramLevelGenerator_keydoor import ParameterizedLevelGenerator_KeyDoor
+from src.CoinJump.coinjump.coinjump.paramLevelGenerator_dodge import ParameterizedLevelGenerator_Dodge
 from src.CoinJump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
 from src.CoinJump.coinjump.coinjump.coinjump import CoinJump
 
@@ -29,13 +31,19 @@ def setup_image_viewer(coinjump):
     return viewer
 
 
-def create_coinjump_instance(seed=None, V1=False):
+def create_coinjump_instance(seed=None, V1=False, key_door=False,Dodge=False):
     seed = random.randint(0, 100000000) if seed is None else seed
 
     # level_generator = DummyGenerator()
-    coin_jump = CoinJump(start_on_first_action=True, V1=True)
-    level_generator = ParameterizedLevelGenerator_V1()
-
+    if V1:
+        coin_jump = CoinJump(V1=True)
+        level_generator = ParameterizedLevelGenerator_V1()
+    elif key_door:
+        coin_jump = CoinJump(Key_Door_model=True)
+        level_generator = ParameterizedLevelGenerator_KeyDoor()
+    else:
+        coin_jump = CoinJump(Dodge_model=True)
+        level_generator = ParameterizedLevelGenerator_Dodge()
     level_generator.generate(coin_jump, seed=seed)
     coin_jump.render()
 
@@ -82,7 +90,7 @@ def run():
 
     seed = random.seed() if args.seed is None else int(args.seed)
     # TODO input parameter to change mode
-    coin_jump = create_coinjump_instance(seed=seed, V1=True)
+    coin_jump = create_coinjump_instance(seed=seed, Dodge=True)
     viewer = setup_image_viewer(coin_jump)
 
     # frame rate limiting
@@ -105,7 +113,7 @@ def run():
         # TODO change for reset env
         if KEY_r in viewer.pressed_keys:
             # coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
-            coin_jump = create_coinjump_instance(seed=seed, V1=True)
+            coin_jump = create_coinjump_instance(seed=seed, Dodge=True)
             print("--------------------------     next game    --------------------------")
             # coin_jump = create_coinjump_instance(seed=seed,Dodge_model=True)
         # step game
@@ -127,10 +135,10 @@ def run():
             prediction = model(extracted_state)
             # prediction[0][0] = 0
             # print(model.state_dict())
-            print(show_explaining(prediction))
-            #print(model.state_dict())
+            print(show_explaining(prediction, Dodge=True))
+            # print(model.state_dict())
             num = torch.argmax(prediction).cpu().item()
-            action = num_action_select(num)
+            action = num_action_select(num, Dodge=True)
             action = coin_jump_actions_from_unified(action)
         else:
 

@@ -20,7 +20,7 @@ def get_nsfr_model(lang, clauses, atoms, bk, device):
     IM = build_infer_module(clauses, atoms, lang,
                             m=len(clauses), infer_step=2, train=True, device=device)
     # Neuro-Symbolic Forward Reasoner
-    NSFR = NSFReasoner(facts_converter=FC,infer_module=IM, atoms=atoms, bk=bk, clauses=clauses)
+    NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses)
     return NSFR
 
 
@@ -158,7 +158,7 @@ def action_select(explaining):
     return action
 
 
-def num_action_select(action):
+def num_action_select(action, KD=False, V1=False, V2=False, Dodge=False):
     """
     0:jump
     1:left_go_get_key
@@ -182,14 +182,25 @@ def num_action_select(action):
     CJA_MOVE_RIGHT_DOWN: Final[int]= 8
     CJA_NUM_EXPLICIT_ACTIONS = 9
     """
-    if action in [0, 6]:
-        return 3
-    elif action in [1, 3, 7]:
-        return 1
-    elif action in [2, 4, 8]:
-        return 2
-    elif action in [5, 9]:
-        return 4
+    if V1 or V2:
+        if action in [0, 6]:
+            return 3
+        elif action in [1, 3, 7]:
+            return 1
+        elif action in [2, 4, 8]:
+            return 2
+        elif action in [5, 9]:
+            return 4
+    elif KD:
+        if action in [0, 2]:
+            return 1
+        elif action in [1, 3]:
+            return 2
+    elif Dodge:
+        if action in [0]:
+            return 3
+        elif action in [1]:
+            return 0
 
 
 def extract_for_explaining(coin_jump):
@@ -231,12 +242,19 @@ def extract_for_explaining(coin_jump):
     return states
 
 
-def show_explaining(prediction):
-    # prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-    #              'right_go_to_door', 'stay']
-    prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-                 'right_go_to_door', 'stay', 'jump_over_door', 'left_for_nothing', 'right_go_to_enemy',
-                 'stay_for_nothing']
+def show_explaining(prediction, KD=False, Dodge=False, V1=False, V2=False):
+    if KD:
+        prednames = ['left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+                     'right_go_to_door']
+    elif Dodge:
+        prednames = ['jump', 'stay']
+    elif V1:
+        prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+                     'right_go_to_door', 'stay']
+    elif V2:
+        prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+                     'right_go_to_door', 'stay', 'jump_over_door', 'left_for_nothing', 'right_go_to_enemy',
+                     'stay_for_nothing']
     pred = prednames[torch.argmax(prediction).cpu().item()]
     return pred
 # def reward_shaping(reward, last_extracted_state, action):
