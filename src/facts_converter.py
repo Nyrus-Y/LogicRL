@@ -9,7 +9,7 @@ class FactsConverter(nn.Module):
     FactsConverter converts the output fromt the perception module to the valuation vector.
     """
 
-    def __init__(self, lang, perception_module, valuation_module, device=None):
+    def __init__(self, lang, valuation_module, device=None):
         super(FactsConverter, self).__init__()
         # self.e = perception_module.e
         self.e = 0

@@ -15,8 +15,7 @@ device = torch.device('cpu')
 def get_nsfr_model(lang, clauses, atoms, bk, device):
     VM = RLValuationModule(
         lang=lang, device=device)
-    FC = FactsConverter(lang=lang, perception_module=PM,
-                        valuation_module=VM, device=device)
+    FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
     IM = build_infer_module(clauses, atoms, lang,
                             m=len(clauses), infer_step=2, train=True, device=device)
     # Neuro-Symbolic Forward Reasoner
