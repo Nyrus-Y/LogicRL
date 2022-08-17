@@ -9,14 +9,14 @@ import os
 import gym
 import time
 import numpy as np
-import src.CoinJump.coinjump_learn.env
+import src.coinjump.coinjump_learn.env
 
 from src.valuation import RLValuationModule
 from src.facts_converter import FactsConverter
 from src.logic_utils import build_infer_module, get_lang
 from src.util import num_action_select
 from src.nsfr_training import NSFReasoner
-from src.CoinJump.coinjump_learn.models.mlpCriticController import MLPCriticController
+from src.coinjump.coinjump_learn.models.mlpCriticController import MLPCriticController
 
 device = torch.device('cuda:0')
 

@@ -4,7 +4,7 @@ from src.neural_utils import MLP, LogisticRegression
 
 
 ################################
-# Valuation functions for CoinJump #
+# Valuation functions for coinjump #
 ################################
 
 

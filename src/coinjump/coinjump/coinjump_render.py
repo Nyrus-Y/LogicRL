@@ -3,11 +3,11 @@ from argparse import ArgumentParser
 import pathlib
 import pickle
 
-from src.CoinJump.coinjump.coinjump import CJA_NOOP
+from src.coinjump.coinjump.coinjump import CJA_NOOP
 from imageviewer import ImageViewer
 
-from src.CoinJump.coinjump.coinjump import ParameterizedLevelGenerator
-from src.CoinJump.coinjump.coinjump import CoinJump
+from src.coinjump.coinjump.coinjump import ParameterizedLevelGenerator
+from src.coinjump.coinjump.coinjump import CoinJump
 
 import os
 

@@ -7,13 +7,13 @@ import torch
 
 import numpy as np
 
-from src.CoinJump.coinjump.coinjump import coin_jump_actions_from_unified
+from src.coinjump.coinjump.coinjump import coin_jump_actions_from_unified
 from src.coinjump.imageviewer import ImageViewer
 
-from src.CoinJump.coinjump.coinjump import ParameterizedLevelGenerator
-from src.CoinJump.coinjump.coinjump import ParameterizedLevelGenerator_KeyDoor
-from src.CoinJump.coinjump.coinjump import ParameterizedLevelGenerator_Dodge
-from src.CoinJump.coinjump.coinjump import CoinJump
+from src.coinjump.coinjump.coinjump import ParameterizedLevelGenerator
+from src.coinjump.coinjump.coinjump import ParameterizedLevelGenerator_KeyDoor
+from src.coinjump.coinjump.coinjump import ParameterizedLevelGenerator_Dodge
+from src.coinjump.coinjump.coinjump import CoinJump
 
 from src.coinjump_learn.training.data_transform import sample_to_model_input_KD, \
     extract_state, collate
@@ -54,7 +54,7 @@ def create_coinjump_instance(seed=None, Dodge_model=False, Key_Door_model=False)
 
 
 def parse_args():
-    parser = ArgumentParser("Loads a model and lets it play CoinJump")
+    parser = ArgumentParser("Loads a model and lets it play coinjump")
     parser.add_argument("-m", "--model_file", dest="model_file", default=None)
     parser.add_argument("-s", "--seed", dest="seed", type=int)
     args = parser.parse_args()

@@ -7,7 +7,7 @@ import numpy as np
 import torch.optim
 import torch.utils.data._utils.collate
 
-from src.CoinJump.coinjump.coinjump import CJA_NUM_EXPLICIT_ACTIONS
+from src.coinjump.coinjump.coinjump import CJA_NUM_EXPLICIT_ACTIONS
 from src.coinjump_learn.models.mlpController import MLPController
 from src.coinjump_learn.training.data_transform import sample_to_model_input, for_each_tensor, collate
 

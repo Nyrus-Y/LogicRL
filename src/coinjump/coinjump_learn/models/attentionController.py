@@ -1,6 +1,6 @@
 import torch
 
-from src.CoinJump.coinjump.coinjump import CJA_NUM_EXPLICIT_ACTIONS
+from src.coinjump.coinjump.coinjump import CJA_NUM_EXPLICIT_ACTIONS
 
 
 class AttentionController(torch.nn.Module):

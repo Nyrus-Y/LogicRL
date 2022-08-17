@@ -4,9 +4,9 @@ import pathlib
 import pickle
 import sys
 
-from src.CoinJump.coinjump.coinjump import ParameterizedLevelGenerator
-from src.CoinJump.coinjump.coinjump import CoinJump
-from src.CoinJump.coinjump.coinjump import unify_coin_jump_actions
+from src.coinjump.coinjump.coinjump import ParameterizedLevelGenerator
+from src.coinjump.coinjump.coinjump import CoinJump
+from src.coinjump.coinjump.coinjump import unify_coin_jump_actions
 
 #fix some imports for unpickling
 from src import coinjump as cjActions, coinjump as cjEntityEncoding, coinjump as cjCoin

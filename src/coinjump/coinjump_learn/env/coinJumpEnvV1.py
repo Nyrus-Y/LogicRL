@@ -4,9 +4,9 @@ import gym
 import numpy as np
 from gym import spaces
 
-from src.CoinJump.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS, coin_jump_actions_from_unified
-from src.CoinJump.coinjump.coinjump.helpers import create_coinjump_instance
-from src.CoinJump.coinjump_learn.training.data_transform import extract_state, sample_to_model_input_V1
+from src.coinjump.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS, coin_jump_actions_from_unified
+from src.coinjump.coinjump.coinjump.helpers import create_coinjump_instance
+from src.coinjump.coinjump_learn.training.data_transform import extract_state, sample_to_model_input_V1
 
 
 class CoinJumpEnvV1(gym.Env):

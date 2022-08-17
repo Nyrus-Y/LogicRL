@@ -7,14 +7,14 @@ from torch.distributions import Categorical
 import os
 
 import gym
-import src.CoinJump.coinjump_learn.env
+import src.coinjump.coinjump_learn.env
 
-from src.CoinJump.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS
+from src.coinjump.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS
 import time
 import numpy as np
 
 # Original source: https://github.com/nikhilbarhate99/PPO-PyTorch/blob/master/PPO.py
-from src.CoinJump.coinjump_learn.models.mlpController import MLPController
+from src.coinjump.coinjump_learn.models.mlpController import MLPController
 
 device = torch.device('cuda:0')
 

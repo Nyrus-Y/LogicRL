@@ -4,8 +4,8 @@ import gym
 import numpy as np
 from gym import spaces
 
-from src.CoinJump.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS, coin_jump_actions_from_unified
-from src.CoinJump.coinjump.coinjump.helpers import create_coinjump_instance
+from src.coinjump.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS, coin_jump_actions_from_unified
+from src.coinjump.coinjump.coinjump.helpers import create_coinjump_instance
 from src.util import extract_for_explaining
 
 class CoinJumpEnvV2(gym.Env):
@@ -96,6 +96,6 @@ class CoinJumpEnvV2(gym.Env):
 
 gym.envs.register(
     id='CoinJumpEnv-v2',
-    entry_point='src.CoinJump.coinjump_learn.env.coinJumpEnvV2:CoinJumpEnvV2',
+    entry_point='src.coinjump.coinjump_learn.env.coinJumpEnvV2:CoinJumpEnvV2',
     max_episode_steps=300,
 )

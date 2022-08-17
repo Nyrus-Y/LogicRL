@@ -6,18 +6,18 @@ import pickle
 import torch
 import numpy as np
 import os
-from src.CoinJump.coinjump.coinjump.actions import coin_jump_actions_from_unified
-from src.CoinJump.coinjump.imageviewer import ImageViewer
+from src.coinjump.coinjump.coinjump.actions import coin_jump_actions_from_unified
+from src.coinjump.coinjump.imageviewer import ImageViewer
 from src.util import extract_for_explaining, explaining_nsfr
 
-from src.CoinJump.coinjump.coinjump.paramLevelGenerator import ParameterizedLevelGenerator
-from src.CoinJump.coinjump.coinjump.paramLevelGenerator_keydoor import ParameterizedLevelGenerator_KeyDoor
-from src.CoinJump.coinjump.coinjump.paramLevelGenerator_dodge import ParameterizedLevelGenerator_Dodge
-from src.CoinJump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
-from src.CoinJump.coinjump.coinjump.coinjump import CoinJump
+from src.coinjump.coinjump.coinjump.paramLevelGenerator import ParameterizedLevelGenerator
+from src.coinjump.coinjump.coinjump.paramLevelGenerator_keydoor import ParameterizedLevelGenerator_KeyDoor
+from src.coinjump.coinjump.coinjump.paramLevelGenerator_dodge import ParameterizedLevelGenerator_Dodge
+from src.coinjump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
+from src.coinjump.coinjump.coinjump.coinjump import CoinJump
 
-from src.CoinJump.coinjump_learn.training.data_transform import extract_state, sample_to_model_input_V1, collate
-from src.CoinJump.coinjump_learn.training.ppo_coinjump import ActorCritic
+from src.coinjump.coinjump_learn.training.data_transform import extract_state, sample_to_model_input_V1, collate
+from src.coinjump.coinjump_learn.training.ppo_coinjump import ActorCritic
 
 KEY_r = 114
 
@@ -57,7 +57,7 @@ def create_coinjump_instance(seed=None, Dodge_model=False, Key_Door_model=False,
 
 
 def parse_args():
-    parser = ArgumentParser("Loads a model and lets it play CoinJump")
+    parser = ArgumentParser("Loads a model and lets it play coinjump")
     parser.add_argument("-m", "--model_file", dest="model_file", default=None)
     parser.add_argument("-s", "--seed", dest="seed", type=int)
     args = parser.parse_args()

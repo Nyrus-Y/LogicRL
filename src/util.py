@@ -7,7 +7,7 @@ from src.facts_converter import FactsConverter
 from src.nsfr import NSFReasoner
 from src.logic_utils import build_infer_module
 from src.valuation import RLValuationModule, RLValuationModule_D, RLValuationModule_KD
-from src.CoinJump.coinjump.coinjump.actions import coin_jump_actions_from_unified, CoinJumpActions
+from src.coinjump.coinjump.coinjump.actions import coin_jump_actions_from_unified, CoinJumpActions
 
 device = torch.device('cpu')
 

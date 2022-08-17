@@ -1,6 +1,6 @@
 import torch
 
-from src.CoinJump.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS
+from src.coinjump.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS
 
 
 class MLPController(torch.nn.Module):

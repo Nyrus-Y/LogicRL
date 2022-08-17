@@ -4,8 +4,8 @@ import gym
 import numpy as np
 from gym import spaces
 
-from src.CoinJump.coinjump.coinjump import CJA_NUM_EXPLICIT_ACTIONS, coin_jump_actions_from_unified
-from src.CoinJump.coinjump.coinjump import create_coinjump_instance
+from src.coinjump.coinjump.coinjump import CJA_NUM_EXPLICIT_ACTIONS, coin_jump_actions_from_unified
+from src.coinjump.coinjump.coinjump import create_coinjump_instance
 from src.coinjump_learn.training.data_transform import extract_state, sample_to_model_input
 
 
