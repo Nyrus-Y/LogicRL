@@ -39,8 +39,8 @@ class InferModule(nn.Module):
         self.cs = [ClauseFunction(i, I, gamma=gamma)
                    for i in range(self.I.size(0))]
 
-        assert m == self.C, "Invalid m and C: " + \
-            str(m) + ' and ' + str(self.C)
+        # assert m == self.C, "Invalid m and C: " + \
+        #     str(m) + ' and ' + str(self.C)
 
     def init_identity_weights(self, device):
         ones = torch.ones((self.C, ), dtype=torch.float32) * 100
@@ -67,6 +67,7 @@ class InferModule(nn.Module):
         # taking weighted sum using m weights and stack to a tensor H
         # m * C
         W_star = torch.softmax(self.W, 1)
+        print(W_star)
         # m * C * B * G
         W_tild = W_star.unsqueeze(
             dim=-1).unsqueeze(dim=-1).expand(self.m, self.C, B, self.G)

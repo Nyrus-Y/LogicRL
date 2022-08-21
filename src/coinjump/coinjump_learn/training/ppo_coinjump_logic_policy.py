@@ -92,7 +92,7 @@ class NSFR_ActorCritic(nn.Module):
 
         PM = None
         VM = RLValuationModule(lang=lang, device=device)
-        FC = FactsConverter(lang=lang, perception_module=PM, valuation_module=VM, device=device)
+        FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
         m = len(clauses)
         # m = 6
         IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=True, device=device)

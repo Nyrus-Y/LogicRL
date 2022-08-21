@@ -90,7 +90,7 @@ def run():
 
     seed = random.seed() if args.seed is None else int(args.seed)
     # TODO input parameter to change mode
-    coin_jump = create_coinjump_instance(seed=seed, Dodge=True)
+    coin_jump = create_coinjump_instance(seed=seed, V1=True)
     viewer = setup_image_viewer(coin_jump)
 
     # frame rate limiting
@@ -113,7 +113,7 @@ def run():
         # TODO change for reset env
         if KEY_r in viewer.pressed_keys:
             # coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
-            coin_jump = create_coinjump_instance(seed=seed, Dodge=True)
+            coin_jump = create_coinjump_instance(seed=seed, V1=True)
             print("--------------------------     next game    --------------------------")
             # coin_jump = create_coinjump_instance(seed=seed,Dodge_model=True)
         # step game
@@ -135,10 +135,10 @@ def run():
             prediction = model(extracted_state)
             # prediction[0][0] = 0
             # print(model.state_dict())
-            print(show_explaining(prediction, Dodge=True))
+            print(show_explaining(prediction, V1=True))
             # print(model.state_dict())
             num = torch.argmax(prediction).cpu().item()
-            action = num_action_select(num, Dodge=True)
+            action = num_action_select(num, V1=True)
             action = coin_jump_actions_from_unified(action)
         else:
 
