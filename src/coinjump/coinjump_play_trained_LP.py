@@ -4,8 +4,10 @@ from argparse import ArgumentParser
 import pathlib
 import pickle
 import torch
+import torch.nn as nn
 import numpy as np
 import os
+
 from src.coinjump.coinjump.coinjump.actions import coin_jump_actions_from_unified
 from src.coinjump.coinjump.imageviewer import ImageViewer
 from src.util import extract_for_explaining, num_action_select, show_explaining
@@ -16,8 +18,45 @@ from src.coinjump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedL
 from src.coinjump.coinjump.coinjump.coinjump import CoinJump
 
 from src.coinjump.coinjump_learn.training.ppo_coinjump_logic_policy import NSFR_ActorCritic
+from src.coinjump.coinjump_learn.models.mlpCriticController import MLPCriticController
+
+from src.valuation import RLValuationModule
+from src.facts_converter import FactsConverter
+from src.logic_utils import build_infer_module, get_lang
+from src.nsfr_training import NSFReasoner
 
 KEY_r = 114
+
+class NSFR_ActorCritic(nn.Module):
+    def __init__(self):
+        super(NSFR_ActorCritic, self).__init__()
+
+        self.actor = self.get_nsfr_model()
+        self.critic = MLPCriticController(out_size=1)
+
+    def forward(self):
+        raise NotImplementedError
+
+    def act(self):
+        pass
+
+    def get_nsfr_model(self):
+        current_path = os.getcwd()
+        lark_path = os.path.join(current_path, 'lark/exp.lark')
+        lang_base_path = os.path.join(current_path, 'data/lang/')
+        #TODO
+        device = torch.device('cuda:0')
+        lang, clauses, bk, atoms = get_lang(
+            lark_path, lang_base_path, 'coinjump_D', 'coinjump')
+
+        VM = RLValuationModule(lang=lang, device=device)
+        FC = FactsConverter(lang=lang,valuation_module=VM, device=device)
+        m = len(clauses)
+        # m = 6
+        IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=True, device=device)
+        # Neuro-Symbolic Forward Reasoner
+        NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses, train=True)
+        return NSFR
 
 
 def setup_image_viewer(coinjump):
@@ -31,7 +70,7 @@ def setup_image_viewer(coinjump):
     return viewer
 
 
-def create_coinjump_instance(seed=None, V1=False, key_door=False,Dodge=False):
+def create_coinjump_instance(seed=None, V1=False, key_door=False, Dodge=False):
     seed = random.randint(0, 100000000) if seed is None else seed
 
     # level_generator = DummyGenerator()
@@ -71,7 +110,9 @@ def parse_args():
 
 def load_model(model_path, set_eval=True):
     with open(model_path, "rb") as f:
-        model = torch.load(f)
+        model = NSFR_ActorCritic()
+        # model = torch.load(f)
+        model.load_state_dict(state_dict=torch.load(f))
 
     if isinstance(model, NSFR_ActorCritic):
         model = model.actor
@@ -90,7 +131,7 @@ def run():
 
     seed = random.seed() if args.seed is None else int(args.seed)
     # TODO input parameter to change mode
-    coin_jump = create_coinjump_instance(seed=seed, V1=True)
+    coin_jump = create_coinjump_instance(seed=seed, Dodge=True)
     viewer = setup_image_viewer(coin_jump)
 
     # frame rate limiting
@@ -113,7 +154,7 @@ def run():
         # TODO change for reset env
         if KEY_r in viewer.pressed_keys:
             # coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
-            coin_jump = create_coinjump_instance(seed=seed, V1=True)
+            coin_jump = create_coinjump_instance(seed=seed, Dodge=True)
             print("--------------------------     next game    --------------------------")
             # coin_jump = create_coinjump_instance(seed=seed,Dodge_model=True)
         # step game
@@ -135,10 +176,10 @@ def run():
             prediction = model(extracted_state)
             # prediction[0][0] = 0
             # print(model.state_dict())
-            print(show_explaining(prediction, V1=True))
+            print(show_explaining(prediction, Dodge=True))
             # print(model.state_dict())
             num = torch.argmax(prediction).cpu().item()
-            action = num_action_select(num, V1=True)
+            action = num_action_select(num, Dodge=True)
             action = coin_jump_actions_from_unified(action)
         else:
 

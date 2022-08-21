@@ -17,6 +17,7 @@ from src.logic_utils import build_infer_module, get_lang
 from src.util import num_action_select
 from src.nsfr_training import NSFReasoner
 from src.coinjump.coinjump_learn.models.mlpCriticController import MLPCriticController
+from src.util import plot_weights
 
 device = torch.device('cuda:0')
 
@@ -46,7 +47,7 @@ class NSFR_ActorCritic(nn.Module):
 
         self.rng = random.Random() if rng is None else rng
         # TODO change num of action
-        self.num_actions = 2
+        self.num_actions = 6
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
 
@@ -85,16 +86,15 @@ class NSFR_ActorCritic(nn.Module):
         current_path = os.getcwd()
         lark_path = os.path.join(current_path, '../..', 'lark/exp.lark')
         lang_base_path = os.path.join(current_path, '../..', 'data/lang/')
-        #TODO
+        # TODO
         device = torch.device('cuda:0')
         lang, clauses, bk, atoms = get_lang(
-            lark_path, lang_base_path, 'coinjump_D', 'coinjump')
+            lark_path, lang_base_path, 'coinjump1', 'coinjump')
 
-        PM = None
         VM = RLValuationModule(lang=lang, device=device)
         FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
-        m = len(clauses)
-        # m = 6
+        # m = len(clauses)
+        m = 5
         IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=True, device=device)
         # Neuro-Symbolic Forward Reasoner
         NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses, train=True)
@@ -185,14 +185,17 @@ class PPO:
         self.buffer.clear()
 
     def save(self, checkpoint_path):
-        # torch.save(self.policy_old.state_dict(), checkpoint_path)
-        torch.save(self.policy_old, checkpoint_path)
+        torch.save(self.policy_old.state_dict(), checkpoint_path)
+        # torch.save(self.policy_old, checkpoint_path)
+
+    def get_weights(self):
+        return self.policy.actor.get_params()
 
     def load(self, checkpoint_path):
-        # self.policy_old.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
-        # self.policy.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
-        self.policy_old = torch.load(checkpoint_path)
-        self.policy = torch.load(checkpoint_path)
+        self.policy_old.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
+        self.policy.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
+        # self.policy_old = torch.load(checkpoint_path)
+        # self.policy = torch.load(checkpoint_path)
 
     def get_predictions(self, state):
         self.prediction = state
@@ -216,8 +219,8 @@ def main():
     # TODO choose env
     # env_name = "CoinJumpEnv-v0"
     # env_name = "CoinJumpEnvKD-v0"
-    env_name = "CoinJumpEnvDodge-v0"
-    # env_name = "CoinJumpEnv-v2"
+    # env_name = "CoinJumpEnvDodge-v0"
+    env_name = "CoinJumpEnv-v2"
 
     # max_ep_len = 1000  # max timesteps in one episode
     max_ep_len = 500  # max timesteps in one episode
@@ -365,6 +368,18 @@ def main():
 
     print("============================================================================================")
 
+    image_directory = "image"
+    if not os.path.exists(image_directory):
+        os.makedirs(image_directory)
+
+    image_directory = image_directory + '/' + env_name + '/'
+    if not os.path.exists(image_directory):
+        os.makedirs(image_directory)
+
+    # checkpoint_path = directory + "PPO_{}_{}_{}.pth".format(env_name, random_seed, 0)
+
+    plot_weights(ppo_agent.get_weights(), image_directory)
+
     # logging file
     log_f = open(log_f_name, "w+")
     log_f.write('episode,timestep,reward\n')
@@ -389,22 +404,11 @@ def main():
 
         for t in range(1, max_ep_len + 1):
 
-            # select action with policy
-            # extract state for explaining
-            # prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-            #              'right_go_to_door', 'stay']
-
             action = ppo_agent.select_action(state, epsilon=epsilon)
             # TODO
-            action = num_action_select(action, Dodge=True)
+            action = num_action_select(action, V1=True)
             # action = num_action_select(action)
             state, reward, done, _ = env.step(action)
-
-            # simpler policy
-            # if action in [3, 5, 6]:
-            #     reward -= 0.15
-            # elif action == 0:
-            #     reward += 0.1
 
             # saving reward and is_terminals
             ppo_agent.buffer.rewards.append(reward)
@@ -416,18 +420,6 @@ def main():
             # update PPO agent
             if time_step % update_timestep == 0:
                 ppo_agent.update()
-
-            # log in logging file
-            # if time_step % log_freq == 0:
-            #     # log average reward till last episode
-            #     log_avg_reward = log_running_reward / log_running_episodes
-            #     log_avg_reward = round(log_avg_reward, 4)
-            #
-            #     log_f.write('{},{},{}\n'.format(i_episode, time_step, log_avg_reward))
-            #     log_f.flush()
-            #
-            #     log_running_reward = 0
-            #     log_running_episodes = 0
 
             # printing average reward
             if time_step % print_freq == 0:
@@ -451,6 +443,8 @@ def main():
                 print("Elapsed Time  : ", time.time() - start_time)
                 print("--------------------------------------------------------------------------------------------")
 
+                # save image of weights
+                plot_weights(ppo_agent.get_weights(), image_directory, time_step)
             # break; if the episode is over
             if done:
                 break

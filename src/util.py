@@ -1,6 +1,8 @@
 import torch
 import numpy as np
 import os
+import seaborn as sns
+import matplotlib.pyplot as plt
 from src.logic_utils import get_lang
 
 from src.facts_converter import FactsConverter
@@ -257,6 +259,26 @@ def show_explaining(prediction, KD=False, Dodge=False, V1=False, V2=False):
     pred = prednames[torch.argmax(prediction).cpu().item()]
     return pred
 
+
+def plot_weights(weights, image_directory, time_step=0):
+    weights = torch.softmax(weights, dim=1)
+    sns.set()
+    sns.set_style('white')
+    # plt.figure(figsize=(15, 5))
+    plt.ylim([0, 1])
+    x_label = ['jump', 'left_key', 'right_key', 'left_door',
+               'right_door', 'stay']
+    for i, W in enumerate(weights):
+        W_ = W.detach().cpu().numpy()
+        plt.bar(range(1, len(W_) + 1), W_, alpha=0.5, label='C' + str(i))
+
+    plt.xticks(range(1, len(x_label) + 1), x_label)
+    plt.ylabel('Weight')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+    plt.savefig(image_directory + 'W_' + str(time_step) + '.png', bbox_inches='tight')
+
+    plt.show()
+    plt.close()
 # def reward_shaping(reward, last_extracted_state, action):
 #     """
 #     last_extracted_state:
