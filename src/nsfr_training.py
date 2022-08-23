@@ -30,12 +30,12 @@ class NSFReasoner(nn.Module):
         # self.prednames = ['left_go_get_key', 'right_go_get_key', 'left_go_to_door',
         #                   'right_go_to_door']
         # 6C V1
-        self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-                          'right_go_to_door', 'stay']
-        # 10C V2
         # self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-        #                   'right_go_to_door', 'stay', 'jump_over_door', 'left_for_nothing', 'right_go_to_enemy',
-        #                   'stay_for_nothing']
+        # 'right_go_to_door', 'stay']
+        # 10C V2
+        self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+                          'right_go_to_door', 'stay', 'jump_over_door', 'left_for_nothing', 'right_go_to_enemy',
+                          'stay_for_nothing']
 
     def get_params(self):
         return self.im.get_params()  # + self.fc.get_params()

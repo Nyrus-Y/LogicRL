@@ -47,7 +47,7 @@ class NSFR_ActorCritic(nn.Module):
 
         self.rng = random.Random() if rng is None else rng
         # TODO change num of action
-        self.num_actions = 6
+        self.num_actions = 10
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
 
@@ -89,10 +89,12 @@ class NSFR_ActorCritic(nn.Module):
         # TODO
         device = torch.device('cuda:0')
         lang, clauses, bk, atoms = get_lang(
-            lark_path, lang_base_path, 'coinjump1', 'coinjump')
+            lark_path, lang_base_path, 'coinjump', 'coinjump')
 
         VM = RLValuationModule(lang=lang, device=device)
         FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
+        #TODO
+
         # m = len(clauses)
         m = 5
         IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=True, device=device)
@@ -188,9 +190,6 @@ class PPO:
         torch.save(self.policy_old.state_dict(), checkpoint_path)
         # torch.save(self.policy_old, checkpoint_path)
 
-    def get_weights(self):
-        return self.policy.actor.get_params()
-
     def load(self, checkpoint_path):
         self.policy_old.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
         self.policy.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
@@ -200,6 +199,9 @@ class PPO:
     def get_predictions(self, state):
         self.prediction = state
         return self.prediction
+
+    def get_weights(self):
+        return self.policy.actor.get_params()
 
 
 # ===== ACTUAL TRAINING HERE =======
@@ -406,7 +408,7 @@ def main():
 
             action = ppo_agent.select_action(state, epsilon=epsilon)
             # TODO
-            action = num_action_select(action, V1=True)
+            action = num_action_select(action, V2=True)
             # action = num_action_select(action)
             state, reward, done, _ = env.step(action)
 
