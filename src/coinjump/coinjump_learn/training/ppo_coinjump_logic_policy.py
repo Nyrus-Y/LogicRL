@@ -93,7 +93,7 @@ class NSFR_ActorCritic(nn.Module):
 
         VM = RLValuationModule(lang=lang, device=device)
         FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
-        #TODO
+        # TODO
 
         # m = len(clauses)
         m = 5
@@ -209,7 +209,7 @@ class PPO:
 def main():
     ####### initialize environment hyperparameters ######
 
-    random_seed = 123456  # set random seed if required (0 = no random seed)
+    random_seed = random.randint(0, 123456)  # set random seed if required (0 = no random seed)
     if random_seed:
         print("--------------------------------------------------------------------------------------------")
         print("setting random seed to ", random_seed)
@@ -233,7 +233,7 @@ def main():
     log_freq = max_ep_len * 5  # log avg reward in the interval (in num timesteps)
     # save_model_freq = int(2e4)  # save model frequency (in num timesteps)
     # save_model_freq = 500000  # save model frequency (in num timesteps)
-    save_model_freq = 50000  # save model frequency (in num timesteps)
+    save_model_freq = 25000  # save model frequency (in num timesteps)
     #####################################################
 
     ## Note : print/log frequencies should be > than max_ep_len

@@ -216,8 +216,31 @@ def extract_for_explaining(coin_jump):
     To be changed when using object-detection tech
     """
     # TODO
+    # num_of_feature = 6
+    # num_of_object = 4
+    # representation = coin_jump.level.get_representation()
+    # extracted_states = np.zeros((num_of_object, num_of_feature))
+    # for entity in representation["entities"]:
+    #     if entity[0].name == 'PLAYER':
+    #         extracted_states[0][0] = 1
+    #         extracted_states[0][-2:] = entity[1:3]
+    #         # 27 is the width of map, this is normalization
+    #         # extracted_states[0][-2:] /= 27
+    #     elif entity[0].name == 'KEY':
+    #         extracted_states[1][1] = 1
+    #         extracted_states[1][-2:] = entity[1:3]
+    #         # extracted_states[1][-2:] /= 27
+    #     elif entity[0].name == 'DOOR':
+    #         extracted_states[2][2] = 1
+    #         extracted_states[2][-2:] = entity[1:3]
+    #         # extracted_states[2][-2:] /= 27
+    #     elif entity[0].name == 'GROUND_ENEMY':
+    #         extracted_states[3][3] = 1
+    #         extracted_states[3][-2:] = entity[1:3]
+    #         # extracted_states[3][-2:] /= 27
+
     num_of_feature = 6
-    num_of_object = 4
+    num_of_object = 5
     representation = coin_jump.level.get_representation()
     extracted_states = np.zeros((num_of_object, num_of_feature))
     for entity in representation["entities"]:
@@ -237,6 +260,10 @@ def extract_for_explaining(coin_jump):
         elif entity[0].name == 'GROUND_ENEMY':
             extracted_states[3][3] = 1
             extracted_states[3][-2:] = entity[1:3]
+            # extracted_states[3][-2:] /= 27
+        elif entity[0].name == 'KEY2':
+            extracted_states[4][1] = 1
+            extracted_states[4][-2:] = entity[1:3]
             # extracted_states[3][-2:] /= 27
 
     states = torch.tensor(np.array(extracted_states), dtype=torch.float32, device="cuda:0").unsqueeze(0)
@@ -260,7 +287,7 @@ def show_explaining(prediction, KD=False, Dodge=False, V1=False, V2=False):
     return pred
 
 
-def plot_weights(weights, image_directory, time_step=0):
+def plot_weight(weights, image_directory, time_step=0):
     weights = torch.softmax(weights, dim=1)
     sns.set()
     sns.set_style('white')
@@ -274,13 +301,43 @@ def plot_weights(weights, image_directory, time_step=0):
 
     for i, W in enumerate(weights):
         W_ = W.detach().cpu().numpy()
-        plt.bar(range(1, len(W_) + 1), W_, alpha=0.5, label='C' + str(i))
+        plt.bar(range(1, len(W_) + 1), W_, alpha=1, label='C' + str(i))
 
     plt.xticks(range(1, len(x_label) + 1), x_label)
     plt.ylabel('Weights')
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
     plt.savefig(image_directory + 'W_' + str(time_step) + '.png', bbox_inches='tight')
 
+    plt.show()
+    plt.close()
+
+def plot_weights(weights, image_directory, time_step=0):
+    weights = torch.softmax(weights, dim=1)
+    sns.set()
+    sns.set_style('white')
+    plt.figure(figsize=(15, 5))
+    plt.ylim([0, 1])
+    x_label = ['Jump', 'Left_key', 'Right_key', 'Left_door',
+               'Right_door', 'Stay', 'Jump_door', 'Left_nothing', 'Right_enemy',
+               'Stay_nothing']
+    # x_label = ['Jump', 'Left_k', 'Right_k', 'Left_d',
+    #            'Right_d', 'Stay', 'Jump_d', 'Left_n', 'Right_e',
+    #            'Stay_n']
+    x = np.arange(len(x_label))
+    width = 0.15
+    X = x - width * 3
+
+    for i, W in enumerate(weights):
+        W_ = W.detach().cpu().numpy()
+
+        X = X + width
+        plt.bar(X, W_, width=width, alpha=1, label='C' + str(i))
+        # plt.bar(range(len(W_)), W_, width=0.2, alpha=1, label='C' + str(i))
+
+    plt.xticks(x, x_label,fontproperties="Microsoft YaHei",size = 12)
+    plt.ylabel('Weights',size = 14)
+    plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
+    plt.savefig(image_directory + 'W_' + str(time_step) + '.png', bbox_inches='tight')
     plt.show()
     plt.close()
 

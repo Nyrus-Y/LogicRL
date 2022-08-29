@@ -11,3 +11,4 @@ class EntityID(Enum):
     GROUND_ENEMY = 5
     DOOR = 6
     KEY = 7
+    KEY2 = 8
