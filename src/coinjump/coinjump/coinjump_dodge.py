@@ -4,10 +4,10 @@ import time
 import numpy as np
 from imageviewer import ImageViewer
 
-from src.coinjump.coinjump.coinjump import ParameterizedLevelGenerator_Dodge
-from src.coinjump.coinjump.coinjump import CoinJump
+from src.coinjump.coinjump.coinjump.paramLevelGenerator_dodge import ParameterizedLevelGenerator_Dodge
+from src.coinjump.coinjump.coinjump.coinjump import CoinJump
 
-from src.coinjump.coinjump.coinjump import CoinJumpActions
+from src.coinjump.coinjump.coinjump.actions import CoinJumpActions
 
 KEY_SPACE = 32
 # KEY_SPACE = 32

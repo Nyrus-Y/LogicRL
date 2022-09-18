@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\Github\Use Knowledge Representation and Reasoning for the policy\src\bigfish\procgen\.build\relwithdebinfo\CMakeFiles\1b3373488d6b32ea90a968797604b3ea\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{9EF07D25-F03A-3CDC-9C20-417100D7719A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

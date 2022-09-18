@@ -93,26 +93,4 @@ class NSFReasoner(nn.Module):
         index = np.argmax(predicts[0])
         return clauses[index]
 
-    def get_valuation_text(self, valuation):
-        text_batch = ''  # texts for each batch
-        for b in range(valuation.size(0)):
-            top_atoms = self.get_top_atoms(valuation[b].detach().cpu().numpy())
-            text = '----BATCH ' + str(b) + '----\n'
-            text += self.atoms_to_text(top_atoms)
-            text += '\n'
-            # texts.append(text)
-            text_batch += text
-        return text_batch
 
-    def get_top_atoms(self, v):
-        top_atoms = []
-        for i, atom in enumerate(self.atoms):
-            if v[i] > 0.7:
-                top_atoms.append(atom)
-        return top_atoms
-
-    def atoms_to_text(self, atoms):
-        text = ''
-        for atom in atoms:
-            text += str(atom) + ', '
-        return text

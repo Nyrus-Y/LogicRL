@@ -4,10 +4,10 @@ import time
 import numpy as np
 from imageviewer import ImageViewer
 
-from src.coinjump.coinjump.coinjump import ParameterizedLevelGenerator_KeyDoor
-from src.coinjump.coinjump.coinjump import CoinJump
+from src.coinjump.coinjump.coinjump.paramLevelGenerator_keydoor import ParameterizedLevelGenerator_KeyDoor
+from src.coinjump.coinjump.coinjump.coinjump import CoinJump
 
-from src.coinjump.coinjump.coinjump import CoinJumpActions
+from src.coinjump.coinjump.coinjump.actions import CoinJumpActions
 
 KEY_SPACE = 32
 # KEY_SPACE = 32
@@ -32,7 +32,7 @@ def setup_image_viewer(coinjump):
 def create_coinjump_instance():
     seed = random.random()
 
-    coin_jump = CoinJump(start_on_first_action=True, Key_Door_mode=True)
+    coin_jump = CoinJump(start_on_first_action=True, Key_Door_model=True)
     # level_generator = DummyGenerator()
 
     # change generator to choose env

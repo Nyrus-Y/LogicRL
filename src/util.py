@@ -3,6 +3,7 @@ import numpy as np
 import os
 import seaborn as sns
 import matplotlib.pyplot as plt
+import random
 from src.logic_utils import get_lang
 
 from src.facts_converter import FactsConverter
@@ -216,31 +217,8 @@ def extract_for_explaining(coin_jump):
     To be changed when using object-detection tech
     """
     # TODO
-    # num_of_feature = 6
-    # num_of_object = 4
-    # representation = coin_jump.level.get_representation()
-    # extracted_states = np.zeros((num_of_object, num_of_feature))
-    # for entity in representation["entities"]:
-    #     if entity[0].name == 'PLAYER':
-    #         extracted_states[0][0] = 1
-    #         extracted_states[0][-2:] = entity[1:3]
-    #         # 27 is the width of map, this is normalization
-    #         # extracted_states[0][-2:] /= 27
-    #     elif entity[0].name == 'KEY':
-    #         extracted_states[1][1] = 1
-    #         extracted_states[1][-2:] = entity[1:3]
-    #         # extracted_states[1][-2:] /= 27
-    #     elif entity[0].name == 'DOOR':
-    #         extracted_states[2][2] = 1
-    #         extracted_states[2][-2:] = entity[1:3]
-    #         # extracted_states[2][-2:] /= 27
-    #     elif entity[0].name == 'GROUND_ENEMY':
-    #         extracted_states[3][3] = 1
-    #         extracted_states[3][-2:] = entity[1:3]
-    #         # extracted_states[3][-2:] /= 27
-
     num_of_feature = 6
-    num_of_object = 5
+    num_of_object = 4
     representation = coin_jump.level.get_representation()
     extracted_states = np.zeros((num_of_object, num_of_feature))
     for entity in representation["entities"]:
@@ -261,11 +239,60 @@ def extract_for_explaining(coin_jump):
             extracted_states[3][3] = 1
             extracted_states[3][-2:] = entity[1:3]
             # extracted_states[3][-2:] /= 27
-        elif entity[0].name == 'KEY2':
-            extracted_states[4][1] = 1
-            extracted_states[4][-2:] = entity[1:3]
-            # extracted_states[3][-2:] /= 27
 
+    # num_of_feature = 6
+    # num_of_object = 5
+    # representation = coin_jump.level.get_representation()
+    # extracted_states = np.zeros((num_of_object, num_of_feature))
+    # for entity in representation["entities"]:
+    #     if entity[0].name == 'PLAYER':
+    #         extracted_states[0][0] = 1
+    #         extracted_states[0][-2:] = entity[1:3]
+    #         # 27 is the width of map, this is normalization
+    #         # extracted_states[0][-2:] /= 27
+    #     elif entity[0].name == 'KEY':
+    #         extracted_states[1][1] = 1
+    #         extracted_states[1][-2:] = entity[1:3]
+    #         # extracted_states[1][-2:] /= 27
+    #     elif entity[0].name == 'DOOR':
+    #         extracted_states[2][2] = 1
+    #         extracted_states[2][-2:] = entity[1:3]
+    #         # extracted_states[2][-2:] /= 27
+    #     elif entity[0].name == 'GROUND_ENEMY':
+    #         extracted_states[3][3] = 1
+    #         extracted_states[3][-2:] = entity[1:3]
+    #         # extracted_states[3][-2:] /= 27
+    #     elif entity[0].name == 'KEY2':
+    #         extracted_states[4][1] = 1
+    #         extracted_states[4][-2:] = entity[1:3]
+    #         # extracted_states[3][-2:] /= 27
+    a = sum(extracted_states[:, 1])
+    if sum(extracted_states[:, 1]) == 0:
+        key_picked = True
+    else:
+        key_picked = False
+
+    def simulate_prob(extracted_states, num_of_objs, key_picked):
+        for i, obj in enumerate(extracted_states):
+            obj = add_noise(obj, i, num_of_objs)
+            extracted_states[i] = obj
+        if key_picked:
+            extracted_states[:, 1] = 0
+        return extracted_states
+
+    def add_noise(obj, index_obj, num_of_objs):
+        mean = torch.tensor(0.2)
+        std = torch.tensor(0.05)
+        noise = torch.abs(torch.normal(mean=mean, std=std)).item()
+        rand_noises = torch.randint(1, 5, (num_of_objs - 1,)).tolist()
+        rand_noises = [i * noise / sum(rand_noises) for i in rand_noises]
+        rand_noises.insert(index_obj, 1 - noise)
+
+        for i, noise in enumerate(rand_noises):
+            obj[i] = rand_noises[i]
+        return obj
+
+    extracted_states = simulate_prob(extracted_states, num_of_object, key_picked)
     states = torch.tensor(np.array(extracted_states), dtype=torch.float32, device="cuda:0").unsqueeze(0)
     return states
 
@@ -311,6 +338,7 @@ def plot_weight(weights, image_directory, time_step=0):
     plt.show()
     plt.close()
 
+
 def plot_weights(weights, image_directory, time_step=0):
     weights = torch.softmax(weights, dim=1)
     sns.set()
@@ -334,70 +362,91 @@ def plot_weights(weights, image_directory, time_step=0):
         plt.bar(X, W_, width=width, alpha=1, label='C' + str(i))
         # plt.bar(range(len(W_)), W_, width=0.2, alpha=1, label='C' + str(i))
 
-    plt.xticks(x, x_label,fontproperties="Microsoft YaHei",size = 12)
-    plt.ylabel('Weights',size = 14)
+    plt.xticks(x, x_label, fontproperties="Microsoft YaHei", size=12)
+    plt.ylabel('Weights', size=14)
     plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
     plt.savefig(image_directory + 'W_' + str(time_step) + '.png', bbox_inches='tight')
     plt.show()
     plt.close()
 
-# def reward_shaping(reward, last_extracted_state, action):
-#     """
-#     last_extracted_state:
-#     x:agent,key,door,enemy,x,y
-#     y:agent,key,door,enemy
-#     action: nsfr action
-#             0:jump
-#             1:left_go_get_key
-#             2:right_go_get_key
-#             3:left_go_to_door
-#             4:right_go_to_door
-#             5:stay
-#     """
-#     last_extracted_state = torch.squeeze(last_extracted_state)
-#     p_agent = last_extracted_state[0][-2:]
-#     p_key = last_extracted_state[1][-2:]
-#     p_door = last_extracted_state[2][-2:]
-#     p_enemy = last_extracted_state[3][-2:]
-#     # jump
-#     if action == 0:
-#         # if abs(p_enemy[0] - p_agent[0]) < 2 and abs(p_enemy[1] - p_agent[1] < 0.1):
-#         #     reward += 0.1
-#         # else:
-#         #     reward -= 0.05
-#         reward -= 0.1
-#         return reward
-#     # left_go_get_key
-#     if action == 1:
-#         if p_key[0] - p_agent[0] < 0 and p_key[0] >= 1:
-#             reward += 0.1
-#         else:
-#             reward -= 0.1
-#         return reward
-#     # right_go_get_key
-#     if action == 2:
-#         if p_key[0] - p_agent[0] > 0 and p_key[0] >= 1:
-#             reward += 0.1
-#         else:
-#             reward -= 0.1
-#         return reward
-#     # left_go_to_door
-#     if action == 3:
-#         if p_door[0] - p_agent[0] < 0 and p_key[0] < 1:
-#             reward += 0.1
-#         else:
-#             reward -= 0.1
-#         return reward
-#     # right_go_to_door
-#     if action == 4:
-#         if p_door[0] - p_agent[0] > 0 and p_key[0] < 1:
-#             reward += 0.1
-#         else:
-#             reward -= 0.1
-#         return reward
-#     # stay
-#     if action == 5:
-#         reward -= 0.1
-#         return reward
-#
-#     return reward
+
+attrs = ['type']
+
+
+def valuation_to_attr_string(v, atoms, e, th=0.5):
+    """Generate string explanations of the scene.
+    """
+
+    st = ''
+    for i in range(e):
+        st_i = ''
+        for j, atom in enumerate(atoms):
+            # print(atom, [str(term) for term in atom.terms])
+            if 'obj' + str(i) in [str(term) for term in atom.terms] and atom.pred.name in attrs:
+                if v[j] > th:
+                    prob = np.round(v[j].detach().cpu().numpy(), 2)
+                    st_i += str(prob) + ':' + str(atom) + ','
+        if st_i != '':
+            st_i = st_i[:-1]
+            st += st_i + '\n'
+    return st
+
+
+def valuation_to_rel_string(v, atoms, th=0.5):
+    l = 100
+    st = ''
+    n = 0
+    for j, atom in enumerate(atoms):
+        if v[j] > th and not (atom.pred.name in attrs + ['in', '.']):
+            prob = np.round(v[j].detach().cpu().numpy(), 2)
+            st += str(prob) + ':' + str(atom) + ','
+            n += len(str(prob) + ':' + str(atom) + ',')
+        if n > l:
+            st += '\n'
+            n = 0
+    return st[:-1] + '\n'
+
+
+def valuation_to_string(v, atoms, e, th=0.5):
+    return valuation_to_attr_string(v, atoms, e, th) + valuation_to_rel_string(v, atoms, th)
+
+
+def valuations_to_string(V, atoms, e, th=0.5):
+    """Generate string explanation of the scenes.
+    """
+    st = ''
+    for i in range(V.size(0)):
+        st += 'image ' + str(i) + '\n'
+        # for each data in the batch
+        st += valuation_to_string(V[i], atoms, e, th)
+    return st
+
+
+def generate_captions(V, atoms, e, th):
+    captions = []
+    for v in V:
+        # for each data in the batch
+        captions.append(valuation_to_string(v, atoms, e, th))
+    return captions
+
+
+def save_images_with_captions(imgs, captions, folder, img_id_start, dataset):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    if dataset == 'online-pair':
+        figsize = (15, 15)
+    elif dataset == 'red-triangle':
+        figsize = (10, 8)
+    else:
+        figsize = (12, 6)
+    # imgs should be denormalized.
+    img_id = img_id_start
+    for i, img in enumerate(imgs):
+        plt.figure(figsize=figsize, dpi=80)
+        plt.imshow(img)
+        plt.xlabel(captions[i])
+        plt.tight_layout()
+        plt.savefig(folder + str(img_id) + '.png')
+        img_id += 1
+        plt.close()

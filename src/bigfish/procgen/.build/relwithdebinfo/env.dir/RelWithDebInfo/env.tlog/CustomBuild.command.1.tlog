@@ -1,0 +1,10 @@
+^E:\GITHUB\USE KNOWLEDGE REPRESENTATION AND REASONING FOR THE POLICY\SRC\BIGFISH\PROCGEN\CMAKELISTS.TXT
+setlocal
+C:\Users\tongz\anaconda3\envs\procgen\Library\bin\cmake.exe "-SE:/Github/Use Knowledge Representation and Reasoning for the policy/src/bigfish/procgen" "-BE:/Github/Use Knowledge Representation and Reasoning for the policy/src/bigfish/procgen/.build/relwithdebinfo" --check-stamp-file "E:/Github/Use Knowledge Representation and Reasoning for the policy/src/bigfish/procgen/.build/relwithdebinfo/CMakeFiles/generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

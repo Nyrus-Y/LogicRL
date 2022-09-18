@@ -6,7 +6,6 @@ from imageviewer import ImageViewer
 
 from src.coinjump.coinjump.coinjump.paramLevelGenerator_keys import ParameterizedLevelGenerator_Keys
 from src.coinjump.coinjump.coinjump.coinjump import CoinJump
-
 from src.coinjump.coinjump.coinjump.actions import CoinJumpActions
 
 KEY_SPACE = 32

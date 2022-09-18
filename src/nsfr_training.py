@@ -2,7 +2,7 @@ import numpy as np
 import torch.nn as nn
 import torch
 from src.logic_utils import get_index_by_predname
-from src.util import num_action_select
+from src.util import valuation_to_string
 
 
 class NSFReasoner(nn.Module):
@@ -48,7 +48,9 @@ class NSFReasoner(nn.Module):
         # perform T-step forward-chaining reasoning
         V_T = self.im(V_0)
         actions = self.get_predictions(V_T, prednames=self.prednames)
+        self.print_valuation_batch(V_T)
         # action = torch.argmax(predictions)
+        # text = self.generate_captions(V_T, self.atoms, 4, 0.3)
         return actions
 
     def predict(self, v, predname):
@@ -83,13 +85,13 @@ class NSFReasoner(nn.Module):
         """
         print('====== LEARNED PROGRAM ======')
         C = self.clauses
-        a = self.im.W
+        # a = self.im.W
         Ws_softmaxed = torch.softmax(self.im.W, 1)
 
         for i, W_ in enumerate(Ws_softmaxed):
             max_i = np.argmax(W_.detach().cpu().numpy())
             print('C_' + str(i) + ': ',
-                  C[max_i], W_[max_i].detach().cpu().item())
+                  C[max_i], 'W_' + str(i) + ':', round(W_[max_i].detach().cpu().item(), 3))
 
     def print_valuation_batch(self, valuation, n=40):
         self.print_program()
@@ -98,8 +100,8 @@ class NSFReasoner(nn.Module):
             v = valuation[b].detach().cpu().numpy()
             idxs = np.argsort(-v)
             for i in idxs:
-                if v[i] > 0.1:
-                    print(i, self.atoms[i], ': ', round(v[i], 3))
+                if v[i] >= 0:
+                    print(self.atoms[i], ': ', round(v[i], 3))
 
     def print_explaining(self, predicts):
         clauses = self.clauses
@@ -134,3 +136,10 @@ class NSFReasoner(nn.Module):
     def get_predictions(self, V_T, prednames):
         predicts = self.predict_multi(v=V_T, prednames=prednames)
         return predicts
+
+    def generate_captions(self, V, atoms, e, th):
+        captions = []
+        for v in V:
+            # for each data in the batch
+            captions.append(valuation_to_string(v, atoms, e, th))
+        return captions

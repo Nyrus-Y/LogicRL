@@ -10,7 +10,7 @@ import os
 
 from src.coinjump.coinjump.coinjump.actions import coin_jump_actions_from_unified
 from src.coinjump.coinjump.imageviewer import ImageViewer
-from src.util import extract_for_explaining, num_action_select, show_explaining
+from src.util import extract_for_explaining, num_action_select, show_explaining,generate_captions
 
 from src.coinjump.coinjump.coinjump.paramLevelGenerator_keydoor import ParameterizedLevelGenerator_KeyDoor
 from src.coinjump.coinjump.coinjump.paramLevelGenerator_dodge import ParameterizedLevelGenerator_Dodge
@@ -49,7 +49,7 @@ class NSFR_ActorCritic(nn.Module):
         # TODO
         device = torch.device('cuda:0')
         lang, clauses, bk, atoms = get_lang(
-            lark_path, lang_base_path, 'coinjump', 'coinjump_keys')
+            lark_path, lang_base_path, 'coinjump', 'coinjump')
 
         VM = RLValuationModule(lang=lang, device=device)
         FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
@@ -136,7 +136,7 @@ def run():
 
     seed = random.seed() if args.seed is None else int(args.seed)
     # TODO input parameter to change mode
-    coin_jump = create_coinjump_instance(seed=seed, keys=True)
+    coin_jump = create_coinjump_instance(seed=seed, V1=True)
     viewer = setup_image_viewer(coin_jump)
 
     # frame rate limiting
@@ -159,7 +159,7 @@ def run():
         # TODO change for reset env
         if KEY_r in viewer.pressed_keys:
             # coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
-            coin_jump = create_coinjump_instance(seed=seed, keys=True)
+            coin_jump = create_coinjump_instance(seed=seed, V1=True)
             print("--------------------------     next game    --------------------------")
             # coin_jump = create_coinjump_instance(seed=seed,Dodge_model=True)
         # step game
