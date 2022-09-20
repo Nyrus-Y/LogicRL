@@ -266,7 +266,6 @@ def extract_for_explaining(coin_jump):
     #         extracted_states[4][1] = 1
     #         extracted_states[4][-2:] = entity[1:3]
     #         # extracted_states[3][-2:] /= 27
-    a = sum(extracted_states[:, 1])
     if sum(extracted_states[:, 1]) == 0:
         key_picked = True
     else:
@@ -370,83 +369,3 @@ def plot_weights(weights, image_directory, time_step=0):
     plt.close()
 
 
-attrs = ['type']
-
-
-def valuation_to_attr_string(v, atoms, e, th=0.5):
-    """Generate string explanations of the scene.
-    """
-
-    st = ''
-    for i in range(e):
-        st_i = ''
-        for j, atom in enumerate(atoms):
-            # print(atom, [str(term) for term in atom.terms])
-            if 'obj' + str(i) in [str(term) for term in atom.terms] and atom.pred.name in attrs:
-                if v[j] > th:
-                    prob = np.round(v[j].detach().cpu().numpy(), 2)
-                    st_i += str(prob) + ':' + str(atom) + ','
-        if st_i != '':
-            st_i = st_i[:-1]
-            st += st_i + '\n'
-    return st
-
-
-def valuation_to_rel_string(v, atoms, th=0.5):
-    l = 100
-    st = ''
-    n = 0
-    for j, atom in enumerate(atoms):
-        if v[j] > th and not (atom.pred.name in attrs + ['in', '.']):
-            prob = np.round(v[j].detach().cpu().numpy(), 2)
-            st += str(prob) + ':' + str(atom) + ','
-            n += len(str(prob) + ':' + str(atom) + ',')
-        if n > l:
-            st += '\n'
-            n = 0
-    return st[:-1] + '\n'
-
-
-def valuation_to_string(v, atoms, e, th=0.5):
-    return valuation_to_attr_string(v, atoms, e, th) + valuation_to_rel_string(v, atoms, th)
-
-
-def valuations_to_string(V, atoms, e, th=0.5):
-    """Generate string explanation of the scenes.
-    """
-    st = ''
-    for i in range(V.size(0)):
-        st += 'image ' + str(i) + '\n'
-        # for each data in the batch
-        st += valuation_to_string(V[i], atoms, e, th)
-    return st
-
-
-def generate_captions(V, atoms, e, th):
-    captions = []
-    for v in V:
-        # for each data in the batch
-        captions.append(valuation_to_string(v, atoms, e, th))
-    return captions
-
-
-def save_images_with_captions(imgs, captions, folder, img_id_start, dataset):
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-
-    if dataset == 'online-pair':
-        figsize = (15, 15)
-    elif dataset == 'red-triangle':
-        figsize = (10, 8)
-    else:
-        figsize = (12, 6)
-    # imgs should be denormalized.
-    img_id = img_id_start
-    for i, img in enumerate(imgs):
-        plt.figure(figsize=figsize, dpi=80)
-        plt.imshow(img)
-        plt.xlabel(captions[i])
-        plt.tight_layout()
-        plt.savefig(folder + str(img_id) + '.png')
-        img_id += 1
-        plt.close()

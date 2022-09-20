@@ -13,7 +13,7 @@ MAX_STATE_SIZE = 2 ** 20
 
 ENV_NAMES = [
     "bigfish",
-    "bigfishm",
+    "1",
     "ebigfish",
     "ebigfishs",
     "ebigfishl",
@@ -216,6 +216,7 @@ class BaseProcgenEnv(CEnv):
         # tensorflow may return int64 actions (https://github.com/openai/gym/blob/master/gym/spaces/discrete.py#L13)
         # so always cast actions to int32
         return super().act({"action": ac.astype(np.int32)})
+        # return super().act(ac.astype(np.int32))
 
 
 class ProcgenGym3Env(BaseProcgenEnv):

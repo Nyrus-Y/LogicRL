@@ -200,9 +200,9 @@ def main():
 
     # TODO choose env
     # env_name = "CoinJumpEnv-v0"
-    env_name = "CoinJumpEnvKD-v0"
+    # env_name = "CoinJumpEnvKD-v0"
     # env_name = "CoinJumpEnvDodge-v0"
-    # env_name = "CoinJumpEnv-v1"
+    env_name = "CoinJumpEnv-v1"
 
     # max_ep_len = 1000  # max timesteps in one episode
     max_ep_len = 500  # max timesteps in one episode

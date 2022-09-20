@@ -2,7 +2,6 @@ import numpy as np
 import torch.nn as nn
 import torch
 from src.logic_utils import get_index_by_predname
-from src.util import valuation_to_string
 
 
 class NSFReasoner(nn.Module):
@@ -137,9 +136,3 @@ class NSFReasoner(nn.Module):
         predicts = self.predict_multi(v=V_T, prednames=prednames)
         return predicts
 
-    def generate_captions(self, V, atoms, e, th):
-        captions = []
-        for v in V:
-            # for each data in the batch
-            captions.append(valuation_to_string(v, atoms, e, th))
-        return captions
