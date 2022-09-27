@@ -11,7 +11,7 @@ import gym
 import time
 import numpy as np
 from src.bigfish.utils_procgen import InteractiveEnv
-from src.utils_bf import extract_state
+from src.utils_bf import extract_state, simplify_action
 from procgen import ProcgenGym3Env
 
 from training.mlpController import MLPController
@@ -41,7 +41,7 @@ class ActorCritic(nn.Module):
         super(ActorCritic, self).__init__()
 
         self.rng = random.Random() if rng is None else rng
-        self.BF_NUM_ACTIONS = 9
+        self.BF_NUM_ACTIONS = 5
         self.uniform = Categorical(
             torch.tensor([1.0 / self.BF_NUM_ACTIONS for _ in range(self.BF_NUM_ACTIONS)], device="cuda"))
 
@@ -334,11 +334,16 @@ def main():
 
             # select action with policy
             action = ppo_agent.select_action(state, epsilon=epsilon)
+            action = simplify_action(action)
             # state, reward, done, _ = env.step(action)
             env.act(action)
             reward, obs, done = env.observe()
             state = extract_state(obs['positions'])
             reward = reward[0]
+
+            if action[0] == 4:
+                reward += 0.005
+
             # saving reward and is_terminals
             ppo_agent.buffer.rewards.append(reward)
             ppo_agent.buffer.is_terminals.append(done)

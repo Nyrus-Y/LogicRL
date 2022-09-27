@@ -20,9 +20,9 @@ class BFValuationModule(nn.Module):
         self.lang = lang
         self.device = device
         self.layers, self.vfs = self.init_valuation_functions(
-            device, pretrained)
+            device)
 
-    def init_valuation_functions(self, device, pretrained):
+    def init_valuation_functions(self, device):
         """
             Args:
                 device (device): The device.
@@ -41,41 +41,47 @@ class BFValuationModule(nn.Module):
         vfs['on_top'] = v_on_top
         layers.append(v_on_top)
 
-        v_on_top_left = OnTopLeftValuationFunction()
-        vfs['on_top_left'] = v_on_top_left
-        layers.append(v_on_top_left)
+        # v_on_top_left = OnTopLeftValuationFunction()
+        # vfs['on_top_left'] = v_on_top_left
+        # layers.append(v_on_top_left)
 
         v_on_left = OnLeftValuationFunction()
         vfs['on_left'] = v_on_left
         layers.append(v_on_left)
 
-        v_at_bottom_left = AtBottomLeftValuationFunction()
-        vfs['at_bottom_left'] = v_at_bottom_left
-        layers.append(v_at_bottom_left)
+        # v_at_bottom_left = AtBottomLeftValuationFunction()
+        # vfs['at_bottom_left'] = v_at_bottom_left
+        # layers.append(v_at_bottom_left)
 
         v_at_bottom = AtBottomValuationFunction()
         vfs['at_bottom'] = v_at_bottom
         layers.append(v_at_bottom)
 
-        v_at_bottom_right = AtBottomRightValuationFunction()
-        vfs['at_bottom_right'] = v_at_bottom_right
-        layers.append(v_at_bottom_right)
+        # v_at_bottom_right = AtBottomRightValuationFunction()
+        # vfs['at_bottom_right'] = v_at_bottom_right
+        # layers.append(v_at_bottom_right)
 
         v_on_right = OnRightValuationFunction()
         vfs['on_right'] = v_on_right
         layers.append(v_on_right)
 
-        v_on_top_right = OnTopRightValuationFunction()
-        vfs['on_top_right'] = v_on_top_right
-        layers.append(v_on_top_right)
+        # v_on_top_right = OnTopRightValuationFunction()
+        # vfs['on_top_right'] = v_on_top_right
+        # layers.append(v_on_top_right)
 
         v_closeby = ClosebyValuationFunction(device)
         vfs['closeby'] = v_closeby
         layers.append(v_closeby)
 
+        v_bigger = BiggerValuationFunction()
+        vfs['is_bigger_than'] = v_bigger
+        layers.append(v_bigger)
+
+        v_smaller = SmallerValuationFunction()
+        vfs['is_smaller_than'] = v_smaller
+        layers.append(v_smaller)
         return nn.ModuleList(
-            [v_type, v_on_top, v_on_top_left, v_on_left, v_at_bottom_left, v_at_bottom, v_at_bottom_right, v_on_right,
-             v_on_top_right]), vfs
+            [v_type, v_on_top, v_on_left, v_at_bottom, v_on_right, v_closeby, v_bigger, v_smaller]), vfs
 
     def forward(self, zs, atom):
         """Convert the object-centric representation to a valuation tensor.

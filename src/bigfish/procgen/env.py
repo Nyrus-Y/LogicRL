@@ -189,6 +189,14 @@ class BaseProcgenEnv(CEnv):
             ("RIGHT", "UP")
         ]
 
+        # return [
+        #     ("LEFT",),
+        #     ("DOWN",),
+        #     (),
+        #     ("UP",),
+        #     ("RIGHT",),
+        # ]
+
     def keys_to_act(self, keys_list: Sequence[Sequence[str]]) -> List[Optional[np.ndarray]]:
         """
         Convert list of keys being pressed to actions, used in interactive mode

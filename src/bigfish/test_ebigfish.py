@@ -1,8 +1,11 @@
+import random
+
 import gym3
 
 from utils_procgen import InteractiveEnv
 from procgen import ProcgenGym3Env
 import numpy as np
+from src.utils_bf import extract_reasoning_state
 import sys
 
 INTERACTIVE = False
@@ -24,21 +27,37 @@ env_info = env.get_info()[0]
 total_reward = 0
 fish_dict = {}
 
-while NB_DONE < TO_SUCCEED:
-    if INTERACTIVE:
-        env.iact()  # Slow because renders
-    else:
-        # a = np.array([2])
-        a = np.array([np.random.randint(0, 9)])
-        # print(a)
-        env.act(a)
-        # env.act(a)
+# [
+#     ("LEFT",),
+#     ("DOWN",),
+#     (),
+#     ("UP",),
+#     ("RIGHT",),
+# ]
+action_space = [1, 3, 4, 5, 7]
 
+while NB_DONE < TO_SUCCEED:
+    # if INTERACTIVE:
+    #     env.iact()  # Slow because renders
+    # else:
+    #     # a = np.array([2])
+    #     a = np.array([random.choice(action_space)])
+    #     # a = np.array([np.random.randint(0, 9)])
+    #     # print(a)
+    #
+    #     env.act(a)
+    a = np.array([random.choice(action_space)])
+    env.act(a)
     rew, obs, done = env.observe()
 
+    extracted_reasoning_state = extract_reasoning_state(obs["positions"])
+    if a[0] == 4:
+        rew += 0.005
+    print(a)
     print(f"reward : {rew}")
-    if done:
-        break
+
+    # if done:
+    #     break
     # print(f"observation : {obs['positions']}")
     # total_reward += rew
     all_objects = env.get_info()[0]

@@ -8,7 +8,7 @@ import os
 import gym3
 
 from procgen import ProcgenGym3Env
-from src.utils_bf import extract_state
+from src.utils_bf import extract_state,simplify_action
 from ppo_bigfish import ActorCritic
 
 
@@ -61,10 +61,16 @@ def run():
     while True:
 
         prediction = model(torch.tensor(state, device='cuda:0'))
-        env.act(torch.argmax(prediction).cpu().numpy().reshape(-1))
+        action = torch.argmax(prediction).cpu().numpy().reshape(-1)
+        action = simplify_action(action)
+        # print(action)
+        env.act(action)
         rew, obs, done = env.observe()
-        ep_reward += rew
-        print(ep_reward)
+        print(action)
+        # if action[0] == 4:
+        #     rew += 0.001
+        # ep_reward += rew
+        # print(rew)
         state = extract_state(obs['positions'])
         if done:
             ep_reward = 0

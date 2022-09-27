@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
+from src import utils_bf
 from src.neural_utils import MLP, LogisticRegression
-from src.utils_bf import fuzzy_position
 
 
 ################################
@@ -12,7 +12,7 @@ from src.utils_bf import fuzzy_position
 class TypeValuationFunction(nn.Module):
     """The function v_object-type
     type(obj1, agent):0.98
-    type(obj2, enemy）：0.87
+    type(obj2, fish）：0.87
     """
 
     def __init__(self):
@@ -22,13 +22,13 @@ class TypeValuationFunction(nn.Module):
         """
         Args:
             z (tensor): 2-d tensor B * d of object-centric representation.
-                [sfish, agent, bigfish, x, y]
+                [agent, fish, radius, x, y]
             a (tensor): The one-hot tensor that is expanded to the batch size.
 
         Returns:
             A batch of probabilities.
         """
-        z_type = z[:, 0:3]  # [1.0, 0, 0] * [1.0, 0, 0] .sum = 0.0  type(obj1, sfish): 1.0
+        z_type = z[:, 0:2]  # [1.0, 0] * [1.0, 0] .sum = 0.0  type(obj1, agent): 1.0
         prob = (a * z_type).sum(dim=1)
 
         return prob
@@ -53,31 +53,31 @@ class OnTopValuationFunction(nn.Module):
         c_1 = z_1[:, -2:]
         c_2 = z_2[:, -2:]
 
-        result = fuzzy_position(c_1, c_2, keyword='top')
+        result = utils_bf.fuzzy_position(c_2, c_1, keyword='top')
         return result
 
 
-class OnTopLeftValuationFunction(nn.Module):
-    """The function v_closeby.
-    """
-
-    def __init__(self):
-        super(OnTopLeftValuationFunction, self).__init__()
-
-    def forward(self, z_1, z_2):
-        """
-        Args:
-            z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-             [sfish, agent, bigfish, x, y]
-
-        Returns:
-            A batch of probabilities.
-        """
-        c_1 = z_1[:, -2:]
-        c_2 = z_2[:, -2:]
-
-        result = fuzzy_position(c_1, c_2, keyword='top_left')
-        return result
+# class OnTopLeftValuationFunction(nn.Module):
+#     """The function v_closeby.
+#     """
+#
+#     def __init__(self):
+#         super(OnTopLeftValuationFunction, self).__init__()
+#
+#     def forward(self, z_1, z_2):
+#         """
+#         Args:
+#             z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
+#              [sfish, agent, bigfish, x, y]
+#
+#         Returns:
+#             A batch of probabilities.
+#         """
+#         c_1 = z_1[:, -2:]
+#         c_2 = z_2[:, -2:]
+#
+#         result = fuzzy_position(c_1, c_2, keyword='top_left')
+#         return result
 
 
 class OnLeftValuationFunction(nn.Module):
@@ -99,31 +99,32 @@ class OnLeftValuationFunction(nn.Module):
         c_1 = z_1[:, -2:]
         c_2 = z_2[:, -2:]
 
-        result = fuzzy_position(c_1, c_2, keyword='left')
+        result = utils_bf.fuzzy_position(c_2, c_1, keyword='left')
         return result
 
 
-class AtBottomLeftValuationFunction(nn.Module):
-    """The function v_closeby.
-    """
-
-    def __init__(self):
-        super(AtBottomLeftValuationFunction, self).__init__()
-
-    def forward(self, z_1, z_2):
-        """
-        Args:
-            z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-             [sfish, agent, bigfish, x, y]
-
-        Returns:
-            A batch of probabilities.
-        """
-        c_1 = z_1[:, -2:]
-        c_2 = z_2[:, -2:]
-
-        result = fuzzy_position(c_1, c_2, keyword='bottom_left')
-        return result
+#
+# class AtBottomLeftValuationFunction(nn.Module):
+#     """The function v_closeby.
+#     """
+#
+#     def __init__(self):
+#         super(AtBottomLeftValuationFunction, self).__init__()
+#
+#     def forward(self, z_1, z_2):
+#         """
+#         Args:
+#             z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
+#              [sfish, agent, bigfish, x, y]
+#
+#         Returns:
+#             A batch of probabilities.
+#         """
+#         c_1 = z_1[:, -2:]
+#         c_2 = z_2[:, -2:]
+#
+#         result = fuzzy_position(c_1, c_2, keyword='bottom_left')
+#         return result
 
 
 class AtBottomValuationFunction(nn.Module):
@@ -145,31 +146,32 @@ class AtBottomValuationFunction(nn.Module):
         c_1 = z_1[:, -2:]
         c_2 = z_2[:, -2:]
 
-        result = fuzzy_position(c_1, c_2, keyword='bottom')
+        result = utils_bf.fuzzy_position(c_2, c_1, keyword='bottom')
         return result
 
 
-class AtBottomRightValuationFunction(nn.Module):
-    """The function v_closeby.
-    """
-
-    def __init__(self):
-        super(AtBottomRightValuationFunction, self).__init__()
-
-    def forward(self, z_1, z_2):
-        """
-        Args:
-            z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-             [sfish, agent, bigfish, x, y]
-
-        Returns:
-            A batch of probabilities.
-        """
-        c_1 = z_1[:, -2:]
-        c_2 = z_2[:, -2:]
-
-        result = fuzzy_position(c_1, c_2, keyword='bottom_right')
-        return result
+#
+# class AtBottomRightValuationFunction(nn.Module):
+#     """The function v_closeby.
+#     """
+#
+#     def __init__(self):
+#         super(AtBottomRightValuationFunction, self).__init__()
+#
+#     def forward(self, z_1, z_2):
+#         """
+#         Args:
+#             z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
+#              [sfish, agent, bigfish, x, y]
+#
+#         Returns:
+#             A batch of probabilities.
+#         """
+#         c_1 = z_1[:, -2:]
+#         c_2 = z_2[:, -2:]
+#
+#         result = fuzzy_position(c_1, c_2, keyword='bottom_right')
+#         return result
 
 
 class OnRightValuationFunction(nn.Module):
@@ -191,35 +193,62 @@ class OnRightValuationFunction(nn.Module):
         c_1 = z_1[:, -2:]
         c_2 = z_2[:, -2:]
 
-        result = fuzzy_position(c_1, c_2, keyword='right')
+        result = utils_bf.fuzzy_position(c_2, c_1, keyword='right')
         return result
 
 
-class OnTopRightValuationFunction(nn.Module):
-    """The function v_closeby.
-    """
-
-    def __init__(self):
-        super(OnTopRightValuationFunction, self).__init__()
-
-    def forward(self, z_1, z_2):
-        """
-        Args:
-            z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-             [sfish, agent, bigfish, x, y]
-
-        Returns:
-            A batch of probabilities.
-        """
-        c_1 = z_1[:, -2:]
-        c_2 = z_2[:, -2:]
-
-        result = fuzzy_position(c_1, c_2, keyword='top_right')
-        return result
+#
+# class OnTopRightValuationFunction(nn.Module):
+#     """The function v_closeby.
+#     """
+#
+#     def __init__(self):
+#         super(OnTopRightValuationFunction, self).__init__()
+#
+#     def forward(self, z_1, z_2):
+#         """
+#         Args:
+#             z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
+#              [sfish, agent, bigfish, x, y]
+#
+#         Returns:
+#             A batch of probabilities.
+#         """
+#         c_1 = z_1[:, -2:]
+#         c_2 = z_2[:, -2:]
+#
+#         result = fuzzy_position(c_1, c_2, keyword='top_right')
+#         return result
 
 class ClosebyValuationFunction(nn.Module):
     """The function v_closeby.
     """
+
+    # def __init__(self, device):
+    #     super(ClosebyValuationFunction, self).__init__()
+    #     self.device = device
+    #     self.logi = LogisticRegression(input_dim=1)
+    #     self.logi.to(device)
+    #
+    # def forward(self, z_1, z_2):
+    #     """
+    #     Args:
+    #         z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
+    #             [agent, fish, radius, x, y]
+    #         z_2 (tensor): 2-d tensor (B * D), the object-centric representation.
+    #             [agent, fish, radius, x, y]
+    #     Returns:
+    #         A batch of probabilities.
+    #     """
+
+        # c_1 = z_1[:, -2:]
+        # c_2 = z_2[:, -2:]
+        # r_1 = z_1[:, 2] / 2
+        # r_2 = z_2[:, 2] / 2
+        # dist = torch.norm(c_1 - c_2, dim=1).unsqueeze(-1)
+        # #dist = dist - r_1 - r_2
+        # probs = self.logi(dist).squeeze()
+        # return probs
 
     def __init__(self, device):
         super(ClosebyValuationFunction, self).__init__()
@@ -229,137 +258,94 @@ class ClosebyValuationFunction(nn.Module):
         """
         Args:
             z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-             [agent, key, door, enemy, x, y]
+             [agent, fish, radius, x, y]
 
         Returns:
             A batch of probabilities.
         """
-        c_1 = z_1[:, 4:]
-        c_2 = z_2[:, 4:]
+        c_1 = z_1[:, -2:]
+        c_2 = z_2[:, -2:]
 
-        # if abs(c_1[:, 1] - c_2[:, 1]) <=0.1:
-        #     return torch.tensor(0)
-        dis_x = abs(c_1[:, 0] - c_2[:, 0])
-        # if len(dis_x) == 1:
-        #     dis_x = torch.unsqueeze(dis_x, 0)
-        dis_y = abs(c_1[:, 1] - c_2[:, 1])
-        # if len(dis_y) == 1:
-        #     dis_y = torch.unsqueeze(dis_y, 0)
+        r_1 = z_1[:, 2] / 2
+        r_2 = z_2[:, 2] / 2
 
-        result = []
-        for x, y in zip(dis_x, dis_y):
-            if x < 2 and y <= 0.1:
-                result.append(0.99)
-            else:
-                result.append(0.01)
-        # result = torch.where((dis_x < 2 and dis_y <= 0.1), 0.9, 0.01)
-        return torch.tensor(result)
+        dis_x = torch.pow(c_2[:, 0] - c_1[:, 0], 2)
+        dis_y = torch.pow(c_2[:, 1] - c_1[:, 1], 2)
+        dis = torch.sqrt(dis_x[:] + dis_y[:])
+        dis = abs(dis[:] - r_1[:] - r_2[:])
+
+        probs = torch.where(dis <= 3, 0.99, 0)
+        return probs
 
 
-class OnRightValuationFunction(nn.Module):
+class BiggerValuationFunction(nn.Module):
     """The function v_closeby.
     """
 
     def __init__(self):
-        super(OnRightValuationFunction, self).__init__()
-
-    def forward(self, z_1, z_2):
-        """
-        Args: x
-            z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-             [agent, key, door, enemy, x, y]
-
-        Returns:
-            A batch of probabilities.
-        """
-        c_1 = z_1[:, 4]
-        c_2 = z_2[:, 4]
-        diff = c_2 - c_1
-        result = torch.where(diff < 0, 0.99, 0.01)
-        return result
-        # if c_2 - c_1 < 0:
-        #     on_right = torch.tensor(0.9)
-        # else:
-        #     on_right = torch.tensor(0.01)
-        #
-        # return on_right
-
-
-class HaveKeyValuationFunction(nn.Module):
-    """The function v_closeby.
-    """
-
-    def __init__(self):
-        super(HaveKeyValuationFunction, self).__init__()
-
-    def forward(self, z):
-        """
-        Args:
-            z (tensor): 2-d tensor B * d of object-centric representation.
-                [agent, key, door, enemy, x, y]
-
-        Returns:
-            A batch of probabilities.
-        """
-        has_key = []
-        for i, y in enumerate(z):
-            a = abs(1 - torch.sum(y[:, 1])) * 0.99
-            has_key.append(a)
-        # has_key = abs(1 - torch.sum(z[:, :, 1]))
-        result = torch.tensor(has_key)
-
-        return result
-
-
-class NotHaveKeyValuationFunction(nn.Module):
-    """The function v_closeby.
-    """
-
-    def __init__(self):
-        super(NotHaveKeyValuationFunction, self).__init__()
-
-    def forward(self, z):
-        """
-        Args:
-            z (tensor): 2-d tensor B * d of object-centric representation.
-                [agent, key, door, enemy, x, y]
-
-        Returns:
-            A batch of probabilities.
-        """
-        not_has_key = []
-        for i, y in enumerate(z):
-            a = torch.sum(y[:, 1]) * 0.99
-            not_has_key.append(a)
-        result = torch.tensor(not_has_key)
-        return result
-
-
-class SafeValuationFunction(nn.Module):
-    """The function v_closeby.
-    """
-
-    def __init__(self):
-        super(SafeValuationFunction, self).__init__()
+        super(BiggerValuationFunction, self).__init__()
 
     def forward(self, z_1, z_2):
         """
         Args:
-            z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-             [agent, key, door, enemy, x, y]
+            z (tensor): 2-d tensor B * d of object-centric representation.
+                [agent,fish, radius, x, y]
 
         Returns:
             A batch of probabilities.
         """
-        c_1 = z_1[:, 4:]
-        c_2 = z_2[:, 4:]
+        r_1 = z_1[:, 2]
+        r_2 = z_2[:, 2]
+        diff = r_2[:] - r_1[:]
+        bigger = torch.where(diff < 0, 0.99, 0)
 
-        # if abs(c_1[:, 1] - c_2[:, 1]) <=0.1:
-        #     return torch.tensor(0)
-        dis_x = abs(c_1[:, 0] - c_2[:, 0])
-        result = torch.where(dis_x > 2, 0.99, 0.01)
-        return result
-        # if abs(c_1[:, 0] - c_2[:, 0]) > 2:
-        #     return torch.tensor(0.9)
-        # else:
-        #     return torch.tensor(0.01)
+        return bigger
+
+
+class SmallerValuationFunction(nn.Module):
+    """The function v_closeby.
+    """
+
+    def __init__(self):
+        super(SmallerValuationFunction, self).__init__()
+
+    def forward(self, z_1, z_2):
+        """
+        Args:
+            z (tensor): 2-d tensor B * d of object-centric representation.
+                [agent,fish, radius, x, y]
+
+        Returns:
+            A batch of probabilities.
+        """
+        r_1 = z_1[:, 2]
+        r_2 = z_2[:, 2]
+        diff = r_2[:] - r_1[:]
+        bigger = torch.where(diff >= 0, 0.99, 0)
+
+        return bigger
+
+# class NotExistBValuationFunction(nn.Module):
+#     """The function v_closeby.
+#     """
+#
+#     def __init__(self):
+#         super(NotExistBValuationFunction, self).__init__()
+#
+#     def forward(self, z):
+#         """
+#         Args:
+#             z (tensor): 2-d tensor B * d of object-centric representation.
+#                 [sfish, agent, bigfish, x, y]
+#
+#         Returns:
+#             A batch of probabilities.
+#         """
+#         has_key = []
+#         for i, y in enumerate(z):
+#             a = abs(1 - torch.sum(y[:, 1])) * 0.99
+#             has_key.append(a)
+#         # has_key = abs(1 - torch.sum(z[:, :, 1]))
+#         result = torch.tensor(has_key)
+#
+#         return result

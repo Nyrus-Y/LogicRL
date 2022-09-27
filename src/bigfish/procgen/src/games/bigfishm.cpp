@@ -7,14 +7,14 @@
 const std::string NAME = "bigfishm";
 
 const int COMPLETION_BONUS = 100.0f;
-const int POSITIVE_REWARD = 10.0f;
-const float SURVIVAL_REWARD_PER_STEP = -0.1; //TO DO: Come up with a reward system
-const float EATEN_PENALTY = -100;
+const float POSITIVE_REWARD = 1.0;
+const float SURVIVAL_REWARD_PER_STEP = 0.0; //TO DO: Come up with a reward system
+const float EATEN_PENALTY = -1;
 
 const int FISH = 2;
 
 const float FISH_MIN_R = .25;
-const float FISH_MAX_R = 2;
+const float FISH_MAX_R = 3;
 
 const int FISH_QUOTA = 30;
 
@@ -33,7 +33,7 @@ class BigFishM : public BasicAbstractGame {
         timeout = 500;
 
         main_width = 20;
-        main_height = 3;
+        main_height = 10;
     }
 
     void load_background_images() override {
@@ -127,18 +127,18 @@ class BigFishM : public BasicAbstractGame {
         if (small_fish_count < 1) spawn_small_fish();
         if (large_fish_count < 1) spawn_large_fish();
         
-        data[3] = agent->x;
-        data[4] = agent->y;
-        data[5] = agent->rx;
+        data[0] = agent->x;
+        data[1] = agent->y;
+        data[2] = agent->rx;
 
         int32_t fish_count = (int)entities.size() - 1;
         *(int32_t *)(info_bufs[info_name_to_offset.at("fish_count")]) = fish_count;
         int32_t fish_alive = 0;
         
         // std::cout << "Smol" << small_fish_count << std::endl; 
-        data[0] = small_positions["x"];
-        data[1] = small_positions["y"];
-        data[2] = small_positions["rx"];
+        data[3] = small_positions["x"];
+        data[4] = small_positions["y"];
+        data[5] = small_positions["rx"];
 
         // std::cout << "bij" << small_fish_count+large_fish_count << std::endl; 
         data[6] = large_positions["x"];
@@ -165,7 +165,7 @@ class BigFishM : public BasicAbstractGame {
     
     void spawn_large_fish(){
         // float ent_r = (FISH_MAX_R - FISH_MIN_R) * pow(rand_gen.rand01(), 1.4) + FISH_MIN_R;       
-        float ent_r = agent->rx + r_inc;       
+        float ent_r = agent->rx + 20 * r_inc;
         // ent_r = std::max(ent_r, agent->rx + r_inc);
 
         // float ent_y = rand_gen.rand01() * (main_height - 2 * ent_r);
@@ -185,7 +185,7 @@ class BigFishM : public BasicAbstractGame {
     void spawn_small_fish(){
         float ent_r = (FISH_MAX_R - FISH_MIN_R) * pow(rand_gen.rand01(), 1.4) + FISH_MIN_R;
         // float agent_size = agent->rx;
-        ent_r = std::min(ent_r, agent->rx - r_inc);
+        ent_r = std::min(ent_r, agent->rx - 3 * r_inc);
         float ent_y = rand_gen.rand01() * (main_height - 2 * ent_r);
         // ent_y = std::clamp(ent_y, agent->y - main_height/8, agent->y + main_height/8);
         float moves_right = rand_gen.rand01() < .5;

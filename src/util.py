@@ -4,11 +4,10 @@ import os
 import seaborn as sns
 import matplotlib.pyplot as plt
 import random
-from src.logic_utils import get_lang
 
 from src.facts_converter import FactsConverter
 from src.nsfr import NSFReasoner
-from src.logic_utils import build_infer_module
+from src.logic_utils import build_infer_module,get_lang
 from src.valuation import RLValuationModule, RLValuationModule_D, RLValuationModule_KD
 from src.coinjump.coinjump.coinjump.actions import coin_jump_actions_from_unified, CoinJumpActions
 
