@@ -11,6 +11,7 @@ INTERACTIVE = False
 
 env_name = "bigfishm"
 
+
 env = ProcgenGym3Env(num=1, env_name=env_name, render_mode="rgb_array")
 env = gym3.ViewerWrapper(env, info_key="rgb")
 

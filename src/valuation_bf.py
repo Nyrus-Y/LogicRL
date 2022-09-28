@@ -41,6 +41,14 @@ class BFValuationModule(nn.Module):
         vfs['on_top'] = v_on_top
         layers.append(v_on_top)
 
+        v_high_level = HighLevelValuationFunction()
+        vfs['high_level'] = v_high_level
+        layers.append(v_high_level)
+
+        v_low_level = LowLevelValuationFunction()
+        vfs['low_level'] = v_low_level
+        layers.append(v_low_level)
+
         # v_on_top_left = OnTopLeftValuationFunction()
         # vfs['on_top_left'] = v_on_top_left
         # layers.append(v_on_top_left)
@@ -81,7 +89,7 @@ class BFValuationModule(nn.Module):
         vfs['is_smaller_than'] = v_smaller
         layers.append(v_smaller)
         return nn.ModuleList(
-            [v_type, v_on_top, v_on_left, v_at_bottom, v_on_right, v_closeby, v_bigger, v_smaller]), vfs
+            [v_type, v_on_top, v_on_left, v_at_bottom, v_on_right, v_closeby, v_bigger, v_smaller,v_high_level,v_low_level]), vfs
 
     def forward(self, zs, atom):
         """Convert the object-centric representation to a valuation tensor.

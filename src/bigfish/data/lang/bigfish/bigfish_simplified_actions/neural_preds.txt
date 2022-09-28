@@ -6,3 +6,5 @@ on_right:2:object,object
 closeby:2:object,object
 is_bigger_than:2:object,object
 is_smaller_than:2:object,object
+high_level:2:object,object
+low_level:2:object,object
