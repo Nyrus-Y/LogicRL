@@ -7,7 +7,7 @@
 const std::string NAME = "bigfishm";
 
 const int COMPLETION_BONUS = 100.0f;
-const float POSITIVE_REWARD = 1.0;
+const float POSITIVE_REWARD = 0.1;
 const float SURVIVAL_REWARD_PER_STEP = 0.0; //TO DO: Come up with a reward system
 const float EATEN_PENALTY = -1;
 
@@ -165,7 +165,7 @@ class BigFishM : public BasicAbstractGame {
     
     void spawn_large_fish(){
         // float ent_r = (FISH_MAX_R - FISH_MIN_R) * pow(rand_gen.rand01(), 1.4) + FISH_MIN_R;       
-        float ent_r = agent->rx + 20 * r_inc;
+        float ent_r = agent->rx + 15 * r_inc;
         // ent_r = std::max(ent_r, agent->rx + r_inc);
 
         // float ent_y = rand_gen.rand01() * (main_height - 2 * ent_r);

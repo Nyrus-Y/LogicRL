@@ -3,19 +3,24 @@ import numpy as np
 import torch
 import math
 import os
-
+import seaborn as sns
+import matplotlib.pyplot as plt
 from src.facts_converter import FactsConverter
 from src.nsfr_bf import NSFReasoner
 from src.logic_utils import build_infer_module, get_lang
-from src.valuation_bf import BFValuationModule
+from src import valuation_bf
 
 device = torch.device('cuda:0')
 
 
-def extract_state(obs):
+def extract_state(obs, train=False):
     state = obs.reshape(-1)
     # return torch.tensor(state, device='cuda:0')
-    return state.tolist()
+    state = state.tolist()
+    if train:
+        return torch.tensor(state)
+    else:
+        return state
 
 
 def fuzzy_position(pos1, pos2, keyword):
@@ -98,7 +103,7 @@ def extract_reasoning_state(states):
             extracted_state[i, 3] = states[i, 0]  # X
             extracted_state[i, 4] = states[i, 1]  # Y
         else:
-            extracted_state[i, 1] = 1  # agent
+            extracted_state[i, 1] = 1  # fish
             extracted_state[i, 2] = states[i, 2]  # radius
             extracted_state[i, 3] = states[i, 0]  # X
             extracted_state[i, 4] = states[i, 1]  # Y
@@ -108,8 +113,7 @@ def extract_reasoning_state(states):
 
 
 def get_nsfr_model(lang, clauses, atoms, bk, device):
-    VM = BFValuationModule(
-        lang=lang, device=device)
+    VM = valuation_bf.BFValuationModule(lang=lang, device=device)
     FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
     IM = build_infer_module(clauses, atoms, lang,
                             m=len(clauses), infer_step=2, train=False, device=device)
@@ -118,7 +122,7 @@ def get_nsfr_model(lang, clauses, atoms, bk, device):
     return NSFR
 
 
-def explaining_nsfr(extracted_states, env, prednames):
+def nsfr(env):
     current_path = os.getcwd()
     lark_path = os.path.join(current_path, 'lark/exp.lark')
     lang_base_path = os.path.join(current_path, 'data/lang/')
@@ -127,13 +131,22 @@ def explaining_nsfr(extracted_states, env, prednames):
     lang, clauses, bk, atoms = get_lang(
         lark_path, lang_base_path, 'bigfish', env)
     NSFR = get_nsfr_model(lang, clauses, atoms, bk, device)
+    return NSFR
 
+
+def explain(NSFR, extracted_states):
     V_T = NSFR(extracted_states)
+    prednames = NSFR.prednames
     predicts = NSFR.predict_multi(v=V_T, prednames=prednames)
-
     explaining = NSFR.print_explaining(predicts)
 
     return explaining
+
+
+def print_explaining(actions):
+    action = torch.argmax(actions)
+    prednames = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat', 'up_to_dodge', 'down_to_dodge']
+    return print(prednames[action])
 
 
 def action_select(explaining):
@@ -159,3 +172,70 @@ def action_select(explaining):
     elif 'down' in full_name:
         action = np.array([3])
     return action
+
+
+def num_action_select(action, trained=False):
+    """
+    prednames:  [
+                'up_to_eat',
+                'left_to_eat',
+                'down_to_eat',
+                'right_to_eat',
+                'up_to_dodge',
+                'down_to_dodge'
+                ]
+
+    env_actions
+                [
+                    ("LEFT",),
+                    ("DOWN",),
+                    (),
+                    ("UP",),
+                    ("RIGHT",),
+                ]
+    action_space = [1, 3, 4, 5, 7]
+    """
+    if trained == True:
+        action = torch.argmax(action)
+
+    if action in [0, 4]:
+        return np.array([5])
+    elif action in [1]:
+        return np.array([1])
+    elif action in [2, 5]:
+        return np.array([3])
+    elif action in [3]:
+        return np.array([7])
+    else:
+        return np.array([4])
+
+
+def plot_weights(weights, image_directory, time_step=0):
+    weights = torch.softmax(weights, dim=1)
+    sns.set()
+    sns.set_style('white')
+    plt.figure(figsize=(15, 5))
+    plt.ylim([0, 1])
+    x_label = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat',
+               'up_to_dodge', 'down_to_dodge']
+    # x_label = ['Jump', 'Left_k', 'Right_k', 'Left_d',
+    #            'Right_d', 'Stay', 'Jump_d', 'Left_n', 'Right_e',
+    #            'Stay_n']
+    x = np.arange(len(x_label)) / 2
+    # width = 0.15
+    # X = x - width * 2
+
+    for i, W in enumerate(weights):
+        W_ = W.detach().cpu().numpy()
+
+        # X = X + width
+        # plt.bar(X, W_, width=width, alpha=1, label='C' + str(i))
+        plt.bar(x, W_, width=0.2, alpha=1, label='C' + str(i))
+        # plt.bar(range(len(W_)), W_, width=0.2, alpha=1, label='C' + str(i))
+
+    plt.xticks(x, x_label, fontproperties="Microsoft YaHei", size=12)
+    plt.ylabel('Weights', size=14)
+    plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
+    plt.savefig(image_directory + 'W_' + str(time_step) + '.png', bbox_inches='tight')
+    plt.show()
+    plt.close()

@@ -7,14 +7,20 @@ from torch.distributions import Categorical
 import os
 
 import gym
-
 import time
 import numpy as np
-from src.bigfish.utils_procgen import InteractiveEnv
-from src.utils_bf import extract_state, simplify_action
+import src.coinjump.coinjump_learn.env
+
+from src import valuation_bf
+from src.facts_converter import FactsConverter
+from src.logic_utils import build_infer_module, get_lang
+from src.nsfr_bf import NSFReasoner
+from src.bigfish.training.mlpCriticController import MLPController
+
+from src.utils_bf import extract_reasoning_state, num_action_select, plot_weights
 from procgen import ProcgenGym3Env
 
-from training.mlpController import MLPController
+# from src.util import plot_weights
 
 device = torch.device('cuda:0')
 
@@ -27,6 +33,7 @@ class RolloutBuffer:
         self.logprobs = []
         self.rewards = []
         self.is_terminals = []
+        self.predictions = []
 
     def clear(self):
         del self.actions[:]
@@ -34,24 +41,26 @@ class RolloutBuffer:
         del self.logprobs[:]
         del self.rewards[:]
         del self.is_terminals[:]
+        del self.predictions[:]
 
 
-class ActorCritic(nn.Module):
+class NSFR_ActorCritic(nn.Module):
     def __init__(self, rng=None):
-        super(ActorCritic, self).__init__()
+        super(NSFR_ActorCritic, self).__init__()
 
         self.rng = random.Random() if rng is None else rng
-        self.BF_NUM_ACTIONS = 5
+        self.num_actions = 6
         self.uniform = Categorical(
-            torch.tensor([1.0 / self.BF_NUM_ACTIONS for _ in range(self.BF_NUM_ACTIONS)], device="cuda"))
+            torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
 
-        self.actor = MLPController(has_softmax=True)
-        self.critic = MLPController(has_softmax=False, out_size=1, special=True)
+        self.actor = self.get_nsfr_model(train=True)
+        self.critic = MLPController(out_size=1)
 
     def forward(self):
         raise NotImplementedError
 
     def act(self, state, epsilon=0.0):
+
         action_probs = self.actor(state)
 
         # e-greedy
@@ -75,6 +84,25 @@ class ActorCritic(nn.Module):
 
         return action_logprobs, state_values, dist_entropy
 
+    def get_nsfr_model(self, train=False):
+        # current_path = os.getcwd()
+        # lark_path = os.path.join(current_path, '..', 'lark/exp.lark')
+        # lang_base_path = os.path.join(current_path, '..', 'data/lang/')
+
+        lark_path = 'lark/exp.lark'
+        lang_base_path = 'data/lang/'
+        device = torch.device('cuda:0')
+        lang, clauses, bk, atoms = get_lang(
+            lark_path, lang_base_path, 'bigfish', 'bigfish_simplified_actions')
+
+        VM = valuation_bf.BFValuationModule(lang=lang, device=device)
+        FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
+        m = len(clauses)
+        IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=train, device=device)
+        # Neuro-Symbolic Forward Reasoner
+        NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses, train=train)
+        return NSFR
+
 
 class PPO:
     def __init__(self, lr_actor, lr_critic, optimizer, gamma, K_epochs, eps_clip):
@@ -84,14 +112,13 @@ class PPO:
         self.K_epochs = K_epochs
 
         self.buffer = RolloutBuffer()
-
-        self.policy = ActorCritic().to(device)
+        self.policy = NSFR_ActorCritic().to(device)
         self.optimizer = optimizer([
-            {'params': self.policy.actor.parameters(), 'lr': lr_actor},
+            {'params': self.policy.actor.get_params(), 'lr': lr_actor},
             {'params': self.policy.critic.parameters(), 'lr': lr_critic}
         ])
 
-        self.policy_old = ActorCritic().to(device)
+        self.policy_old = NSFR_ActorCritic().to(device)
         self.policy_old.load_state_dict(self.policy.state_dict())
 
         self.MseLoss = nn.MSELoss()
@@ -99,16 +126,16 @@ class PPO:
     def select_action(self, state, epsilon=0.0):
         # select random action with epsilon probability and policy probiability with 1-epsilon
         with torch.no_grad():
-            state = torch.FloatTensor(state).to(device)
+            # state = torch.FloatTensor(state).to(device)
             action, action_logprob = self.policy_old.act(state, epsilon=epsilon)
-
+        # state = extract_state(state, train=True)
         self.buffer.states.append(state)
         action = torch.squeeze(action)
         self.buffer.actions.append(action)
         action_logprob = torch.squeeze(action_logprob)
         self.buffer.logprobs.append(action_logprob)
 
-        return np.array([action.item()])
+        return action.item()
 
     def update(self):
         # Monte Carlo estimate of returns
@@ -161,14 +188,21 @@ class PPO:
         self.buffer.clear()
 
     def save(self, checkpoint_path):
-        # torch.save(self.policy_old.state_dict(), checkpoint_path)
-        torch.save(self.policy_old, checkpoint_path)
+        torch.save(self.policy_old.state_dict(), checkpoint_path)
+        # torch.save(self.policy_old, checkpoint_path)
 
     def load(self, checkpoint_path):
-        # self.policy_old.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
-        # self.policy.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
-        self.policy_old = torch.load(checkpoint_path)
-        self.policy = torch.load(checkpoint_path)
+        self.policy_old.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
+        self.policy.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
+        # self.policy_old = torch.load(checkpoint_path)
+        # self.policy = torch.load(checkpoint_path)
+
+    def get_predictions(self, state):
+        self.prediction = state
+        return self.prediction
+
+    def get_weights(self):
+        return self.policy.actor.get_params()
 
 
 # ===== ACTUAL TRAINING HERE =======
@@ -186,15 +220,17 @@ def main():
         random.seed(random_seed)
 
     env_name = "bigfishm"
+
     # max_ep_len = 1000  # max timesteps in one episode
     max_ep_len = 500  # max timesteps in one episode
     # max_training_timesteps = int(1e5)  # break training loop if timeteps > max_training_timesteps
     max_training_timesteps = 100000000  # break training loop if timeteps > max_training_timesteps
 
-    print_freq = max_ep_len * 10  # print avg reward in the interval (in num timesteps)
+    print_freq = max_ep_len * 5  # print avg reward in the interval (in num timesteps)
     log_freq = max_ep_len * 5  # log avg reward in the interval (in num timesteps)
-    # save_model_freq = int(2e0000 4)  # save model frequency (in num timesteps)
-    save_model_freq = 500000  # save model frequency (in num timesteps)
+    # save_model_freq = int(2e4)  # save model frequency (in num timesteps)
+    # save_model_freq = 500000  # save model frequency (in num timesteps)
+    save_model_freq = 25000  # save model frequency (in num timesteps)
 
     #####################################################
 
@@ -203,10 +239,11 @@ def main():
     ################ PPO hyperparameters ################
 
     # update_timestep = max_ep_len * 4  # update policy every n episodes
-    # update_timestep = max_ep_len * 10  # update policy every n episodes
-    update_timestep = max_ep_len * 5  # debug update policy every n episodes
+    update_timestep = max_ep_len * 10  # update policy every n episodes
+    # update_timestep = 10
     # update_timestep = 2  # update policy every n episodes
     # K_epochs = 80  # update policy for K epochs (= # update steps)
+    # K_epochs = 20
     K_epochs = 20  # update policy for K epochs (= # update steps)
     # eps_clip = 0.2  # clip parameter for PPO
     eps_clip = 0.2  # clip parameter for PPO
@@ -235,9 +272,9 @@ def main():
 
     print("training environment name : " + env_name)
 
-    # env = gym.make(env_name, generator_args={"spawn_all_entities": False})
     env = ProcgenGym3Env(num=1, env_name=env_name, render_mode=None)
-    # env.seed(random_seed)
+
+    #####################################################
 
     ################### checkpointing ###################
 
@@ -291,7 +328,7 @@ def main():
     print("============================================================================================")
 
     ################# training procedure ################
-
+    #
     # initialize a PPO agent
     ppo_agent = PPO(lr_actor, lr_critic, optimizer, gamma, K_epochs, eps_clip)
 
@@ -301,9 +338,17 @@ def main():
 
     print("============================================================================================")
 
-    # # logging file
-    # log_f = open(log_f_name, "w+")
-    # log_f.write('episode,timestep,reward\n')
+    image_directory = "image"
+    if not os.path.exists(image_directory):
+        os.makedirs(image_directory)
+
+    image_directory = image_directory + '/' + env_name + '/'
+    if not os.path.exists(image_directory):
+        os.makedirs(image_directory)
+
+    # checkpoint_path = directory + "PPO_{}_{}_{}.pth".format(env_name, random_seed, 0)
+
+    plot_weights(ppo_agent.get_weights(), image_directory)
 
     # printing and logging variables
     print_running_reward = 0
@@ -318,26 +363,25 @@ def main():
     # training loop
     while time_step <= max_training_timesteps:
 
-        # state = env.reset()
         reward, obs, done = env.observe()
-        state = extract_state(obs['positions'])
+        state = extract_reasoning_state(obs['positions'])
         current_ep_reward = 0
 
         epsilon = epsilon_func(i_episode)
 
         for t in range(1, max_ep_len + 1):
 
+            reward = 0
             # select action with policy
             action = ppo_agent.select_action(state, epsilon=epsilon)
-            action = simplify_action(action)
+            if action in [0, 1, 2, 3]:
+                reward += 0.001
+            action = num_action_select(action)
             # state, reward, done, _ = env.step(action)
             env.act(action)
-            reward, obs, done = env.observe()
-            state = extract_state(obs['positions'])
-            reward = reward[0]
-
-            if action[0] == 4:
-                reward += 0.005
+            rew, obs, done = env.observe()
+            state = extract_reasoning_state(obs["positions"])
+            reward += rew[0]
 
             # saving reward and is_terminals
             ppo_agent.buffer.rewards.append(reward)
@@ -350,23 +394,11 @@ def main():
             if time_step % update_timestep == 0:
                 ppo_agent.update()
 
-            # log in logging file
-            # if time_step % log_freq == 0:
-            #     # log average reward till last episode
-            #     log_avg_reward = log_running_reward / log_running_episodes
-            #     log_avg_reward = round(log_avg_reward, 4)
-            #
-            #     log_f.write('{},{},{}\n'.format(i_episode, time_step, log_avg_reward))
-            #     log_f.flush()
-            #
-            #     log_running_reward = 0
-            #     log_running_episodes = 0
-
             # printing average reward
             if time_step % print_freq == 0:
                 # print average reward till last episode
                 print_avg_reward = print_running_reward / print_running_episodes
-                print_avg_reward = np.round(print_avg_reward, 2)
+                print_avg_reward = round(print_avg_reward, 2)
 
                 print("Episode : {} \t\t Timestep : {} \t\t Average Reward : {}".format(i_episode, time_step,
                                                                                         print_avg_reward))
@@ -384,6 +416,8 @@ def main():
                 print("Elapsed Time  : ", time.time() - start_time)
                 print("--------------------------------------------------------------------------------------------")
 
+                # save image of weights
+                plot_weights(ppo_agent.get_weights(), image_directory, time_step)
             # break; if the episode is over
             if done:
                 break

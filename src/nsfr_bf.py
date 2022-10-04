@@ -25,7 +25,7 @@ class NSFReasoner(nn.Module):
         # TODO change possible action here
 
         self.prednames = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat',
-                          'up_to_dodge', 'left_to_dodge', 'down_to_dodge', 'right_to_dodge']
+                     'up_to_dodge', 'down_to_dodge']
 
     def get_params(self):
         return self.im.get_params()  # + self.fc.get_params()
@@ -37,12 +37,13 @@ class NSFReasoner(nn.Module):
         V_0 = self.fc(zs, self.atoms, self.bk)
         # perform T-step forward-chaining reasoning
         V_T = self.im(V_0)
-        #actions = self.get_predictions(V_T, prednames=self.prednames)
+        if self._train:
+            predictions = self.get_predictions(V_T, prednames=self.prednames)
+            # action = torch.argmax(predictions)
+            return predictions
         # self.print_valuation_batch(V_T)
-        # action = torch.argmax(predictions)
-        # text = self.generate_captions(V_T, self.atoms, 4, 0.3)
-        # return actions
         return V_T
+
     def predict(self, v, predname):
         """Extracting a value from the valuation tensor using a given predicate.
         """
