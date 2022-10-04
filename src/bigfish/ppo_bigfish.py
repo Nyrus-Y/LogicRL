@@ -337,7 +337,7 @@ def main():
             reward = reward[0]
 
             if action[0] == 4:
-                reward += 0.005
+                reward += 0.01
 
             # saving reward and is_terminals
             ppo_agent.buffer.rewards.append(reward)
