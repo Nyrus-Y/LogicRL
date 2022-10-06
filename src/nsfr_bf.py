@@ -31,7 +31,6 @@ class NSFReasoner(nn.Module):
         return self.im.get_params()  # + self.fc.get_params()
 
     def forward(self, x):
-
         zs = x
         # convert to the valuation tensor
         V_0 = self.fc(zs, self.atoms, self.bk)

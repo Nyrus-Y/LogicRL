@@ -272,57 +272,57 @@ class ClosebyValuationFunction(nn.Module):
     """The function v_closeby.
     """
 
-    # def __init__(self, device):
-    #     super(ClosebyValuationFunction, self).__init__()
-    #     self.device = device
-    #     self.logi = LogisticRegression(input_dim=1)
-    #     self.logi.to(device)
-    #
-    # def forward(self, z_1, z_2):
-    #     """
-    #     Args:
-    #         z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-    #             [agent, fish, radius, x, y]
-    #         z_2 (tensor): 2-d tensor (B * D), the object-centric representation.
-    #             [agent, fish, radius, x, y]
-    #     Returns:
-    #         A batch of probabilities.
-    #     """
-    #
-    #     c_1 = z_1[:, -2:]
-    #     c_2 = z_2[:, -2:]
-    #     r_1 = z_1[:, 2]
-    #     r_2 = z_2[:, 2]
-    #     dist = torch.norm(c_1 - c_2, dim=1).unsqueeze(-1)
-    #     dist = dist[:] - r_1[:] - r_2[:]
-    #     probs = self.logi(dist).squeeze()
-    #     return probs
-
     def __init__(self, device):
         super(ClosebyValuationFunction, self).__init__()
         self.device = device
+        self.logi = LogisticRegression(input_dim=1)
+        self.logi.to(device)
 
     def forward(self, z_1, z_2):
         """
         Args:
             z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-             [agent, fish, radius, x, y]
-
+                [agent, fish, radius, x, y]
+            z_2 (tensor): 2-d tensor (B * D), the object-centric representation.
+                [agent, fish, radius, x, y]
         Returns:
             A batch of probabilities.
         """
+
         c_1 = z_1[:, -2:]
         c_2 = z_2[:, -2:]
-
         r_1 = z_1[:, 2]
         r_2 = z_2[:, 2]
-
-        dis_x = torch.pow(c_2[:, 0] - c_1[:, 0], 2)
-        dis_y = torch.pow(c_2[:, 1] - c_1[:, 1], 2)
-        dis = torch.sqrt(dis_x[:] + dis_y[:])
-        dis = abs(dis[:] - r_1[:] - r_2[:])
-        probs = torch.where(dis <= 2, 0.99, 0)
+        dist = torch.norm(c_1 - c_2, dim=1).unsqueeze(-1)
+        dist = dist[:] - r_1[:] - r_2[:]
+        probs = self.logi(dist).squeeze()
         return probs
+
+    # def __init__(self, device):
+    #     super(ClosebyValuationFunction, self).__init__()
+    #     self.device = device
+    #
+    # def forward(self, z_1, z_2):
+    #     """
+    #     Args:
+    #         z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
+    #          [agent, fish, radius, x, y]
+    #
+    #     Returns:
+    #         A batch of probabilities.
+    #     """
+    #     c_1 = z_1[:, -2:]
+    #     c_2 = z_2[:, -2:]
+    #
+    #     r_1 = z_1[:, 2]
+    #     r_2 = z_2[:, 2]
+    #
+    #     dis_x = torch.pow(c_2[:, 0] - c_1[:, 0], 2)
+    #     dis_y = torch.pow(c_2[:, 1] - c_1[:, 1], 2)
+    #     dis = torch.sqrt(dis_x[:] + dis_y[:])
+    #     dis = abs(dis[:] - r_1[:] - r_2[:])
+    #     probs = torch.where(dis <= 2, 0.99, 0)
+    #     return probs
 
 
 class BiggerValuationFunction(nn.Module):
