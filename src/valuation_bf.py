@@ -15,7 +15,7 @@ class BFValuationModule(nn.Module):
             dataset (str): The dataset.
     """
 
-    def __init__(self, lang, device, pretrained=True):
+    def __init__(self, lang, device):
         super().__init__()
         self.lang = lang
         self.device = device

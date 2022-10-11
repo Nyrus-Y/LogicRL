@@ -14,7 +14,7 @@ class NSFReasoner(nn.Module):
         atoms (list(atom)): The set of ground atoms (facts).
     """
 
-    def __init__(self, facts_converter, infer_module, atoms, bk, clauses, train=False):
+    def __init__(self, facts_converter, infer_module, atoms, bk, clauses, prednames, train=False):
         super().__init__()
         self.fc = facts_converter
         self.im = infer_module
@@ -24,8 +24,7 @@ class NSFReasoner(nn.Module):
         self._train = train
         # TODO change possible action here
 
-        self.prednames = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat',
-                     'up_to_dodge', 'down_to_dodge']
+        self.prednames = prednames
 
     def get_params(self):
         return self.im.get_params()  # + self.fc.get_params()

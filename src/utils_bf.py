@@ -145,7 +145,8 @@ def explain(NSFR, extracted_states):
 
 def print_explaining(actions):
     action = torch.argmax(actions)
-    prednames = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat', 'up_to_dodge', 'down_to_dodge']
+    prednames = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat', 'up_to_dodge', 'down_to_dodge',
+                 'up_redundant', 'down_redundant']
     return print(prednames[action])
 
 
@@ -182,7 +183,9 @@ def num_action_select(action, trained=False):
                 'down_to_eat',
                 'right_to_eat',
                 'up_to_dodge',
-                'down_to_dodge'
+                'down_to_dodge',
+                'up_redundant_action',
+                'down_redundant_action'
                 ]
 
     env_actions
@@ -198,11 +201,11 @@ def num_action_select(action, trained=False):
     if trained == True:
         action = torch.argmax(action)
 
-    if action in [0, 4]:
+    if action in [0, 4, 6]:
         return np.array([5])
     elif action in [1]:
         return np.array([1])
-    elif action in [2, 5]:
+    elif action in [2, 5, 7]:
         return np.array([3])
     elif action in [3]:
         return np.array([7])
@@ -217,7 +220,7 @@ def plot_weights(weights, image_directory, time_step=0):
     plt.figure(figsize=(15, 5))
     plt.ylim([0, 1])
     x_label = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat',
-               'up_to_dodge', 'down_to_dodge']
+               'up_to_dodge', 'down_to_dodge', 'up_redundant', 'down_redundant']
     # x_label = ['Jump', 'Left_k', 'Right_k', 'Left_d',
     #            'Right_d', 'Stay', 'Jump_d', 'Left_n', 'Right_e',
     #            'Stay_n']

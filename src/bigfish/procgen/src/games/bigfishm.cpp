@@ -7,7 +7,7 @@
 const std::string NAME = "bigfishm";
 
 const int COMPLETION_BONUS = 100.0f;
-const float POSITIVE_REWARD = 0.5;
+const float POSITIVE_REWARD = 0.1;
 const float SURVIVAL_REWARD_PER_STEP = 0.0; //TO DO: Come up with a reward system
 const float EATEN_PENALTY = -1;
 

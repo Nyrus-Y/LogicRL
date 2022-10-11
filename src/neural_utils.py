@@ -1,6 +1,13 @@
+import random
 import torch
 import torch.nn as nn
-from torch.nn import functional as F
+from torch.distributions import Categorical
+
+from src import valuation_bf
+from src.facts_converter import FactsConverter
+from src.logic_utils import build_infer_module, get_lang
+from src.nsfr_bf import NSFReasoner
+from src.bigfish.training.mlpCriticController import MLPController
 
 
 class LogisticRegression(torch.nn.Module):
@@ -11,6 +18,7 @@ class LogisticRegression(torch.nn.Module):
     def forward(self, x):
         y_pred = torch.sigmoid(self.linear(x))
         return y_pred
+
 
 class MLP(nn.Module):
     def __init__(self, in_channels, out_channels, hidden_dim=256):

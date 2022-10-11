@@ -280,6 +280,7 @@ def main():
     ################### checkpointing ###################
 
     directory = "closeby"
+
     if not os.path.exists(directory):
         os.makedirs(directory)
 
@@ -287,7 +288,7 @@ def main():
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    checkpoint_path = directory + "PPO_{}_{}_{}.pth".format(env_name, random_seed, 0)
+    checkpoint_path = directory + "closeby_{}_{}_{}.pth".format(env_name, random_seed, 0)
     print("save checkpoint path : " + checkpoint_path)
 
     #####################################################
@@ -375,8 +376,8 @@ def main():
             reward = 0
             # select action with policy
             action = ppo_agent.select_action(state, epsilon=epsilon)
-            if action in [0, 1, 2, 3]:
-                reward += 0.001
+            # if action in [0, 1, 2, 3]:
+            #     reward += 0.001
             action = num_action_select(action)
             # state, reward, done, _ = env.step(action)
             env.act(action)

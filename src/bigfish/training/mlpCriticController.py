@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-from src.utils_bf import extract_state
 
 
 class MLPController(torch.nn.Module):

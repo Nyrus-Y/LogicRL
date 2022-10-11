@@ -49,7 +49,7 @@ class NSFR_ActorCritic(nn.Module):
         super(NSFR_ActorCritic, self).__init__()
 
         self.rng = random.Random() if rng is None else rng
-        self.num_actions = 6
+        self.num_actions = 8
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
 
@@ -92,15 +92,21 @@ class NSFR_ActorCritic(nn.Module):
         lark_path = 'lark/exp.lark'
         lang_base_path = 'data/lang/'
         device = torch.device('cuda:0')
+        # lang, clauses, bk, atoms = get_lang(
+        #     lark_path, lang_base_path, 'bigfish', 'bigfish_simplified_actions')
         lang, clauses, bk, atoms = get_lang(
-            lark_path, lang_base_path, 'bigfish', 'bigfish_simplified_actions')
+            lark_path, lang_base_path, 'bigfish', 'redundant_actions')
 
+        prednames = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat',
+                     'up_to_dodge', 'down_to_dodge', 'up_redundant', 'down_redundant']
         VM = valuation_bf.BFValuationModule(lang=lang, device=device)
         FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
         m = len(clauses)
+        m = 6
         IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=train, device=device)
         # Neuro-Symbolic Forward Reasoner
-        NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses, train=train)
+        NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses,
+                           prednames=prednames, train=train)
         return NSFR
 
 
@@ -211,6 +217,7 @@ def main():
     ####### initialize environment hyperparameters ######
 
     random_seed = random.randint(0, 123456)  # set random seed if required (0 = no random seed)
+    random_seed = 107603
     if random_seed:
         print("--------------------------------------------------------------------------------------------")
         print("setting random seed to ", random_seed)
@@ -374,8 +381,8 @@ def main():
             reward = 0
             # select action with policy
             action = ppo_agent.select_action(state, epsilon=epsilon)
-            if action in [0, 1, 2, 3]:
-                reward += 0.001
+            # if action in [0, 1, 2, 3]:
+            #     reward += 0.001
             action = num_action_select(action)
             # state, reward, done, _ = env.step(action)
             env.act(action)

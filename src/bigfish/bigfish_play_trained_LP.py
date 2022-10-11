@@ -11,50 +11,54 @@ import gym3
 
 from src.utils_bf import extract_reasoning_state, num_action_select, print_explaining
 from src.bigfish.training.mlpCriticController import MLPController
-from src import valuation_bf
+from src.valuation_bf import BFValuationModule
 from src.facts_converter import FactsConverter
 from src.logic_utils import build_infer_module, get_lang
 from src.nsfr_bf import NSFReasoner
 from procgen import ProcgenGym3Env
+from src.bigfish.actorcritic_bigfish_logic_policy import NSFR_ActorCritic
 
+# from src.bigfish.closeby import NSFR_ActorCritic
 KEY_r = 114
 
 
-class NSFR_ActorCritic(nn.Module):
-    def __init__(self):
-        super(NSFR_ActorCritic, self).__init__()
-
-        self.actor = self.get_nsfr_model(train=True)
-        self.critic = MLPController(out_size=1)
-
-    def forward(self):
-        raise NotImplementedError
-
-    def act(self):
-        pass
-
-    def get_nsfr_model(self, train=False):
-        # current_path = os.getcwd()
-        # lark_path = os.path.join(current_path, '..', 'lark/exp.lark')
-        # lang_base_path = os.path.join(current_path, '..', 'data/lang/')
-
-        lark_path = 'lark/exp.lark'
-        lang_base_path = 'data/lang/'
-        device = torch.device('cuda:0')
-        lang, clauses, bk, atoms = get_lang(
-            lark_path, lang_base_path, 'bigfish', 'bigfish_simplified_actions')
-
-        VM = valuation_bf.BFValuationModule(lang=lang, device=device)
-        FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
-        m = len(clauses)
-        IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=train, device=device)
-        # Neuro-Symbolic Forward Reasoner
-        NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses, train=train)
-        return NSFR
+#
+#
+# class NSFR_ActorCritic(nn.Module):
+#     def __init__(self):
+#         super(NSFR_ActorCritic, self).__init__()
+#
+#         self.actor = self.get_nsfr_model(train=False)
+#         self.critic = MLPController(out_size=1)
+#
+#     def forward(self):
+#         raise NotImplementedError
+#
+#     def act(self):
+#         pass
+#
+#     def get_nsfr_model(self, train=True):
+#         # current_path = os.getcwd()
+#         # lark_path = os.path.join(current_path, '..', 'lark/exp.lark')
+#         # lang_base_path = os.path.join(current_path, '..', 'data/lang/')
+#
+#         lark_path = 'lark/exp.lark'
+#         lang_base_path = 'data/lang/'
+#         device = torch.device('cuda:0')
+#         lang, clauses, bk, atoms = get_lang(
+#             lark_path, lang_base_path, 'bigfish', 'bigfish_simplified_actions')
+#
+#         VM = BFValuationModule(lang=lang, device=device)
+#         FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
+#         m = len(clauses)
+#         IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=train, device=device)
+#         # Neuro-Symbolic Forward Reasoner
+#         NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses, train=True)
+#         return NSFR
 
 
 def parse_args():
-    parser = ArgumentParser("Loads a model and lets it play coinjump")
+    parser = ArgumentParser("Loads a model and lets it play bigfish")
     parser.add_argument("-m", "--model_file", dest="model_file", default=None)
     parser.add_argument("-s", "--seed", dest="seed", type=int)
     args = parser.parse_args()
@@ -74,7 +78,8 @@ def parse_args():
 def load_model(model_path, set_eval=True):
     with open(model_path, "rb") as f:
         model = NSFR_ActorCritic()
-        # model = torch.load(f)
+        # a = model.state_dict()
+        # model_1 = torch.load(f)
         model.load_state_dict(state_dict=torch.load(f))
 
     if isinstance(model, NSFR_ActorCritic):
