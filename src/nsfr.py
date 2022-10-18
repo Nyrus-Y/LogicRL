@@ -14,17 +14,24 @@ class NSFReasoner(nn.Module):
         atoms (list(atom)): The set of ground atoms (facts).
     """
 
-    def __init__(self,facts_converter, infer_module, atoms, bk, clauses, train=False):
+    def __init__(self, facts_converter, infer_module, atoms, bk, clauses, train=False):
         super().__init__()
         self.fc = facts_converter
         self.im = infer_module
         self.atoms = atoms
         self.bk = bk
         self.clauses = clauses
+        self.prednames = self.get_prednames()
         self._train = train
 
     def get_params(self):
         return self.im.get_params()  # + self.fc.get_params()
+
+    def get_prednames(self):
+        prednames = []
+        for clause in self.clauses:
+            prednames.append(clause.head.pred.name)
+        return prednames
 
     def forward(self, x):
         # obtain the object-centric representation
@@ -45,21 +52,21 @@ class NSFReasoner(nn.Module):
             pred_str=predname, atoms=self.atoms)
         return v[:, target_index]
 
-    def predict_multi(self, v, prednames):
+    def predict_multi(self, v):
         """Extracting values from the valuation tensor using given predicates.
 
         prednames = ['kp1', 'kp2', 'kp3']
         """
         # v: batch * |atoms|
         target_indices = []
-        for predname in prednames:
+        for predname in self.prednames:
             target_index = get_index_by_predname(
                 pred_str=predname, atoms=self.atoms)
             target_indices.append(target_index)
         prob = torch.cat([v[:, i].unsqueeze(-1)
                           for i in target_indices], dim=1)
         B = v.size(0)
-        N = len(prednames)
+        N = len(self.prednames)
         assert prob.size(0) == B and prob.size(
             1) == N, 'Invalid shape in the prediction.'
         return prob
@@ -92,5 +99,4 @@ class NSFReasoner(nn.Module):
         predicts = predicts.detach().cpu().numpy()
         index = np.argmax(predicts[0])
         return clauses[index]
-
 

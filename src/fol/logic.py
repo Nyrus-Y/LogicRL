@@ -87,6 +87,9 @@ class Const(Term):
     def __hash__(self):
         return hash(self.__str__())
 
+    def __lt__(self, other):
+        return self.__str__() < other.__str__()
+
     def head(self):
         return self
 
@@ -148,6 +151,9 @@ class Var(Term):
     def __hash__(self):
         return hash(self.__str__())
 
+    def __lt__(self, other):
+        return self.__str__() < other.__str__()
+
     def head(self):
         return self
 
@@ -208,6 +214,9 @@ class FuncSymbol():
     def __eq__(self, other):
         return self.name == other.name and self.arity == other.arity
 
+    def __lt__(self, other):
+        return self.__str__() < other.__str__()
+
 
 class FuncTerm(Term):
     """Term with a function symbol f(t_1, ..., t_n)
@@ -232,6 +241,9 @@ class FuncTerm(Term):
         s = s[0:-1]
         s += ')'
         return s
+
+    def __lt__(self, other):
+        return self.__str__() < other.__str__()
 
     def __repr__(self, level=0):
         return self.__str__()
@@ -350,6 +362,9 @@ class Predicate():
         # return self.name
         return self.name + '/' + str(self.arity) + '/' + str(self.dtypes)
 
+    def __hash__(self):
+        return hash(self.__str__())
+
     def __repr__(self):
         return self.__str__()
 
@@ -358,6 +373,9 @@ class Predicate():
             return self.name == other.name
         else:
             return False
+
+    def __lt__(self, other):
+        return self.__str__() < other.__str__()
 
 
 class NeuralPredicate(Predicate):
@@ -380,14 +398,19 @@ class NeuralPredicate(Predicate):
     def __str__(self):
         return self.name + '/' + str(self.arity) + '/' + str(self.dtypes)
 
+    def __hash__(self):
+        return hash(self.__str__())
     def __repr__(self):
         return self.__str__()
 
     def __eq__(self, other):
         return type(other) == NeuralPredicate and self.name == other.name
 
+    def __lt__(self, other):
+        return self.__str__() < other.__str__()
 
-class Atom():
+
+class Atom(object):
     """Atoms in first-oder logic.
 
     A class of atoms: p(t1, ..., tn)
@@ -474,8 +497,19 @@ class Atom():
             size += term.size()
         return size
 
+    def get_terms_by_dtype(self, dtype):
+        """Return terms that have type of dtype.
+        Returns: (list(Term))
+        """
+        result = []
+        for i, term in enumerate(self.terms):
+            if self.pred.dtypes[i] == dtype:
+                #print( self.pred.dtypes[i], dtype,  self.pred.dtypes[i] == dtype)
+                result.append(term)
+        return result
 
-class Clause():
+
+class Clause(object):
     """Clauses in first-oder logic.
 
     A class of clauses in first-order logic: A :- B1, ..., Bn.
@@ -487,9 +521,14 @@ class Clause():
 
     def __init__(self, head, body):
         self.head = head
-        self.body = body
+        self.body = sorted(body)
+        #self.body = body
+        #print(self)
+        ###self._rename()
+        #print(self)
 
     def __str__(self):
+
         head_str = self.head.__str__()
         body_str = ""
         for bi in self.body:
@@ -503,7 +542,9 @@ class Clause():
         return self.__str__()
 
     def __eq__(self, other):
-        return self.__str__() == other.__str__()
+        #return self._id_str() == other._id_str()
+        return self.head == other.head and set(self.body) == set(other.body)
+        #return self.__str__() == other.__str__()
 
     def __hash__(self):
         return hash(self.__str__())
@@ -513,6 +554,72 @@ class Clause():
 
     def __gt__(self, other):
         return self.__str__() > other.__str__()
+
+    def _rename(self):
+        """Renaming variables to compute the equality.
+        e.g. p(O1,O2):-. == p(O2,O3):-. == p(__X1__,__X2__):-.
+        """
+        atoms = [self.head] + self.body
+        vars = self.all_vars()
+        id_vars = [Var("_X" + str(i) + "_") for i in range(len(vars))]
+
+        head_terms = []
+        for term in self.head.terms:
+            if term.is_var():
+                head_terms.append(id_vars[vars.index(term)])
+            else:
+                head_terms.append(term)
+        head_ = Atom(self.head.pred, head_terms)
+
+        body_ = []
+        for bi in self.body:
+            bi_terms = []
+            for term in bi.terms:
+                if term.is_var():
+                    bi_terms.append(id_vars[vars.index(term)])
+                else:
+                    bi_terms.append(term)
+            bi_atom = Atom(bi.pred, bi_terms)
+            body_.append(bi_atom)
+        self.head = head_
+        self.body = sorted(body_)
+
+    def _id_str(self):
+        """Renaming variables to compute the equality.
+        e.g. p(O1,O2):-. == p(O2,O3):-. == p(__X1__,__X2__):-.
+        """
+        atoms = [self.head] + self.body
+        vars = list(set(self.all_vars()))
+        id_vars = [Var("__X" + str(i) + "__") for i in range(len(vars))]
+
+        head_terms = []
+        for term in self.head.terms:
+            if term.is_var():
+                head_terms.append(id_vars[vars.index(term)])
+            else:
+                head_terms.append(term)
+        head_ = Atom(self.head.pred, head_terms)
+
+        body_ = []
+        for bi in self.body:
+            bi_terms = []
+            for term in bi.terms:
+                if term.is_var():
+                    bi_terms.append(id_vars[vars.index(term)])
+                else:
+                    bi_terms.append(term)
+            bi_atom = Atom(bi.pred, bi_terms)
+            body_.append(bi_atom)
+        # to str
+        head_str = head_.__str__()
+        body_str = ""
+        for bi in body_:
+            body_str += bi.__str__()
+            body_str += ','
+        body_str = body_str[0:-1]
+        body_str += '.'
+        return head_str + ':-' + body_str
+
 
     def is_tautology(self):
         return len(self.body) == 1 and self.body[0] == self.head
@@ -541,6 +648,26 @@ class Clause():
             if not v in result:
                 result.append(v)
         return result
+
+    def all_vars_by_dtype(self, dtype):
+        """Get all variables in the clause that has given data type.
+        Returns: list(Var)
+        """
+        atoms = [self.head] + self.body
+        result = []
+        for atom in atoms:
+            terms = atom.get_terms_by_dtype(dtype)
+            vars = [t for t in terms if t.is_var()]
+            result.extend(vars)
+        return sorted(list(set(result)))
+
+    def count_by_predicate(self, pred):
+        atoms = [self.head] + self.body
+        n = 0
+        for atom in atoms:
+            if pred == atom.pred:
+                n += 1
+        return n
 
     def all_consts(self):
         const_list = []

@@ -336,8 +336,10 @@ def main():
             state = extract_state(obs['positions'])
             reward = reward[0]
 
-            if action[0] == 4:
-                reward += 0.01
+            # if action[0] == 4:
+            #     reward += 0.001
+            if action[0] in [1, 3, 5, 7]:
+                reward += 0.001
 
             # saving reward and is_terminals
             ppo_agent.buffer.rewards.append(reward)
@@ -391,8 +393,8 @@ def main():
         print_running_reward += current_ep_reward
         print_running_episodes += 1
 
-        log_running_reward += current_ep_reward
-        log_running_episodes += 1
+        # log_running_reward += current_ep_reward
+        # log_running_episodes += 1
 
         i_episode += 1
 

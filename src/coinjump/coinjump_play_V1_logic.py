@@ -6,7 +6,7 @@ from src.coinjump.coinjump.imageviewer import ImageViewer
 
 from src.coinjump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
 from src.coinjump.coinjump.coinjump.coinjump import CoinJump
-from src.util import extract_for_explaining, explaining_nsfr, action_select
+from src.util import extract_for_explaining, explaining_nsfr, action_select, get_nsfr
 
 KEY_SPACE = 32
 # KEY_SPACE = 32
@@ -54,6 +54,9 @@ def run():
     last_frame_time = 0
     last_explaining = None
 
+    env_name = 'coinjump1'
+    nsfr = get_nsfr(env_name)
+
     while True:
         # control framerate
         current_frame_time = time.time()
@@ -74,11 +77,8 @@ def run():
         if not coin_jump.level.terminated:
 
             # extract state for explaining
-            prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-                         'right_go_to_door']
             extracted_state = extract_for_explaining(coin_jump)
-            explaining = explaining_nsfr(extracted_state, 'coinjump1', prednames)
-            # explaining = explaining_nsfr_combine(extracted_state,'coinjump_D','coinjump_KD')
+            explaining = explaining_nsfr(nsfr, extracted_state)
             action = action_select(explaining)
 
             if last_explaining is None:
@@ -87,16 +87,6 @@ def run():
             elif explaining != last_explaining:
                 print(explaining)
                 last_explaining = explaining
-
-        # else:
-        #     if KEY_a in viewer.pressed_keys:
-        #         action.append(CoinJumpActions.MOVE_LEFT)
-        #     if KEY_d in viewer.pressed_keys:
-        #         action.append(CoinJumpActions.MOVE_RIGHT)
-        #     if (KEY_SPACE in viewer.pressed_keys) or (KEY_w in viewer.pressed_keys):
-        #         action.append(CoinJumpActions.MOVE_UP)
-        #     if KEY_s in viewer.pressed_keys:
-        #         action.append(CoinJumpActions.MOVE_DOWN)
 
         reward = coin_jump.step(action)
         score = coin_jump.get_score()

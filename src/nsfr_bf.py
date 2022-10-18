@@ -29,6 +29,12 @@ class NSFReasoner(nn.Module):
     def get_params(self):
         return self.im.get_params()  # + self.fc.get_params()
 
+    def get_prednames(self):
+        prednames = []
+        for clause in self.clauses:
+            prednames.append(clause.head.pred.name)
+        return prednames
+
     def forward(self, x):
         zs = x
         # convert to the valuation tensor

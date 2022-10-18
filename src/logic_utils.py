@@ -1,4 +1,4 @@
-from src.infer import InferModule
+from src.infer import InferModule, ClauseInferModule
 from src.tensor_encoder import TensorEncoder
 from src.fol.logic import *
 from src.fol.data_utils import DataUtils
@@ -53,6 +53,24 @@ def generate_atoms(lang):
                 # print('add atom: ', Atom(pred, args))
     return spec_atoms + sorted(atoms)
 
+def build_clause_infer_module(clauses, bk_clauses, atoms, lang, device, m=3, infer_step=3, train=False):
+    te = TensorEncoder(lang, atoms, clauses, device=device)
+    I = te.encode()
+    if len(bk_clauses) > 0:
+        te_bk = TensorEncoder(lang, atoms, bk_clauses, device=device)
+        I_bk = te_bk.encode()
+    else:
+        te_bk = None
+        I_bk = None
+
+    im = ClauseInferModule(I, m=m, infer_step=infer_step, device=device, train=train, I_bk=I_bk)
+    return im
+
+def get_prednames(clauses):
+    prednames = []
+    for clause in clauses:
+        prednames.append(clause.head.pred.name)
+    return prednames
 
 def generate_bk(lang):
     atoms = []
@@ -77,3 +95,15 @@ def get_index_by_predname(pred_str, atoms):
 def parse_clauses(lang, clause_strs):
     du = DataUtils(lang)
     return [du.parse_clause(c) for c in clause_strs]
+
+
+def get_searched_clauses(lark_path, lang_base_path, dataset_type, dataset):
+    """Load the language of first-order logic from files.
+    Read the language, clauses, background knowledge from files.
+    Atoms are generated from the language.
+    """
+    du = DataUtils(lark_path=lark_path, lang_base_path=lang_base_path,
+                   dataset_type=dataset_type, dataset=dataset)
+    lang = du.load_language()
+    clauses = du.load_clauses(du.base_path  +  dataset +  '/beam_searched.txt', lang)
+    return clauses

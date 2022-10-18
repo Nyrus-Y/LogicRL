@@ -56,7 +56,7 @@ class ParameterizedLevelGenerator_V1:
             (18, 2),
         ]
 
-        # rng.shuffle(positions)
+        rng.shuffle(positions)
 
         coinjump.player.x = positions[0][0] - 0.5
         coinjump.player.y = positions[0][1]

@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from src.neural_utils import MLP, LogisticRegression
 
 
 ################################

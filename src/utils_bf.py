@@ -7,7 +7,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from src.facts_converter import FactsConverter
 from src.nsfr_bf import NSFReasoner
-from src.logic_utils import build_infer_module, get_lang
+from src.logic_utils import build_infer_module, get_lang, get_prednames
 from src import valuation_bf
 
 device = torch.device('cuda:0')
@@ -117,8 +117,11 @@ def get_nsfr_model(lang, clauses, atoms, bk, device):
     FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
     IM = build_infer_module(clauses, atoms, lang,
                             m=len(clauses), infer_step=2, train=False, device=device)
+    prednames = get_prednames(clauses)
+    # prednames = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat', 'up_to_dodge', 'down_to_dodge',
+    #              'up_redundant', 'down_redundant']
     # Neuro-Symbolic Forward Reasoner
-    NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses)
+    NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses, prednames=prednames)
     return NSFR
 
 
@@ -146,7 +149,7 @@ def explain(NSFR, extracted_states):
 def print_explaining(actions):
     action = torch.argmax(actions)
     prednames = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat', 'up_to_dodge', 'down_to_dodge',
-                 'up_redundant', 'down_redundant']
+                 'up_redundant', 'down_redundant','left_redundant','right_redundant','idle_redundant']
     return print(prednames[action])
 
 
@@ -184,8 +187,11 @@ def num_action_select(action, trained=False):
                 'right_to_eat',
                 'up_to_dodge',
                 'down_to_dodge',
-                'up_redundant_action',
-                'down_redundant_action'
+                'up_redundant',
+                'down_redundant'
+                'left_redundant',
+                'right_redundant',
+                'idle_redundant'
                 ]
 
     env_actions
@@ -200,15 +206,19 @@ def num_action_select(action, trained=False):
     """
     if trained == True:
         action = torch.argmax(action)
-
+    # up
     if action in [0, 4, 6]:
         return np.array([5])
-    elif action in [1]:
+    # left
+    elif action in [1, 8]:
         return np.array([1])
+    # down
     elif action in [2, 5, 7]:
         return np.array([3])
-    elif action in [3]:
+    # right
+    elif action in [3, 9]:
         return np.array([7])
+    # idle
     else:
         return np.array([4])
 
@@ -219,8 +229,9 @@ def plot_weights(weights, image_directory, time_step=0):
     sns.set_style('white')
     plt.figure(figsize=(15, 5))
     plt.ylim([0, 1])
-    x_label = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat',
-               'up_to_dodge', 'down_to_dodge', 'up_redundant', 'down_redundant']
+    x_label = ['up_eat', 'left_eat', 'down_eat', 'right_eat',
+               'up_dodge', 'down_dodge', 'up_re', 'down_re', 'left_re', 'right_re',
+               'idle_re']
     # x_label = ['Jump', 'Left_k', 'Right_k', 'Left_d',
     #            'Right_d', 'Stay', 'Jump_d', 'Left_n', 'Right_e',
     #            'Stay_n']
@@ -233,7 +244,7 @@ def plot_weights(weights, image_directory, time_step=0):
 
         # X = X + width
         # plt.bar(X, W_, width=width, alpha=1, label='C' + str(i))
-        plt.bar(x, W_, width=0.2, alpha=1, label='C' + str(i))
+        plt.bar(x, W_, width=0.25, alpha=1, label='C' + str(i))
         # plt.bar(range(len(W_)), W_, width=0.2, alpha=1, label='C' + str(i))
 
     plt.xticks(x, x_label, fontproperties="Microsoft YaHei", size=12)

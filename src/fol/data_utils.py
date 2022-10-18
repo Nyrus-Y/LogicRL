@@ -19,7 +19,7 @@ class DataUtils(object):
         base_path: The base path of the dataset.
     """
 
-    def __init__(self, lark_path, lang_base_path, dataset_type='kandinsky', dataset='twopairs'):
+    def __init__(self, lark_path, lang_base_path, dataset_type='coinjump', dataset='coinjump_5a'):
         self.base_path = lang_base_path + dataset_type + '/' + dataset + '/'
         with open(lark_path, encoding="utf-8") as grammar:
             self.lp_atom = Lark(grammar.read(), start="atom")
@@ -124,7 +124,7 @@ class DataUtils(object):
         """Load language, background knowledge, and clauses from files.
         """
         preds = self.load_preds(self.base_path + 'preds.txt') + \
-            self.load_neural_preds(self.base_path + 'neural_preds.txt')
+                self.load_neural_preds(self.base_path + 'neural_preds.txt')
         consts = self.load_consts(self.base_path + 'consts.txt')
         lang = Language(preds, [], consts)
         return lang

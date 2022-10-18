@@ -49,7 +49,7 @@ class NSFR_ActorCritic(nn.Module):
         super(NSFR_ActorCritic, self).__init__()
 
         self.rng = random.Random() if rng is None else rng
-        self.num_actions = 8
+        self.num_actions = 11
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
 
@@ -95,10 +95,13 @@ class NSFR_ActorCritic(nn.Module):
         # lang, clauses, bk, atoms = get_lang(
         #     lark_path, lang_base_path, 'bigfish', 'bigfish_simplified_actions')
         lang, clauses, bk, atoms = get_lang(
-            lark_path, lang_base_path, 'bigfish', 'redundant_actions')
+            lark_path, lang_base_path, 'bigfish', 'more_redundant_actions')
 
+        # prednames = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat',
+        #              'up_to_dodge', 'down_to_dodge', 'up_redundant', 'down_redundant']
         prednames = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat',
-                     'up_to_dodge', 'down_to_dodge', 'up_redundant', 'down_redundant']
+                     'up_to_dodge', 'down_to_dodge', 'up_redundant', 'down_redundant', 'left_redundant',
+                     'right_redundant', 'idle_redundant']
         VM = valuation_bf.BFValuationModule(lang=lang, device=device)
         FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
         m = len(clauses)
@@ -217,7 +220,7 @@ def main():
     ####### initialize environment hyperparameters ######
 
     random_seed = random.randint(0, 123456)  # set random seed if required (0 = no random seed)
-    random_seed = 107603
+    # random_seed = 107603
     if random_seed:
         print("--------------------------------------------------------------------------------------------")
         print("setting random seed to ", random_seed)
@@ -285,7 +288,7 @@ def main():
 
     ################### checkpointing ###################
 
-    directory = "PPO_preTrained"
+    directory = "logic_preTrained"
     if not os.path.exists(directory):
         os.makedirs(directory)
 
@@ -293,7 +296,7 @@ def main():
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    checkpoint_path = directory + "PPO_{}_{}_{}.pth".format(env_name, random_seed, 0)
+    checkpoint_path = directory + "logic_{}_{}_{}.pth".format(env_name, random_seed, 0)
     print("save checkpoint path : " + checkpoint_path)
 
     #####################################################

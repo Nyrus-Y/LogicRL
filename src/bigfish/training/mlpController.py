@@ -13,9 +13,11 @@ class MLPController(torch.nn.Module):
         self.num_in_features = encoding_entity_features * encoding_max_entities  # 9
 
         modules = [
-            torch.nn.Linear(self.num_in_features, 10),
+            torch.nn.Linear(self.num_in_features, 40),
             torch.nn.ReLU(inplace=True),
-            torch.nn.Linear(10, out_size)
+            torch.nn.Linear(40, 40),
+            torch.nn.ReLU(inplace=True),
+            torch.nn.Linear(40, out_size)
         ]
 
         self.special = special
