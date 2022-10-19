@@ -124,21 +124,22 @@ def run():
             coin_jump = create_coinjump_instance(seed=seed, V1=True)
             print("--------------------------     next game    --------------------------")
             # coin_jump = create_coinjump_instance(seed=seed,Dodge_model=True)
+
         # step game
         if not coin_jump.level.terminated:
 
             # extract state for explaining
-            extracted_state = extract_for_explaining(coin_jump)
-            explaining = explaining_nsfr(extracted_state, "coinjump_ppo",
-                                         prednames=['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-                                                    'right_go_to_door'])
-
-            if last_explaining is None:
-                print(explaining)
-                last_explaining = explaining
-            elif explaining != last_explaining:
-                print(explaining)
-                last_explaining = explaining
+            # extracted_state = extract_for_explaining(coin_jump)
+            # explaining = explaining_nsfr(extracted_state, "coinjump_ppo",
+            #                              prednames=['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+            #                                         'right_go_to_door'])
+            #
+            # if last_explaining is None:
+            #     print(explaining)
+            #     last_explaining = explaining
+            # elif explaining != last_explaining:
+            #     print(explaining)
+            #     last_explaining = explaining
             # print(explaining)
 
             # TODO change sample function of different envs
@@ -154,10 +155,11 @@ def run():
             prediction = model(model_input['state'])
             # prediction[0][0] = 0
             num = torch.argmax(prediction).cpu().item()
-            action = coin_jump_actions_from_unified(torch.argmax(prediction).cpu().item())
+            action = coin_jump_actions_from_unified(torch.argmax(prediction).cpu().item()+1)
         else:
 
             action = []
+
         reward = coin_jump.step(action)
 
         np_img = np.asarray(coin_jump.camera.screen)

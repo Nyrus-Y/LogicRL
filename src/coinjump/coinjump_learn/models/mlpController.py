@@ -5,7 +5,7 @@ from src.coinjump.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS
 
 class MLPController(torch.nn.Module):
 
-    def __init__(self, has_softmax=False, out_size=CJA_NUM_EXPLICIT_ACTIONS, as_dict=False, special=False):
+    def __init__(self, has_softmax=False, out_size=3, as_dict=False, special=False):
         super().__init__()
         self.as_dict = as_dict
 
