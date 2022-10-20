@@ -119,154 +119,187 @@ def to_plot_images_kandinsky(imgs):
     return [img.permute(1, 2, 0).detach().numpy() for img in denormalize_kandinsky(imgs)]
 
 
-# def get_data_loader(args):
-#     if args.dataset_type == 'kandinsky':
-#         return get_kandinsky_loader(args)
-#     elif args.dataset_type == 'clevr':
-#         return get_clevr_loader(args)
-#     else:
-#         assert 0, 'Invalid dataset type: ' + args.dataset_type
+def get_data_loader(buffer,args):
+    if args.dataset_type == 'coinjump_5a':
+        return get_coinjump_loader(buffer,args)
+    if args.dataset_type == 'kandinsky':
+        return get_kandinsky_loader(args)
+    elif args.dataset_type == 'clevr':
+        return get_clevr_loader(args)
+    else:
+        assert 0, 'Invalid dataset type: ' + args.dataset_type
 
 
-# def get_data_pos_loader(args):
-#     if args.dataset_type == 'kandinsky':
-#         return get_kandinsky_pos_loader(args)
-#     elif args.dataset_type == 'clevr':
-#         return get_clevr_pos_loader(args)
-#     else:
-#         assert 0, 'Invalid dataset type: ' + args.dataset_type
+def get_data_pos_loader(args):
+    if args.dataset_type == 'kandinsky':
+        return get_kandinsky_pos_loader(args)
+    elif args.dataset_type == 'clevr':
+        return get_clevr_pos_loader(args)
+    else:
+        assert 0, 'Invalid dataset type: ' + args.dataset_type
+
+def get_coinjump_loader(buffer,args):
+    # dataset_train = data_clevr.CLEVRHans(
+    #     args.dataset, 'train'
+    # )
+    # dataset_val = data_clevr.CLEVRHans(
+    #     args.dataset, 'val'
+    # )
+    # dataset_test = data_clevr.CLEVRHans(
+    #     args.dataset, 'test'
+    # )
+
+    train_loader = torch.utils.data.DataLoader(
+        dataset_train,
+        shuffle=True,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+    )
+    val_loader = torch.utils.data.DataLoader(
+        dataset_val,
+        shuffle=False,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+    )
+    test_loader = torch.utils.data.DataLoader(
+        dataset_test,
+        shuffle=False,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+    )
+
+    return train_loader, val_loader, test_loader
+
+def get_clevr_loader(args):
+    dataset_train = data_clevr.CLEVRHans(
+        args.dataset, 'train'
+    )
+    dataset_val = data_clevr.CLEVRHans(
+        args.dataset, 'val'
+    )
+    dataset_test = data_clevr.CLEVRHans(
+        args.dataset, 'test'
+    )
+
+    train_loader = torch.utils.data.DataLoader(
+        dataset_train,
+        shuffle=True,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+    )
+    val_loader = torch.utils.data.DataLoader(
+        dataset_val,
+        shuffle=False,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+    )
+    test_loader = torch.utils.data.DataLoader(
+        dataset_test,
+        shuffle=False,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+    )
+
+    return train_loader, val_loader, test_loader
 
 
-# def get_clevr_loader(args):
-#     dataset_train = data_clevr.CLEVRHans(
-#         args.dataset, 'train'
-#     )
-#     dataset_val = data_clevr.CLEVRHans(
-#         args.dataset, 'val'
-#     )
-#     dataset_test = data_clevr.CLEVRHans(
-#         args.dataset, 'test'
-#     )
-#
-#     train_loader = torch.utils.data.DataLoader(
-#         dataset_train,
-#         shuffle=True,
-#         batch_size=args.batch_size,
-#         num_workers=args.num_workers,
-#     )
-#     val_loader = torch.utils.data.DataLoader(
-#         dataset_val,
-#         shuffle=False,
-#         batch_size=args.batch_size,
-#         num_workers=args.num_workers,
-#     )
-#     test_loader = torch.utils.data.DataLoader(
-#         dataset_test,
-#         shuffle=False,
-#         batch_size=args.batch_size,
-#         num_workers=args.num_workers,
-#     )
-#
-#     return train_loader, val_loader, test_loader
-#
-#
-# def get_kandinsky_loader(args, shuffle=False):
-#     dataset_train = data_kandinsky.KANDINSKY(
-#         args.dataset, 'train', small_data=args.small_data
-#     )
-#     dataset_val = data_kandinsky.KANDINSKY(
-#         args.dataset, 'val', small_data=args.small_data
-#     )
-#     dataset_test = data_kandinsky.KANDINSKY(
-#         args.dataset, 'test'
-#     )
-#
-#     train_loader = torch.utils.data.DataLoader(
-#         dataset_train,
-#         shuffle=True,
-#         batch_size=args.batch_size,
-#         num_workers=args.num_workers,
-#     )
-#     val_loader = torch.utils.data.DataLoader(
-#         dataset_val,
-#         shuffle=False,
-#         batch_size=args.batch_size,
-#         num_workers=args.num_workers,
-#     )
-#     test_loader = torch.utils.data.DataLoader(
-#         dataset_test,
-#         shuffle=False,
-#         batch_size=args.batch_size,
-#         num_workers=args.num_workers,
-#     )
-#
-#     return train_loader, val_loader, test_loader
+def get_kandinsky_loader(args, shuffle=False):
+    dataset_train = data_kandinsky.KANDINSKY(
+        args.dataset, 'train', small_data=args.small_data
+    )
+    dataset_val = data_kandinsky.KANDINSKY(
+        args.dataset, 'val', small_data=args.small_data
+    )
+    dataset_test = data_kandinsky.KANDINSKY(
+        args.dataset, 'test'
+    )
+
+    train_loader = torch.utils.data.DataLoader(
+        dataset_train,
+        shuffle=True,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+    )
+    val_loader = torch.utils.data.DataLoader(
+        dataset_val,
+        shuffle=False,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+    )
+    test_loader = torch.utils.data.DataLoader(
+        dataset_test,
+        shuffle=False,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+    )
+
+    return train_loader, val_loader, test_loader
 
 
-# def get_kandinsky_pos_loader(args, shuffle=False):
-#     dataset_train = data_kandinsky.KANDINSKY_POSITIVE(
-#         args.dataset, 'train', small_data=args.small_data
-#     )
-#     dataset_val = data_kandinsky.KANDINSKY_POSITIVE(
-#         args.dataset, 'val', small_data=args.small_data
-#     )
-#     dataset_test = data_kandinsky.KANDINSKY_POSITIVE(
-#         args.dataset, 'test'
-#     )
-#
-#     train_loader = torch.utils.data.DataLoader(
-#         dataset_train,
-#         shuffle=shuffle,
-#         batch_size=args.batch_size_bs,
-#         num_workers=args.num_workers,
-#     )
-#     val_loader = torch.utils.data.DataLoader(
-#         dataset_val,
-#         shuffle=False,
-#         batch_size=args.batch_size_bs,
-#         num_workers=args.num_workers,
-#     )
-#     test_loader = torch.utils.data.DataLoader(
-#         dataset_test,
-#         shuffle=False,
-#         batch_size=args.batch_size_bs,
-#         num_workers=args.num_workers,
-#     )
-#
-#     return train_loader, val_loader, test_loader
-#
-#
-# def get_clevr_pos_loader(args):
-#     dataset_train = data_clevr.CLEVRHans_POSITIVE(
-#         args.dataset, 'train'
-#     )
-#     dataset_val = data_clevr.CLEVRHans_POSITIVE(
-#         args.dataset, 'val'
-#     )
-#     dataset_test = data_clevr.CLEVRHans_POSITIVE(
-#         args.dataset, 'test'
-#     )
-#
-#     train_loader = torch.utils.data.DataLoader(
-#         dataset_train,
-#         shuffle=True,
-#         batch_size=args.batch_size_bs,
-#         num_workers=args.num_workers,
-#     )
-#     val_loader = torch.utils.data.DataLoader(
-#         dataset_val,
-#         shuffle=False,
-#         batch_size=args.batch_size_bs,
-#         num_workers=args.num_workers,
-#     )
-#     test_loader = torch.utils.data.DataLoader(
-#         dataset_test,
-#         shuffle=False,
-#         batch_size=args.batch_size_bs,
-#         num_workers=args.num_workers,
-#     )
-#
-#     return train_loader, val_loader, test_loader
+def get_kandinsky_pos_loader(args, shuffle=False):
+    dataset_train = data_kandinsky.KANDINSKY_POSITIVE(
+        args.dataset, 'train', small_data=args.small_data
+    )
+    dataset_val = data_kandinsky.KANDINSKY_POSITIVE(
+        args.dataset, 'val', small_data=args.small_data
+    )
+    dataset_test = data_kandinsky.KANDINSKY_POSITIVE(
+        args.dataset, 'test'
+    )
+
+    train_loader = torch.utils.data.DataLoader(
+        dataset_train,
+        shuffle=shuffle,
+        batch_size=args.batch_size_bs,
+        num_workers=args.num_workers,
+    )
+    val_loader = torch.utils.data.DataLoader(
+        dataset_val,
+        shuffle=False,
+        batch_size=args.batch_size_bs,
+        num_workers=args.num_workers,
+    )
+    test_loader = torch.utils.data.DataLoader(
+        dataset_test,
+        shuffle=False,
+        batch_size=args.batch_size_bs,
+        num_workers=args.num_workers,
+    )
+
+    return train_loader, val_loader, test_loader
+
+
+def get_clevr_pos_loader(args):
+    dataset_train = data_clevr.CLEVRHans_POSITIVE(
+        args.dataset, 'train'
+    )
+    dataset_val = data_clevr.CLEVRHans_POSITIVE(
+        args.dataset, 'val'
+    )
+    dataset_test = data_clevr.CLEVRHans_POSITIVE(
+        args.dataset, 'test'
+    )
+
+    train_loader = torch.utils.data.DataLoader(
+        dataset_train,
+        shuffle=True,
+        batch_size=args.batch_size_bs,
+        num_workers=args.num_workers,
+    )
+    val_loader = torch.utils.data.DataLoader(
+        dataset_val,
+        shuffle=False,
+        batch_size=args.batch_size_bs,
+        num_workers=args.num_workers,
+    )
+    test_loader = torch.utils.data.DataLoader(
+        dataset_test,
+        shuffle=False,
+        batch_size=args.batch_size_bs,
+        num_workers=args.num_workers,
+    )
+
+    return train_loader, val_loader, test_loader
 
 
 def get_prob(v_T, NSFR, args):

@@ -202,7 +202,7 @@ def main(n):
     rtpt.start()
 
     # get torch data loader
-    train_loader, val_loader,  test_loader = get_data_loader(args)
+    train_loader, val_loader, test_loader = get_data_loader(args)
 
     train_pos_loader, val_pos_loader, test_pos_loader = get_data_pos_loader(args)
     #####train_pos_loader, val_pos_loader, test_pos_loader = get_data_loader(args)
