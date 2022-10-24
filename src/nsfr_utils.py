@@ -5,7 +5,7 @@ import torch
 
 from src.facts_converter import FactsConverter
 from src.nsfr_bm import NSFReasoner
-from src.logic_utils import build_infer_module, build_clause_infer_module
+from src.logic_utils import build_infer_module, build_clause_infer_module, build_clause_body_infer_module
 from src.valuation import RLValuationModule
 
 attrs = ['color', 'shape', 'material', 'size']
@@ -353,6 +353,28 @@ def get_nsfr_model(args, lang, clauses, atoms, bk, bk_clauses, device, train=Fal
                        infer_module=IM, clause_infer_module=CIM, atoms=atoms, bk=bk, clauses=clauses)
     return NSFR
 
+
+
+def get_nsfr_cgen_model(args, lang, clauses, atoms, bk, device, train=False):
+    # if args.dataset_type == 'kandinsky':
+    #     PM = YOLOPerceptionModule(e=args.e, d=11, device=device)
+    #     VM = YOLOValuationModule(
+    #         lang=lang, device=device, dataset=args.dataset)
+    # elif args.dataset_type == 'clevr':
+    #     PM = SlotAttentionPerceptionModule(e=10, d=19, device=device)
+    #     VM = SlotAttentionValuationModule(lang=lang,  device=device)
+    # else:
+    #     assert False, "Invalid dataset type: " + str(args.dataset_type)
+    VM = RLValuationModule(lang=lang, device=device)
+    FC = FactsConverter(lang=lang,
+                        valuation_module=VM, device=device)
+    IM = build_infer_module(clauses, atoms, lang,
+                            m=args.m, infer_step=2, device=device, train=train)
+    CIM = build_clause_body_infer_module(clauses, atoms, lang, device=device)
+    # Neuro-Symbolic Forward Reasoner
+    NSFR = NSFReasoner(facts_converter=FC,
+                       infer_module=IM, clause_infer_module=CIM, atoms=atoms, bk=bk, clauses=clauses)
+    return NSFR
 
 # def __get_nsfr_model_from_nsfr(NSFR, lang, clauses, atoms, bk, bk_clauses, device):
 #     lang = NSFR.lang

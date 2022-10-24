@@ -87,6 +87,53 @@ class InferModule(nn.Module):
     def get_params(self):
         return self.W
 
+class ClauseBodyInferModule(nn.Module):
+    """
+    A class of differentiable foward-chaining inference.
+    """
+
+    def __init__(self, I, gamma=0.01, device=None, train=False):
+        """
+        In the constructor we instantiate two nn.Linear modules and assign them as
+        member variables.
+        """
+        super(ClauseBodyInferModule, self).__init__()
+        self.I = I
+        self.C = self.I.size(0)
+        self.G = self.I.size(1)
+        self.gamma = gamma
+        self.device = device
+        self.train_ = train
+
+        # clause functions
+        self.cs = [ClauseFunction(i, I, gamma=gamma)
+                   for i in range(self.I.size(0))]
+
+        # assert m == self.C, "Invalid m and C: " + \
+        #     str(m) + ' and ' + str(self.C)
+
+    def init_identity_weights(self, device):
+        ones = torch.ones((self.C,), dtype=torch.float32) * 100
+        return torch.diag(ones).to(device)
+
+    def forward(self, x):
+        """
+        In the forward function we accept a Tensor of input data and we must return
+        a Tensor of output data. We can use Modules defined in the constructor as
+        well as arbitrary operators on Tensors.
+        """
+        return self.r(x)
+
+    def r(self, x):
+        B = x.size(0)  # batch size
+        # apply each clause c_i and stack to a tensor C
+        # C * B * G
+        C = torch.stack([self.cs[i](x)
+                         for i in range(self.I.size(0))], 0)
+        return C
+
+    def get_params(self):
+        return self.W
 
 class ClauseInferModule(nn.Module):
     def __init__(self, I, infer_step, gamma=0.01, device=None, train=False, m=1, I_bk=None):
@@ -193,6 +240,36 @@ class ClauseFunction(nn.Module):
 
     def __init__(self, i, I, gamma=0.01):
         super(ClauseFunction, self).__init__()
+        self.i = i  # clause index
+        self.I = I  # index tensor C * S * G, S is the number of possible substituions
+        self.L = I.size(-1)  # number of body atoms
+        self.S = I.size(-2)  # max number of possible substitutions
+        self.gamma = gamma
+
+    def forward(self, x):
+        batch_size = x.size(0)  # batch size
+        # B * G
+        V = x
+        # G * S * b
+        I_i = self.I[self.i, :, :, :]
+
+        # B * G -> B * G * S * L
+        V_tild = V.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, self.S, self.L)
+        # G * S * L -> B * G * S * L
+        I_i_tild = I_i.repeat(batch_size, 1, 1, 1)
+
+        # B * G
+        C = softor(torch.prod(torch.gather(V_tild, 1, I_i_tild), 3),
+                   dim=2, gamma=self.gamma)
+        return C
+
+class ClauseBodyFunction(nn.Module):
+    """
+    A class of the clause function.
+    """
+
+    def __init__(self, i, I, gamma=0.01):
+        super(ClauseBodyFunction, self).__init__()
         self.i = i  # clause index
         self.I = I  # index tensor C * S * G, S is the number of possible substituions
         self.L = I.size(-1)  # number of body atoms

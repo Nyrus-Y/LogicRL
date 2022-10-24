@@ -1,4 +1,4 @@
-from src.infer import InferModule, ClauseInferModule
+from src.infer import InferModule, ClauseInferModule, ClauseBodyInferModule
 from src.tensor_encoder import TensorEncoder
 from src.fol.logic import *
 from src.fol.data_utils import DataUtils
@@ -65,6 +65,15 @@ def build_clause_infer_module(clauses, bk_clauses, atoms, lang, device, m=3, inf
 
     im = ClauseInferModule(I, m=m, infer_step=infer_step, device=device, train=train, I_bk=I_bk)
     return im
+
+
+def build_clause_body_infer_module(clauses,  atoms, lang, device, train=False):
+    te = TensorEncoder(lang, atoms, clauses, device=device)
+    I = te.encode()
+
+    im = ClauseBodyInferModule(I,  device=device, train=train)
+    return im
+
 
 def get_prednames(clauses):
     prednames = []

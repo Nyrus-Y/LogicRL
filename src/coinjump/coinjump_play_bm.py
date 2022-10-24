@@ -17,7 +17,7 @@ from src.coinjump.coinjump_learn.training.data_transform import extract_state, s
 from src.coinjump.coinjump_learn.training.ppo_coinjump import ActorCritic
 from src.coinjump.coinjump.coinjump.actions import coin_jump_actions_from_unified
 
-from src.util import extract_for_explaining
+from src.util import extract_for_cgen_explaining
 from src.nsfr_utils import get_nsfr_model, update_initial_clauses, get_prob, get_data_loader
 from src.logic_utils import get_lang, get_searched_clauses
 from src.mode_declaration import get_mode_declarations
@@ -32,7 +32,8 @@ device = torch.device('cuda:0')
 class RolloutBuffer:
     def __init__(self):
         self.actions = []
-        self.states = []
+        self.logic_states = []
+        self.neural_states =[]
         self.action_probs = []
         self.logprobs = []
         self.rewards = []
@@ -41,7 +42,8 @@ class RolloutBuffer:
 
     def clear(self):
         del self.actions[:]
-        del self.states[:]
+        del self.logic_states[:]
+        del self.neural_states[:]
         del self.action_probs[:]
         del self.logprobs[:]
         del self.rewards[:]
@@ -309,18 +311,21 @@ def run():
             # 1 left 2 right 3 up
             action = coin_jump_actions_from_unified(torch.argmax(prediction).cpu().item() + 1)
 
-            logic_state = extract_for_explaining(coin_jump)
+            logic_state = extract_for_cgen_explaining(coin_jump)
             if step % save_frequence == 0:
                 collected_states += 1
-                buffer.states.append(logic_state)
-                buffer.actions.append(torch.argmax(prediction))
-                buffer.action_probs.append(prediction)
+                buffer.logic_states.append(logic_state.detach())
+                buffer.actions.append(torch.argmax(prediction.detach()))
+                buffer.action_probs.append(prediction.detach())
+                buffer.neural_states.append(model_input['state'])
+
+                if collected_states % print_frequence == 0:
+                    print("states collected: {} , max states: {}".format(collected_states, max_states))
         else:
             coin_jump = create_coinjump_instance(seed=seed, V1=True)
             action = []
 
-        if collected_states % print_frequence == 0:
-            print("states collected: {} , max states: {}".format(collected_states, max_states))
+
 
         # reward = coin_jump.step(action)
         # score = coin_jump.get_score()
@@ -333,7 +338,7 @@ def run():
 
     print('data collected')
 
-    env_name = 'coinjump_5a'
+    env_name = 'coinjump_bm'
     current_path = os.getcwd()
     lark_path = os.path.join(current_path, 'lark/exp.lark')
     lang_base_path = os.path.join(current_path, 'data/lang/')
@@ -354,7 +359,7 @@ def run():
     mode_declarations = get_mode_declarations(args, lang, args.n_obj)
     # print("Maze terminated")
 
-    cgen = ClauseGenerator(args, NSFR_cgen, lang, buffer.states, mode_declarations, bk_clauses, device=device,
+    cgen = ClauseGenerator(args, NSFR_cgen, lang, atoms,buffer, mode_declarations, device=device,
                            no_xil=args.no_xil)  # torch.device('cpu'))
     # generate clauses
     # if args.pre_searched:

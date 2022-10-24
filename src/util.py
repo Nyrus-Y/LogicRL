@@ -292,6 +292,95 @@ def extract_for_explaining(coin_jump):
     states = torch.tensor(np.array(extracted_states), dtype=torch.float32, device="cuda:0").unsqueeze(0)
     return states
 
+def extract_for_cgen_explaining(coin_jump):
+    """
+    extract state to metric
+    input: coin_jump instance
+    output: extracted_state to be explained
+
+    x:  agent, key, door, enemy, position_X, position_Y
+    y:  obj1(agent), obj2(key), obj3(door)，obj4(enemy)
+
+    To be changed when using object-detection tech
+    """
+    # TODO
+    num_of_feature = 6
+    num_of_object = 4
+    representation = coin_jump.level.get_representation()
+    extracted_states = np.zeros((num_of_object, num_of_feature))
+    for entity in representation["entities"]:
+        if entity[0].name == 'PLAYER':
+            extracted_states[0][0] = 1
+            extracted_states[0][-2:] = entity[1:3]
+            # 27 is the width of map, this is normalization
+            # extracted_states[0][-2:] /= 27
+        elif entity[0].name == 'KEY':
+            extracted_states[1][1] = 1
+            extracted_states[1][-2:] = entity[1:3]
+            # extracted_states[1][-2:] /= 27
+        elif entity[0].name == 'DOOR':
+            extracted_states[2][2] = 1
+            extracted_states[2][-2:] = entity[1:3]
+            # extracted_states[2][-2:] /= 27
+        elif entity[0].name == 'GROUND_ENEMY':
+            extracted_states[3][3] = 1
+            extracted_states[3][-2:] = entity[1:3]
+            # extracted_states[3][-2:] /= 27
+
+    # num_of_feature = 6
+    # num_of_object = 5
+    # representation = coin_jump.level.get_representation()
+    # extracted_states = np.zeros((num_of_object, num_of_feature))
+    # for entity in representation["entities"]:
+    #     if entity[0].name == 'PLAYER':
+    #         extracted_states[0][0] = 1
+    #         extracted_states[0][-2:] = entity[1:3]
+    #         # 27 is the width of map, this is normalization
+    #         # extracted_states[0][-2:] /= 27
+    #     elif entity[0].name == 'KEY':
+    #         extracted_states[1][1] = 1
+    #         extracted_states[1][-2:] = entity[1:3]
+    #         # extracted_states[1][-2:] /= 27
+    #     elif entity[0].name == 'DOOR':
+    #         extracted_states[2][2] = 1
+    #         extracted_states[2][-2:] = entity[1:3]
+    #         # extracted_states[2][-2:] /= 27
+    #     elif entity[0].name == 'GROUND_ENEMY':
+    #         extracted_states[3][3] = 1
+    #         extracted_states[3][-2:] = entity[1:3]
+    #         # extracted_states[3][-2:] /= 27
+    #     elif entity[0].name == 'KEY2':
+    #         extracted_states[4][1] = 1
+    #         extracted_states[4][-2:] = entity[1:3]
+    #         # extracted_states[3][-2:] /= 27
+    if sum(extracted_states[:, 1]) == 0:
+        key_picked = True
+    else:
+        key_picked = False
+
+    def simulate_prob(extracted_states, num_of_objs, key_picked):
+        for i, obj in enumerate(extracted_states):
+            obj = add_noise(obj, i, num_of_objs)
+            extracted_states[i] = obj
+        if key_picked:
+            extracted_states[:, 1] = 0
+        return extracted_states
+
+    def add_noise(obj, index_obj, num_of_objs):
+        mean = torch.tensor(0.2)
+        std = torch.tensor(0.05)
+        noise = torch.abs(torch.normal(mean=mean, std=std)).item()
+        rand_noises = torch.randint(1, 5, (num_of_objs - 1,)).tolist()
+        rand_noises = [i * noise / sum(rand_noises) for i in rand_noises]
+        rand_noises.insert(index_obj, 1 - noise)
+
+        for i, noise in enumerate(rand_noises):
+            obj[i] = rand_noises[i]
+        return obj
+
+    extracted_states = simulate_prob(extracted_states, num_of_object, key_picked)
+
+    return torch.tensor(extracted_states,device="cuda:0")
 
 def show_explaining(prediction, KD=False, Dodge=False, V1=False, V2=False):
     if KD:

@@ -1,4 +1,6 @@
-from src.nsfr_utils import get_nsfr_model
+from src.nsfr_utils import get_nsfr_cgen_model
+from src.tensor_encoder import TensorEncoder
+from src.infer import ClauseBodyInferModule
 # from eval_clause import EvalInferModule
 from src.refinement import RefinementGenerator
 from tqdm import tqdm
@@ -20,17 +22,18 @@ class ClauseGenerator(object):
         max number of atoms in body of clauses
     """
 
-    def __init__(self, args, NSFR, lang, state, mode_declarations, bk_clauses, device, no_xil=False):
+    def __init__(self, args, NSFR, lang, facts, buffer, mode_declarations, device,
+                 no_xil=False):
         self.args = args
         self.NSFR = NSFR
         self.lang = lang
+        self.facts = facts
         self.mode_declarations = mode_declarations
-        self.bk_clauses = bk_clauses
         self.device = device
         self.no_xil = no_xil
         self.rgen = RefinementGenerator(lang=lang, mode_declarations=mode_declarations)
         # self.pos_loader = pos_data_loader
-        self.state = state
+        self.buffer = buffer
         self.bce_loss = torch.nn.BCELoss()
 
         # self.labels = torch.cat([
@@ -225,8 +228,12 @@ class ClauseGenerator(object):
         print("Eval clauses: ", len(clauses))
         # update infer module with new clauses
         # NSFR = update_nsfr_clauses(self.NSFR, clauses, self.bk_clauses, self.device)
-        NSFR = get_nsfr_model(self.args, self.lang, clauses, self.NSFR.atoms, self.NSFR.bk, self.bk_clauses,
-                              self.device)
+        #NSFR = get_nsfr_model(self.args, self.lang, clauses, self.NSFR.atoms, self.NSFR.bk, self.bk_clauses,
+        #                      self.device)
+        NSFR = get_nsfr_cgen_model(self.args, self.lang, clauses, self.NSFR.atoms, self.NSFR.bk, self.device)
+        #TE = TensorEncoder(lang=self.lang, facts=self.facts, clauses=clauses, device=self.device)
+        #I = TE.encode()
+        #CIM = ClauseBodyInferModule(I, device=self.device)
         # TODO: Compute loss for validation data , score is bce loss
         # N C B G
         predicted_list_list = []
@@ -235,28 +242,42 @@ class ClauseGenerator(object):
         N_data = 0
         # List(C*B*G)
 
-        for i, sample in enumerate(self.state, start=0):
+        # shape: (num_clauses, num_buffers, num_atoms)
+        scores_cba = NSFR.clause_eval(torch.stack(self.buffer.logic_states))
+        # shape: (num_clauses, num_buffers)
+        body_scores = torch.stack([NSFR.predict(score_i, predname='jump') for score_i in scores_cba])
+
+
+        # return sum in terms of buffers
+        # take product: action prob of policy * body scores
+        # shape: (num_clauses, )
+        scores = torch.sum(buffer_action_prob * body_scores, dim=1)
+        return scores
+
+        for i, sample in enumerate(self.buffer.logic_states, start=0):
             # imgs, target_set = map(lambda x: x.to(self.device), sample)]
             # print(NSFR.clauses)
             # N_data += imgs.size(0)
             # B = imgs.size(0)
-            N_data += self.state.size(0)
-            B = self.state.size(0)
+            # N_data += self.buffer.logic_states.size(0)
+            B = self.buffer.logic_states.size(0)
             # C * B * G
-            V_T_list = NSFR.clause_eval(self.state).detach()
-            C_score = torch.zeros((C, B)).to(self.device)
-            for i, V_T in enumerate(V_T_list):
-                # for each clause
-                # B
-                # print(V_T.shape)
-                predicted = NSFR.predict(v=V_T, predname='kp').detach()
-                # print("clause: ", clauses[i])
-                # NSFR.print_valuation_batch(V_T)
-                # print(predicted)
-                # predicted = self.bce_loss(predicted, target_set)
-                # predicted = torch.abs(predicted - target_set)
-                # print(predicted)
-                C_score[i] = predicted
+            # #V_T_list = NSFR.clause_eval(self.buffer.logic_states).detach()
+            # C_score = torch.zeros((C, B)).to(self.device)
+            # for i, V_T in enumerate(V_T_list):
+            #
+            #     # for each clause
+            #     # B
+            #     # print(V_T.shape)
+            #     predname = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door', 'right_go_to_door']
+            #     predicted = NSFR.predict(v=V_T, predname=predname).detach()
+            #     # print("clause: ", clauses[i])
+            #     # NSFR.print_valuation_batch(V_T)
+            #     # print(predicted)
+            #     # predicted = self.bce_loss(predicted, target_set)
+            #     # predicted = torch.abs(predicted - target_set)
+            #     # print(predicted)
+            #     C_score[i] = predicted
             # C
             # sum over positive prob
             C_score = C_score.sum(dim=1)
