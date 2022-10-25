@@ -1,5 +1,6 @@
 import random
 import tqdm
+import time
 import argparse
 import numpy as np
 import torch
@@ -72,8 +73,8 @@ def get_args():
                         help='Smooth parameter in the softor function')
     parser.add_argument("--plot", action="store_true",
                         help="Plot images with captions.")
-    parser.add_argument("--t-beam", type=int, default=4, help="Number of rule expantion of clause generation.")
-    parser.add_argument("--n-beam", type=int, default=5, help="The size of the beam.")
+    parser.add_argument("--t-beam", type=int, default=2, help="Number of rule expantion of clause generation.")
+    parser.add_argument("--n-beam", type=int, default=8, help="The size of the beam.")
     parser.add_argument("--n-max", type=int, default=50, help="The maximum number of clauses.")
     parser.add_argument("--m", type=int, default=1, help="The size of the logic program.")
     parser.add_argument("--n-obj", type=int, default=2, help="The number of objects to be focused.")
@@ -271,7 +272,7 @@ def run():
     seed = random.seed() if args.seed is None else int(args.seed)
 
     coin_jump = create_coinjump_instance(seed=seed, V1=True)
-    # viewer = setup_image_viewer(coin_jump)
+    #viewer = setup_image_viewer(coin_jump)
 
     # frame rate limiting
     fps = 10
@@ -284,8 +285,8 @@ def run():
 
     # collect data
     max_states = 10000
-    max_states = 10
-    save_frequence = 3
+    max_states = 10000
+    save_frequence = 1
     print_frequence = 1000
     step = 0
     collected_states = 0
@@ -327,7 +328,7 @@ def run():
 
 
 
-        # reward = coin_jump.step(action)
+        reward = coin_jump.step(action)
         # score = coin_jump.get_score()
         # np_img = np.asarray(coin_jump.camera.screen)
         # viewer.show(np_img[:, :, :3])
@@ -369,32 +370,32 @@ def run():
     print("====== ", len(clauses), " clauses are generated!! ======")
 
     # update
-    NSFR = get_nsfr_model(args, lang, clauses, atoms, bk, bk_clauses, device, train=True)
-    params = NSFR.get_params()
-    optimizer = torch.optim.RMSprop(params, lr=args.lr)
-    # ##optimizer = torch.optim.Adam(params, lr=args.lr)
-    train_loader, val_loader, test_loader = get_data_loader(buffer, args)
+    # NSFR = get_nsfr_model(args, lang, clauses, atoms, bk, bk_clauses, device, train=True)
+    # params = NSFR.get_params()
+    # optimizer = torch.optim.RMSprop(params, lr=args.lr)
+    # # ##optimizer = torch.optim.Adam(params, lr=args.lr)
+    # train_loader, val_loader, test_loader = get_data_loader(buffer, args)
+    # #
+    # loss_list = train_nsfr(args, NSFR, optimizer, train_loader, val_loader, test_loader, device, writer)
+    # #
+    # # validation split
+    # print("Predicting on validation data set...")
+    # acc_val, rec_val, th_val = predict(
+    #     NSFR, val_loader, args, device, th=0.33, split='val')
     #
-    loss_list = train_nsfr(args, NSFR, optimizer, train_loader, val_loader, test_loader, device, writer)
+    # print("Predicting on training data set...")
+    # # training split
+    # acc, rec, th = predict(
+    #     NSFR, train_loader, args, device, th=th_val, split='train')
     #
-    # validation split
-    print("Predicting on validation data set...")
-    acc_val, rec_val, th_val = predict(
-        NSFR, val_loader, args, device, th=0.33, split='val')
-
-    print("Predicting on training data set...")
-    # training split
-    acc, rec, th = predict(
-        NSFR, train_loader, args, device, th=th_val, split='train')
-
-    print("Predicting on test data set...")
-    # test split
-    acc_test, rec_test, th_test = predict(
-        NSFR, test_loader, args, device, th=th_val, split='test')
-
-    print("training acc: ", acc, "threashold: ", th, "recall: ", rec)
-    print("val acc: ", acc_val, "threashold: ", th_val, "recall: ", rec_val)
-    print("test acc: ", acc_test, "threashold: ", th_test, "recall: ", rec_test)
+    # print("Predicting on test data set...")
+    # # test split
+    # acc_test, rec_test, th_test = predict(
+    #     NSFR, test_loader, args, device, th=th_val, split='test')
+    #
+    # print("training acc: ", acc, "threashold: ", th, "recall: ", rec)
+    # print("val acc: ", acc_val, "threashold: ", th_val, "recall: ", rec_val)
+    # print("test acc: ", acc_test, "threashold: ", th_test, "recall: ", rec_test)
 
 
 if __name__ == "__main__":

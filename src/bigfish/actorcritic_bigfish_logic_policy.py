@@ -49,7 +49,7 @@ class NSFR_ActorCritic(nn.Module):
         super(NSFR_ActorCritic, self).__init__()
 
         self.rng = random.Random() if rng is None else rng
-        self.num_actions = 11
+        self.num_actions = 6
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
 
@@ -92,16 +92,17 @@ class NSFR_ActorCritic(nn.Module):
         lark_path = 'lark/exp.lark'
         lang_base_path = 'data/lang/'
         device = torch.device('cuda:0')
-        # lang, clauses, bk, atoms = get_lang(
-        #     lark_path, lang_base_path, 'bigfish', 'bigfish_simplified_actions')
         lang, clauses, bk, atoms = get_lang(
-            lark_path, lang_base_path, 'bigfish', 'more_redundant_actions')
-
+            lark_path, lang_base_path, 'bigfish', 'bigfish_simplified_actions')
+        # lang, clauses, bk, atoms = get_lang(
+        #     lark_path, lang_base_path, 'bigfish', 'more_redundant_actions')
+        prednames = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat',
+                     'up_to_dodge', 'down_to_dodge']
         # prednames = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat',
         #              'up_to_dodge', 'down_to_dodge', 'up_redundant', 'down_redundant']
-        prednames = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat',
-                     'up_to_dodge', 'down_to_dodge', 'up_redundant', 'down_redundant', 'left_redundant',
-                     'right_redundant', 'idle_redundant']
+        # prednames = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat',
+        #              'up_to_dodge', 'down_to_dodge', 'up_redundant', 'down_redundant', 'left_redundant',
+        #              'right_redundant', 'idle_redundant']
         VM = valuation_bf.BFValuationModule(lang=lang, device=device)
         FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
         m = len(clauses)

@@ -152,17 +152,17 @@ class ClauseGenerator(object):
                 refs_i = list(set(refs_i).difference(set(B_)))
                 B_.extend(refs_i)
                 refs.extend(refs_i)
-                if self._is_valid(c) and not self._is_confounded(c):
-                    C = C.union(set([c]))
-                    print("Added: ", c)
+                # if self._is_valid(c) and not self._is_confounded(c):
+                #     C = C.union(set([c]))
+                #     print("Added: ", c)
 
             print('Evaluating ', len(refs), 'generated clauses.')
             loss_list = self.eval_clauses(refs)
             for i, ref in enumerate(refs):
                 # check duplication
-                if not self.is_in_beam(B_new, ref, loss_list[i]):
-                    B_new[ref] = loss_list[i]
-                    C_dic[ref] = loss_list[i]
+                # if not self.is_in_beam(B_new, ref, loss_list[i]):
+                B_new[ref] = loss_list[i]
+                C_dic[ref] = loss_list[i]
 
                 # if len(C) >= N_max:
                 #    break
@@ -170,9 +170,10 @@ class ClauseGenerator(object):
             # top N_beam refiements
             B_new_sorted = B_new_sorted[:N_beam]
             # B_new_sorted = [x for x in B_new_sorted if x[1] > th]
-            for x in B_new_sorted:
-                print(x[1], x[0])
+            # for x in B_new_sorted:
+            #     print(x[1], x[0])
             B = [x[0] for x in B_new_sorted]
+            C = B
             step += 1
             if len(B) == 0:
                 break
@@ -215,8 +216,10 @@ class ClauseGenerator(object):
         """
         C = set()
         for clause in C_0:
-            C = C.union(self.beam_search_clause(
-                clause, T_beam, N_beam, N_max))
+            searched_clause = self.beam_search_clause(clause, T_beam, N_beam, N_max)
+            C.add(searched_clause[0])
+            # C = C.union(self.beam_search_clause(
+            #     clause, T_beam, N_beam, N_max))
         C = sorted(list(C))
         print('======= BEAM SEARCHED CLAUSES ======')
         for c in C:
@@ -225,15 +228,16 @@ class ClauseGenerator(object):
 
     def eval_clauses(self, clauses):
         C = len(clauses)
+        predname = self.get_predname(clauses)
         print("Eval clauses: ", len(clauses))
         # update infer module with new clauses
         # NSFR = update_nsfr_clauses(self.NSFR, clauses, self.bk_clauses, self.device)
-        #NSFR = get_nsfr_model(self.args, self.lang, clauses, self.NSFR.atoms, self.NSFR.bk, self.bk_clauses,
+        # NSFR = get_nsfr_model(self.args, self.lang, clauses, self.NSFR.atoms, self.NSFR.bk, self.bk_clauses,
         #                      self.device)
         NSFR = get_nsfr_cgen_model(self.args, self.lang, clauses, self.NSFR.atoms, self.NSFR.bk, self.device)
-        #TE = TensorEncoder(lang=self.lang, facts=self.facts, clauses=clauses, device=self.device)
-        #I = TE.encode()
-        #CIM = ClauseBodyInferModule(I, device=self.device)
+        # TE = TensorEncoder(lang=self.lang, facts=self.facts, clauses=clauses, device=self.device)
+        # I = TE.encode()
+        # CIM = ClauseBodyInferModule(I, device=self.device)
         # TODO: Compute loss for validation data , score is bce loss
         # N C B G
         predicted_list_list = []
@@ -245,43 +249,67 @@ class ClauseGenerator(object):
         # shape: (num_clauses, num_buffers, num_atoms)
         scores_cba = NSFR.clause_eval(torch.stack(self.buffer.logic_states))
         # shape: (num_clauses, num_buffers)
-        body_scores = torch.stack([NSFR.predict(score_i, predname='jump') for score_i in scores_cba])
-
+        body_scores = torch.stack([NSFR.predict(score_i, predname=predname) for score_i in scores_cba])
 
         # return sum in terms of buffers
         # take product: action prob of policy * body scores
         # shape: (num_clauses, )
-        scores = torch.sum(buffer_action_prob * body_scores, dim=1)
-        return scores
+        action_probs = self.get_action_probs(predname)
+        # scores = torch.sum(self.buffer.action_buffer * body_scores, dim=1)
+        scores = self.scores(action_probs, body_scores)
 
-        for i, sample in enumerate(self.buffer.logic_states, start=0):
-            # imgs, target_set = map(lambda x: x.to(self.device), sample)]
-            # print(NSFR.clauses)
-            # N_data += imgs.size(0)
-            # B = imgs.size(0)
-            # N_data += self.buffer.logic_states.size(0)
-            B = self.buffer.logic_states.size(0)
-            # C * B * G
-            # #V_T_list = NSFR.clause_eval(self.buffer.logic_states).detach()
-            # C_score = torch.zeros((C, B)).to(self.device)
-            # for i, V_T in enumerate(V_T_list):
-            #
-            #     # for each clause
-            #     # B
-            #     # print(V_T.shape)
-            #     predname = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door', 'right_go_to_door']
-            #     predicted = NSFR.predict(v=V_T, predname=predname).detach()
-            #     # print("clause: ", clauses[i])
-            #     # NSFR.print_valuation_batch(V_T)
-            #     # print(predicted)
-            #     # predicted = self.bce_loss(predicted, target_set)
-            #     # predicted = torch.abs(predicted - target_set)
-            #     # print(predicted)
-            #     C_score[i] = predicted
-            # C
-            # sum over positive prob
-            C_score = C_score.sum(dim=1)
-            score += C_score
+        scoress = torch.sum(scores, dim=1)
+        return scoress
+
+        # for i, sample in enumerate(self.buffer.logic_states, start=0):
+        #     # imgs, target_set = map(lambda x: x.to(self.device), sample)]
+        #     # print(NSFR.clauses)
+        #     # N_data += imgs.size(0)
+        #     # B = imgs.size(0)
+        #     # N_data += self.buffer.logic_states.size(0)
+        #     B = self.buffer.logic_states.size(0)
+        #     # C * B * G
+        #     # #V_T_list = NSFR.clause_eval(self.buffer.logic_states).detach()
+        #     # C_score = torch.zeros((C, B)).to(self.device)
+        #     # for i, V_T in enumerate(V_T_list):
+        #     #
+        #     #     # for each clause
+        #     #     # B
+        #     #     # print(V_T.shape)
+        #     #     predname = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door', 'right_go_to_door']
+        #     #     predicted = NSFR.predict(v=V_T, predname=predname).detach()
+        #     #     # print("clause: ", clauses[i])
+        #     #     # NSFR.print_valuation_batch(V_T)
+        #     #     # print(predicted)
+        #     #     # predicted = self.bce_loss(predicted, target_set)
+        #     #     # predicted = torch.abs(predicted - target_set)
+        #     #     # print(predicted)
+        #     #     C_score[i] = predicted
+        #     # C
+        #     # sum over positive prob
+        #     C_score = C_score.sum(dim=1)
+        #     score += C_score
         # return score
         # score = 1 - score.detach().cpu().numpy() / N_data
-        return score
+        # return score
+
+    def get_predname(self, clauses):
+        predname = clauses[0].head.pred.name
+        return predname
+
+    def get_action_probs(self, predname):
+        action_probs = torch.stack(self.buffer.action_probs, dim=1).squeeze(0)
+        if 'jump' in predname:
+            action_probs = action_probs[:, 2]
+            return action_probs
+        elif 'left' in predname:
+            action_probs = action_probs[:, 0]
+            return action_probs
+        elif 'right' in predname:
+            action_probs = action_probs[:, 1]
+            return action_probs
+
+    def scores(self, action_probs, body_scores):
+        for i, probs in enumerate(action_probs):
+            body_scores[:, i] *= probs
+        return body_scores

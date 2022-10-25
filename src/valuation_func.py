@@ -65,7 +65,7 @@ class ClosebyValuationFunction(nn.Module):
 
         result = []
         for x, y in zip(dis_x, dis_y):
-            if x < 2 and y <= 0.1:
+            if x < 3 and y <= 0.1:
                 result.append(0.99)
             else:
                 result.append(0.01)

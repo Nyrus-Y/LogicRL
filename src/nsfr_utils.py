@@ -10,7 +10,6 @@ from src.valuation import RLValuationModule
 
 attrs = ['color', 'shape', 'material', 'size']
 
-
 def update_initial_clauses(clauses, obj_num):
     print(len(clauses))
     assert len(clauses) == 1, "Too many initial clauses."

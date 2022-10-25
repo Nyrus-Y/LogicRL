@@ -142,7 +142,7 @@ def explain(NSFR, extracted_states):
     prednames = NSFR.prednames
     predicts = NSFR.predict_multi(v=V_T, prednames=prednames)
     explaining = NSFR.print_explaining(predicts)
-
+    # explaining = explaining.head.pred.name
     return explaining
 
 

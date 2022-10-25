@@ -33,7 +33,7 @@ extracted_reasoning_states = extract_reasoning_state(obs['positions'])
 
 explaining_env = 'bigfish_simplified_actions'
 NSFR = nsfr(explaining_env)
-
+last_explaining = ""
 while NB_DONE < TO_SUCCEED:
     explaining = explain(NSFR, extracted_reasoning_states)
     action = action_select(explaining)
@@ -41,7 +41,12 @@ while NB_DONE < TO_SUCCEED:
 
     rew, obs, done = env.observe()
 
-    print(explaining)
-    extracted_reasoning_states = extract_reasoning_state(obs["positions"])
+    # print(explaining)
+    if last_explaining != explaining.head.pred.name:
+        print(explaining.head.pred.name)
+        last_explaining = explaining.head.pred.name
 
+    extracted_reasoning_states = extract_reasoning_state(obs["positions"])
+    if done:
+        print("--------------------------new game--------------------------")
     # print(f"reward : {rew}")
