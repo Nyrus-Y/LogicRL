@@ -153,7 +153,7 @@ class ClauseGenerator(object):
                 B_.extend(refs_i)
                 refs.extend(refs_i)
                 # if self._is_valid(c) and not self._is_confounded(c):
-                #     C = C.union(set([c]))
+                C = C.union(set([c]))
                 #     print("Added: ", c)
 
             print('Evaluating ', len(refs), 'generated clauses.')
@@ -170,10 +170,10 @@ class ClauseGenerator(object):
             # top N_beam refiements
             B_new_sorted = B_new_sorted[:N_beam]
             # B_new_sorted = [x for x in B_new_sorted if x[1] > th]
-            # for x in B_new_sorted:
-            #     print(x[1], x[0])
+            for x in B_new_sorted:
+                print(x[1], x[0])
             B = [x[0] for x in B_new_sorted]
-            C = B
+            # C = B
             step += 1
             if len(B) == 0:
                 break
@@ -217,7 +217,7 @@ class ClauseGenerator(object):
         C = set()
         for clause in C_0:
             searched_clause = self.beam_search_clause(clause, T_beam, N_beam, N_max)
-            C.add(searched_clause[0])
+            # C.add(searched_clause[0])
             # C = C.union(self.beam_search_clause(
             #     clause, T_beam, N_beam, N_max))
         C = sorted(list(C))
@@ -250,6 +250,8 @@ class ClauseGenerator(object):
         scores_cba = NSFR.clause_eval(torch.stack(self.buffer.logic_states))
         # shape: (num_clauses, num_buffers)
         body_scores = torch.stack([NSFR.predict(score_i, predname=predname) for score_i in scores_cba])
+
+        body_probs =
 
         # return sum in terms of buffers
         # take product: action prob of policy * body scores
@@ -310,6 +312,13 @@ class ClauseGenerator(object):
             return action_probs
 
     def scores(self, action_probs, body_scores):
+        # action_probs:（num_buffers, )
+        # body_scores: (num_clauses, num_buffers)
+
+        # (num_clauses, num_buffers)
+        action_probs_ = action_probs.unsqueeze(0).expand((body_scores.size(0), -1))
+        return action_probs_ * body_scores
+
         for i, probs in enumerate(action_probs):
             body_scores[:, i] *= probs
         return body_scores

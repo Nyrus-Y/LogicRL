@@ -285,7 +285,7 @@ def run():
 
     # collect data
     max_states = 10000
-    max_states = 10000
+    max_states = 100
     save_frequence = 1
     print_frequence = 1000
     step = 0

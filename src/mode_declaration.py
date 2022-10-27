@@ -147,7 +147,7 @@ def get_mode_declarations_coinjump(lang, obj_num):
 
     modeb_list = [
         ModeDeclaration('body', 2, lang.get_pred_by_name('type'), [p_object, s_type]),
-        ModeDeclaration('body', 1, lang.get_pred_by_name('closeby'), [p_object, p_object]),
+        ModeDeclaration('body', 1, lang.get_pred_by_name('closeby'), [p_object, p_object], ordered=False),
         ModeDeclaration('body', 1, lang.get_pred_by_name('on_left'), [p_object, p_object]),
         ModeDeclaration('body', 1, lang.get_pred_by_name('on_right'), [p_object, p_object]),
         ModeDeclaration('body', 1, lang.get_pred_by_name('have_key'), [p_image], ordered=False),
