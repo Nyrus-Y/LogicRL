@@ -216,10 +216,10 @@ class ClauseGenerator(object):
         """
         C = set()
         for clause in C_0:
-            searched_clause = self.beam_search_clause(clause, T_beam, N_beam, N_max)
+            # searched_clause = self.beam_search_clause(clause, T_beam, N_beam, N_max)
             # C.add(searched_clause[0])
-            # C = C.union(self.beam_search_clause(
-            #     clause, T_beam, N_beam, N_max))
+            C = C.union(self.beam_search_clause(
+                clause, T_beam, N_beam, N_max))
         C = sorted(list(C))
         print('======= BEAM SEARCHED CLAUSES ======')
         for c in C:
@@ -324,7 +324,7 @@ class ClauseGenerator(object):
             action_logic = [1 if score > 0.5 else 0 for score in body_score]
             actions_logic.append(action_logic)
         # actions_logic = torch.tensor(actions_logic)
-        num_logic_action = [sum(i) for i in actions_logic]
+        # num_logic_action = [sum(i) for i in actions_logic]
         num_correct_actions = []
         for actions in actions_logic:
             num_correct_action = 0
