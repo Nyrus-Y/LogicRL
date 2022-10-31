@@ -14,10 +14,10 @@ import src.coinjump.coinjump_learn.env
 from src.valuation import RLValuationModule
 from src.facts_converter import FactsConverter
 from src.logic_utils import build_infer_module, get_lang
-from src.util import num_action_select
+from src.util import num_action_select_bm
 from src.nsfr_training import NSFReasoner
 from src.coinjump.coinjump_learn.models.mlpCriticController import MLPCriticController
-from src.util import plot_weights
+from src.util import plot_weights, plot_weights_multi
 
 device = torch.device('cuda:0')
 
@@ -47,7 +47,7 @@ class NSFR_ActorCritic(nn.Module):
 
         self.rng = random.Random() if rng is None else rng
         # TODO change num of action
-        self.num_actions = 10
+        self.num_actions = 5
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
 
@@ -89,7 +89,7 @@ class NSFR_ActorCritic(nn.Module):
         # TODO
         device = torch.device('cuda:0')
         lang, clauses, bk, atoms = get_lang(
-            lark_path, lang_base_path, 'coinjump', 'coinjump')
+            lark_path, lang_base_path, 'coinjump', 'coinjump_bm')
 
         VM = RLValuationModule(lang=lang, device=device)
         FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
@@ -229,7 +229,7 @@ def main():
     # max_training_timesteps = int(1e5)  # break training loop if timeteps > max_training_timesteps
     max_training_timesteps = 100000000  # break training loop if timeteps > max_training_timesteps
 
-    print_freq = max_ep_len * 10  # print avg reward in the interval (in num timesteps)
+    print_freq = max_ep_len * 5  # print avg reward in the interval (in num timesteps)
     log_freq = max_ep_len * 5  # log avg reward in the interval (in num timesteps)
     # save_model_freq = int(2e4)  # save model frequency (in num timesteps)
     # save_model_freq = 500000  # save model frequency (in num timesteps)
@@ -380,7 +380,7 @@ def main():
 
     # checkpoint_path = directory + "PPO_{}_{}_{}.pth".format(env_name, random_seed, 0)
 
-    plot_weights(ppo_agent.get_weights(), image_directory)
+    plot_weights_multi(ppo_agent.get_weights(), image_directory)
 
     # logging file
     log_f = open(log_f_name, "w+")
@@ -408,7 +408,7 @@ def main():
 
             action = ppo_agent.select_action(state, epsilon=epsilon)
             # TODO
-            action = num_action_select(action, V2=True)
+            action = num_action_select_bm(action, V2=True)
             # action = num_action_select(action)
             state, reward, done, _ = env.step(action)
 
@@ -446,7 +446,7 @@ def main():
                 print("--------------------------------------------------------------------------------------------")
 
                 # save image of weights
-                plot_weights(ppo_agent.get_weights(), image_directory, time_step)
+                plot_weights_multi(ppo_agent.get_weights(), image_directory, time_step)
             # break; if the episode is over
             if done:
                 break

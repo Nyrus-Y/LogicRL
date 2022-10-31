@@ -202,6 +202,39 @@ def num_action_select(action, KD=False, V1=False, V2=False, Dodge=False):
             return 0
 
 
+def num_action_select_bm(action, KD=False, V1=False, V2=False, Dodge=False):
+    """
+    0:jump
+    1:left_go_get_key
+    2:right_go_get_key
+    3:left_go_to_door
+    4:right_go_to_door
+    5:stay
+    6:jump_over_door
+    7:left_for_nothing
+    8:right_go_to_enemy
+    9:stay_for_nothing
+
+    CJA_NOOP: Final[int] = 0
+    CJA_MOVE_LEFT: Final[int] = 1
+    CJA_MOVE_RIGHT: Final[int] = 2
+    CJA_MOVE_UP: Final[int] = 3
+    CJA_MOVE_DOWN: Final[int] = 4
+    CJA_MOVE_LEFT_UP: Final[int] = 5
+    CJA_MOVE_RIGHT_UP: Final[int] = 6
+    CJA_MOVE_LEFT_DOWN: Final[int] = 7
+    CJA_MOVE_RIGHT_DOWN: Final[int]= 8
+    CJA_NUM_EXPLICIT_ACTIONS = 9
+    """
+    if V1 or V2:
+        if action in [0, 6]:
+            return 3
+        elif action in [1, 2, 7]:
+            return 1
+        elif action in [3, 4, 8]:
+            return 2
+
+
 def extract_for_explaining(coin_jump):
     """
     extract state to metric
@@ -292,6 +325,7 @@ def extract_for_explaining(coin_jump):
     states = torch.tensor(np.array(extracted_states), dtype=torch.float32, device="cuda:0").unsqueeze(0)
     return states
 
+
 def extract_for_cgen_explaining(coin_jump):
     """
     extract state to metric
@@ -367,7 +401,7 @@ def extract_for_cgen_explaining(coin_jump):
         return extracted_states
 
     def add_noise(obj, index_obj, num_of_objs):
-        mean = torch.tensor(0.2)
+        mean = torch.tensor(0.1)
         std = torch.tensor(0.05)
         noise = torch.abs(torch.normal(mean=mean, std=std)).item()
         rand_noises = torch.randint(1, 5, (num_of_objs - 1,)).tolist()
@@ -380,7 +414,8 @@ def extract_for_cgen_explaining(coin_jump):
 
     extracted_states = simulate_prob(extracted_states, num_of_object, key_picked)
 
-    return torch.tensor(extracted_states,device="cuda:0")
+    return torch.tensor(extracted_states, device="cuda:0")
+
 
 def show_explaining(prediction, KD=False, Dodge=False, V1=False, V2=False):
     if KD:
@@ -433,6 +468,11 @@ def plot_weights(weights, image_directory, time_step=0):
     x_label = ['Jump', 'Left_key', 'Right_key', 'Left_door',
                'Right_door', 'Stay', 'Jump_door', 'Left_nothing', 'Right_enemy',
                'Stay_nothing']
+    x_label = ['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7', 'J8', 'J9', 'J10', 'J11', 'J12', 'J13', 'J14', 'J15'
+        , 'LK1', 'LK2', 'LK3', 'LK4', 'LK5', 'LK6', 'LK7', 'LK8', 'LK9', 'LK10', 'LK11', 'LK12', 'LK13', 'LK14', 'LK15'
+        , 'LD1', 'LD2', 'LD3', 'LD4', 'LD5', 'LD6', 'LD7', 'LD8', 'LD9', 'LD10', 'LD11', 'LD12', 'LD13', 'LD14', 'LD15'
+        , 'RK1', 'RK2', 'RK3', 'RK4', 'RK5', 'RK6', 'Rk7', 'RK8', 'Rk9', 'RK10', 'RK11', 'RK12', 'Rk13', 'Rk14', 'Rk15'
+        , 'RD1', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RD7', 'RD8', 'RD9', 'RD10', 'RD11', 'RD12', 'RD13', 'RD14', 'RD15']
     # x_label = ['Jump', 'Left_k', 'Right_k', 'Left_d',
     #            'Right_d', 'Stay', 'Jump_d', 'Left_n', 'Right_e',
     #            'Stay_n']
@@ -452,4 +492,45 @@ def plot_weights(weights, image_directory, time_step=0):
     plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
     plt.savefig(image_directory + 'W_' + str(time_step) + '.png', bbox_inches='tight')
     plt.show()
+    plt.close()
+
+
+def plot_weights_multi(weights, image_directory, time_step=0):
+    weights = torch.softmax(weights, dim=1)
+    sns.set()
+    sns.set_style('white')
+    plt.figure(figsize=(5, 12))
+    plt.xlim([0, 1])
+    # x_label = ['Jump', 'Left_key', 'Right_key', 'Left_door',
+    #            'Right_door', 'Stay', 'Jump_door', 'Left_nothing', 'Right_enemy',
+    #            'Stay_nothing']
+    # y_label = ['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7', 'J8', 'J9', 'J10', 'J11', 'J12', 'J13', 'J14', 'J15'
+    #     , 'LK1', 'LK2', 'LK3', 'LK4', 'LK5', 'LK6', 'LK7', 'LK8', 'LK9', 'LK10', 'LK11', 'LK12', 'LK13', 'LK14', 'LK15'
+    #     , 'LD1', 'LD2', 'LD3', 'LD4', 'LD5', 'LD6', 'LD7', 'LD8', 'LD9', 'LD10', 'LD11', 'LD12', 'LD13', 'LD14', 'LD15'
+    #     , 'RK1', 'RK2', 'RK3', 'RK4', 'RK5', 'RK6', 'RK7', 'RK8', 'RK9', 'RK10', 'RK11', 'RK12', 'RK13', 'RK14', 'RK15'
+    #     , 'RD1', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RD7', 'RD8', 'RD9', 'RD10', 'RD11', 'RD12', 'RD13', 'RD14', 'RD15']
+    y_label = ['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7', 'J8', 'J9', 'J10'
+        , 'LK1', 'LK2', 'LK3', 'LK4', 'LK5', 'LK6', 'LK7', 'LK8', 'LK9', 'LK10'
+        , 'LD1', 'LD2', 'LD3', 'LD4', 'LD5', 'LD6', 'LD7', 'LD8', 'LD9', 'LD10'
+        , 'RK1', 'RK2', 'RK3', 'RK4', 'RK5', 'RK6', 'RK7', 'RK8', 'RK9', 'RK10'
+        , 'RD1', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RD7', 'RD8', 'RD9', 'RD10']
+    # x_label = ['Jump', 'Left_k', 'Right_k', 'Left_d',
+    #            'Right_d', 'Stay', 'Jump_d', 'Left_n', 'Right_e',
+    #            'Stay_n']
+    y = np.arange(len(y_label))
+    width = 0.5
+    # X = x - width * 3
+    for i, W in enumerate(weights):
+        W_ = W.detach().cpu().numpy()
+
+        # X = X + width
+        # plt.bar(X, W_, width=width, alpha=1, label='C' + str(i))
+        plt.barh(y=y, width=W_, alpha=1, label='C' + str(i))
+        # plt.bar(range(len(W_)), W_, width=0.2, alpha=1, label='C' + str(i))
+
+    plt.yticks(y, y_label, fontproperties="Microsoft YaHei", size=8)
+    plt.xlabel('Weights', size=14)
+    plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
+    plt.savefig(image_directory + 'W_' + str(time_step) + '.png', bbox_inches='tight')
+    # plt.show()
     plt.close()

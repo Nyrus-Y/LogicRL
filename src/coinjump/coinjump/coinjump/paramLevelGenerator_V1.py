@@ -65,10 +65,10 @@ class ParameterizedLevelGenerator_V1:
         coinjump.player.y = positions[0][1]
 
         level.entities.append(Key(level, positions[1][0] - 0.5, positions[1][1], resource_loader=resource_loader))
-        # level.entities.append(Door(level, positions[2][0], positions[2][1], resource_loader=resource_loader))
-        level.entities.append(GroundEnemy(level, positions[2][0], positions[2][1], resource_loader=resource_loader))
-        # level.entities.append(GroundEnemy(level, positions[4][0], positions[4][1], resource_loader=resource_loader))
-        level.entities.append(Door(level, 21, 2, resource_loader=resource_loader))
+        level.entities.append(Door(level, positions[2][0], positions[2][1], resource_loader=resource_loader))
+        level.entities.append(GroundEnemy(level, positions[3][0], positions[2][1], resource_loader=resource_loader))
+        #level.entities.append(GroundEnemy(level, positions[4][0], positions[4][1], resource_loader=resource_loader))
+        # level.entities.append(Door(level, 21, 2, resource_loader=resource_loader))
 
         # setup rewards
         if dynamic_reward:

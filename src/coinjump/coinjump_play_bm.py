@@ -73,7 +73,7 @@ def get_args():
                         help='Smooth parameter in the softor function')
     parser.add_argument("--plot", action="store_true",
                         help="Plot images with captions.")
-    parser.add_argument("--t-beam", type=int, default=2, help="Number of rule expantion of clause generation.")
+    parser.add_argument("--t-beam", type=int, default=3, help="Number of rule expantion of clause generation.")
     parser.add_argument("--n-beam", type=int, default=8, help="The size of the beam.")
     parser.add_argument("--n-max", type=int, default=50, help="The maximum number of clauses.")
     parser.add_argument("--m", type=int, default=1, help="The size of the logic program.")
@@ -285,7 +285,7 @@ def run():
 
     # collect data
     max_states = 10000
-    max_states = 100
+    max_states = 10000
     save_frequence = 1
     print_frequence = 1000
     step = 0
@@ -339,7 +339,7 @@ def run():
 
     print('data collected')
 
-    env_name = 'coinjump_bm'
+    env_name = 'coinjump_search'
     current_path = os.getcwd()
     lark_path = os.path.join(current_path, 'lark/exp.lark')
     lang_base_path = os.path.join(current_path, 'data/lang/')

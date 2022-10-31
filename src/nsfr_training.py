@@ -30,14 +30,24 @@ class NSFReasoner(nn.Module):
         #                   'right_go_to_door']
         # 6C V1
         # self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-        # 'right_go_to_door', 'stay']
+        #                   'right_go_to_door']
+        # self.prednames = ['jump','jump','jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+        #                   'right_go_to_door']
+        self.prednames = self.get_prednames()
         # 10C V2
-        self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-                          'right_go_to_door', 'stay', 'jump_over_door', 'left_for_nothing', 'right_go_to_enemy',
-                          'stay_for_nothing']
+        # self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
+        #                   'right_go_to_door', 'stay', 'jump_over_door', 'left_for_nothing', 'right_go_to_enemy',
+        #                   'stay_for_nothing']
 
     def get_params(self):
         return self.im.get_params()  # + self.fc.get_params()
+
+    def get_prednames(self):
+        prednames = []
+        for clause in self.clauses:
+            if clause.head.pred.name not in prednames:
+                prednames.append(clause.head.pred.name)
+        return prednames
 
     def forward(self, x):
 
@@ -47,7 +57,7 @@ class NSFReasoner(nn.Module):
         # perform T-step forward-chaining reasoning
         V_T = self.im(V_0)
         actions = self.get_predictions(V_T, prednames=self.prednames)
-        self.print_valuation_batch(V_T)
+        # self.print_valuation_batch(V_T)
         # action = torch.argmax(predictions)
         # text = self.generate_captions(V_T, self.atoms, 4, 0.3)
         return actions
@@ -135,4 +145,3 @@ class NSFReasoner(nn.Module):
     def get_predictions(self, V_T, prednames):
         predicts = self.predict_multi(v=V_T, prednames=prednames)
         return predicts
-
