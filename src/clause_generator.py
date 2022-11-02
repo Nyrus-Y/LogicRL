@@ -318,27 +318,27 @@ class ClauseGenerator(object):
         # action_probs:（num_buffers, )
         # body_scores: (num_clauses, num_buffers)
 
-        actions_logic = []
-        body_scores_ = body_scores.tolist()
-        for i, body_score in enumerate(body_scores_):
-            action_logic = [1 if score > 0.5 else 0 for score in body_score]
-            actions_logic.append(action_logic)
-        # actions_logic = torch.tensor(actions_logic)
-        # num_logic_action = [sum(i) for i in actions_logic]
-        num_correct_actions = []
-        for actions in actions_logic:
-            num_correct_action = 0
-            for i in range(len(actions_ppo)):
-                if (actions_ppo[i] == 1 and actions[1] == 1) or (actions_ppo[i] == 0 and actions[1] == 0):
-                    num_correct_action += 1
-            num_correct_actions.append(num_correct_action)
-        ratio = torch.tensor([i / len(actions_ppo) for i in num_correct_actions],
-                             device='cuda:0')  # (num_clauses, num_buffers)
+        # actions_logic = []
+        # body_scores_ = body_scores.tolist()
+        # for i, body_score in enumerate(body_scores_):
+        #     action_logic = [1 if score > 0.5 else 0 for score in body_score]
+        #     actions_logic.append(action_logic)
+        # # actions_logic = torch.tensor(actions_logic)
+        # # num_logic_action = [sum(i) for i in actions_logic]
+        # num_correct_actions = []
+        # for actions in actions_logic:
+        #     num_correct_action = 0
+        #     for i in range(len(actions_ppo)):
+        #         if (actions_ppo[i] == 1 and actions[1] == 1) or (actions_ppo[i] == 0 and actions[1] == 0):
+        #             num_correct_action += 1
+        #     num_correct_actions.append(num_correct_action)
+        # ratio = torch.tensor([i / len(actions_ppo) for i in num_correct_actions],
+        #                      device='cuda:0')  # (num_clauses, num_buffers)
         action_probs_ = action_probs.unsqueeze(0).expand((body_scores.size(0), -1))
         scores = action_probs_ * body_scores
         scores = torch.sum(scores, dim=1)
-        final_score = scores * ratio
-        return final_score
+        # final_score = scores * ratio
+        return scores
 
         # for i, probs in enumerate(action_probs):
         #     body_scores[:, i] *= probs
