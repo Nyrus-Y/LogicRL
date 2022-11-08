@@ -161,6 +161,9 @@ class ClauseInferModule(nn.Module):
         self.cs = [ClauseFunction(I[i], I, gamma=gamma)
                    for i in range(self.I.size(0))]
 
+        self.cs_bs = [ClauseBodySumFunction(I[i], I, gamma=gamma)
+                   for i in range(self.I.size(0))]
+
         if not self.I_bk is None:
             self.cs_bk = [ClauseFunction(I_bk[i], I, gamma=gamma)
                           for i in range(self.I_bk.size(0))]
@@ -177,60 +180,19 @@ class ClauseInferModule(nn.Module):
         a Tensor of output data. We can use Modules defined in the constructor as
         well as arbitrary operators on Tensors.
         """
-        B = x.size(0)
-        # C * B * G
-        R = x.unsqueeze(dim=0).expand(self.C, B, self.G)
-        if self.I_bk is None:
-            for t in range(self.infer_step):
-                R = softor([R, self.r(R)], dim=1, gamma=self.gamma)
-        else:
-            for t in range(self.infer_step):
-                # infer by background knowledge
-                # r_bk = self.r_bk(R[0])
-                # R_bk = self.r_bk(r_bk).unsqueeze(dim=0).expand(self.C, B, self.G)
-                # R = R_bk
-                # print("R: ", R.shape)
-                # print("r(R): ", self.r(R).shape)
-                # print("r_bk(R): ", self.r_bk(R).shape)
-                # shape? dim?
-                R = softor([R, self.r(R), self.r_bk(R).unsqueeze(dim=0).expand(self.C, B, self.G)], dim=2,
-                           gamma=self.gamma)
-        return R
+        return self.r_cb(x)
 
-    def r(self, x):
+
+    def r_cb(self, x):
         # x: C * B * G
         B = x.size(1)  # batch size
         # apply each clause c_i and stack to a tensor C
         # C * B * G
         # infer from i-th valuation tensor using i-th clause
-        C = torch.stack([self.cs[i](x[i])
+        C = torch.stack([self.cs_cb[i](x[i])
                          for i in range(self.I.size(0))], 0)
         return C
 
-    def r_bk(self, x):
-        x = x[0]
-        B = x.size(0)  # batch size
-        # apply each clause c_i and stack to a tensor C
-        # C * B * G
-        # just use the first row
-        C = torch.stack([self.cs_bk[i](x)
-                         for i in range(self.I_bk.size(0))], 0)
-        # B * G
-        return softor(C, dim=0, gamma=self.gamma)
-        # taking weighted sum using m weights and stack to a tensor H
-        # m * C
-        W_star = torch.softmax(self.W_bk, 1)
-        # m * C * B * G
-        W_tild = W_star.unsqueeze(
-            dim=-1).unsqueeze(dim=-1).expand(self.m, self.C, B, self.G)
-        # m * C * B * G
-        C_tild = C.unsqueeze(dim=0).expand(self.m, self.C, B, self.G)
-        # m * B * G
-        H = torch.sum(W_tild * C_tild, dim=1)
-        # taking soft or to compose a logic program with m clauses
-        # B * G
-        R = softor(H, dim=0, gamma=self.gamma)
-        return R
 
 
 class ClauseFunction(nn.Module):
@@ -263,13 +225,13 @@ class ClauseFunction(nn.Module):
                    dim=2, gamma=self.gamma)
         return C
 
-class ClauseBodyFunction(nn.Module):
+class ClauseBodySumFunction(nn.Module):
     """
     A class of the clause function.
     """
 
     def __init__(self, i, I, gamma=0.01):
-        super(ClauseBodyFunction, self).__init__()
+        super(ClauseBodySumFunction, self).__init__()
         self.i = i  # clause index
         self.I = I  # index tensor C * S * G, S is the number of possible substituions
         self.L = I.size(-1)  # number of body atoms
@@ -289,6 +251,5 @@ class ClauseBodyFunction(nn.Module):
         I_i_tild = I_i.repeat(batch_size, 1, 1, 1)
 
         # B * G
-        C = softor(torch.prod(torch.gather(V_tild, 1, I_i_tild), 3),
-                   dim=2, gamma=self.gamma)
+        C = torch.sum(torch.prod(torch.gather(V_tild, 1, I_i_tild), 3), dim=2)
         return C
