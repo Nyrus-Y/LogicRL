@@ -1,5 +1,4 @@
 import random
-
 import gym3
 
 from utils_procgen import InteractiveEnv
@@ -50,7 +49,7 @@ while NB_DONE < TO_SUCCEED:
     env.act(a)
     rew, obs, done = env.observe()
 
-    extracted_reasoning_state = extract_reasoning_state(obs["positions"])
+    extracted_reasoning_state = extract_reasoning_state(obs["positions"], env="color")
     if a[0] == 4:
         rew += 0.005
     print(a)

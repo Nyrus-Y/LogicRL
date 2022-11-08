@@ -382,7 +382,7 @@ def main():
 
             # simpler policy
             if action in [3, 5, 6]:
-                reward -= 0.15
+                reward -= 0.2
             # elif action == 0:
             #     reward += 0.1
 

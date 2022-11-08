@@ -18,6 +18,7 @@ class BFValuationModule(nn.Module):
     def __init__(self, lang, device):
         super().__init__()
         self.lang = lang
+        self.colors = ["green", "red"]
         self.device = device
         self.layers, self.vfs = self.init_valuation_functions(
             device)
@@ -36,6 +37,11 @@ class BFValuationModule(nn.Module):
         vfs = {}  # pred name -> valuation function
         v_type = TypeValuationFunction()
         vfs['type'] = v_type
+        layers.append(v_type)
+
+        v_color = ColorValuationFunction()
+        vfs['color'] = v_color
+        layers.append(v_color)
 
         v_on_top = OnTopValuationFunction()
         vfs['on_top'] = v_on_top
@@ -89,7 +95,8 @@ class BFValuationModule(nn.Module):
         vfs['is_smaller_than'] = v_smaller
         layers.append(v_smaller)
         return nn.ModuleList(
-            [v_type, v_on_top, v_on_left, v_at_bottom, v_on_right, v_closeby, v_bigger, v_smaller, v_high_level,
+            [v_type, v_color, v_on_top, v_on_left, v_at_bottom, v_on_right, v_closeby, v_bigger, v_smaller,
+             v_high_level,
              v_low_level]), vfs
 
     def forward(self, zs, atom):

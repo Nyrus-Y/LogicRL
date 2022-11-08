@@ -19,7 +19,6 @@ class Entity {
     int type = 0;
     int image_type = 0;
     int image_theme = 0;
-
     // Currently supports only 3 levels
     // 1: render above other entities (at agent level)
     // 0: standard rendering

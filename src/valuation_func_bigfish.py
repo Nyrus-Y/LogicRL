@@ -5,6 +5,7 @@ import torch.nn as nn
 from src import utils_bf
 from src.neural_utils import MLP, LogisticRegression
 
+
 ################################
 # Valuation functions for bigfish #
 ################################
@@ -30,6 +31,31 @@ class TypeValuationFunction(nn.Module):
             A batch of probabilities.
         """
         z_type = z[:, 0:2]  # [1.0, 0] * [1.0, 0] .sum = 0.0  type(obj1, agent): 1.0
+        prob = (a * z_type).sum(dim=1)
+
+        return prob
+
+
+class ColorValuationFunction(nn.Module):
+    """The function v_object-type
+    type(obj1, agent):0.98
+    type(obj2, fish）：0.87
+    """
+
+    def __init__(self):
+        super(ColorValuationFunction, self).__init__()
+
+    def forward(self, z, a):
+        """
+        Args:
+            z (tensor): 2-d tensor B * d of object-centric representation.
+                [agent, fish, green, red, x, y]
+            a (tensor): The one-hot tensor that is expanded to the batch size.
+
+        Returns:
+            A batch of probabilities.
+        """
+        z_type = z[:, 2:4]  # [1.0, 0] * [1.0, 0] .sum = 0.0  type(obj1, agent): 1.0
         prob = (a * z_type).sum(dim=1)
 
         return prob
@@ -388,9 +414,9 @@ class SmallerValuationFunction(nn.Module):
         r_1 = z_1[:, 2]
         r_2 = z_2[:, 2]
         diff = r_2[:] - r_1[:]
-        bigger = torch.where(diff >= 0, 0.99, 0)
+        smaller = torch.where(diff >= 0, 0.99, 0)
 
-        return bigger
+        return smaller
 
 # class NotExistBValuationFunction(nn.Module):
 #     """The function v_closeby.

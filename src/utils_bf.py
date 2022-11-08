@@ -88,28 +88,48 @@ def simplify_action(action):
     return np.array([action])
 
 
-def extract_reasoning_state(states):
+def extract_reasoning_state(states, env="size"):
     """
     states = [x, y, radius]
     extracted_states = [agent, fish, r, x, y]
     size: 3*5 3 fish, 5 features
     """
     states = torch.from_numpy(states).squeeze()
-    extracted_state = torch.zeros((3, 5))
-    for i, state in enumerate(states):
-        if i == 0:
-            extracted_state[i, 0] = 1  # agent
-            extracted_state[i, 2] = states[i, 2]  # radius
-            extracted_state[i, 3] = states[i, 0]  # X
-            extracted_state[i, 4] = states[i, 1]  # Y
-        else:
-            extracted_state[i, 1] = 1  # fish
-            extracted_state[i, 2] = states[i, 2]  # radius
-            extracted_state[i, 3] = states[i, 0]  # X
-            extracted_state[i, 4] = states[i, 1]  # Y
+    if env == "size":
+        extracted_state = torch.zeros((3, 5))
+        for i, state in enumerate(states):
+            if i == 0:
+                extracted_state[i, 0] = 1  # agent
+                extracted_state[i, 2] = states[i, 2]  # radius
+                extracted_state[i, 3] = states[i, 0]  # X
+                extracted_state[i, 4] = states[i, 1]  # Y
+            else:
+                extracted_state[i, 1] = 1  # fish
+                extracted_state[i, 2] = states[i, 2]  # radius
+                extracted_state[i, 3] = states[i, 0]  # X
+                extracted_state[i, 4] = states[i, 1]  # Y
 
-    extracted_state = extracted_state.unsqueeze(0)
-    return extracted_state.cuda()
+        extracted_state = extracted_state.unsqueeze(0)
+        return extracted_state.cuda()
+    elif env == "color":
+        # [agent, fish, green, red, X, Y]
+        extracted_state = torch.zeros((3, 6))
+        for i, state in enumerate(states):
+            if i == 0:
+                extracted_state[i, 0] = 1  # agent
+                extracted_state[i, 4] = states[i, 0]  # X
+                extracted_state[i, 5] = states[i, 1]  # Y
+            else:
+                extracted_state[i, 1] = 1  # fish
+                if states[i, 2] == 1:
+                    extracted_state[i, 2] = 1  # green
+                else:
+                    extracted_state[i, 3] = 1  # red
+                extracted_state[i, 4] = states[i, 0]  # X
+                extracted_state[i, 5] = states[i, 1]  # Y
+
+        extracted_state = extracted_state.unsqueeze(0)
+        return extracted_state.cuda()
 
 
 def get_nsfr_model(lang, clauses, atoms, bk, device):
@@ -149,7 +169,7 @@ def explain(NSFR, extracted_states):
 def print_explaining(actions):
     action = torch.argmax(actions)
     prednames = ['up_to_eat', 'left_to_eat', 'down_to_eat', 'right_to_eat', 'up_to_dodge', 'down_to_dodge',
-                 'up_redundant', 'down_redundant','left_redundant','right_redundant','idle_redundant']
+                 'up_redundant', 'down_redundant', 'left_redundant', 'right_redundant', 'idle_redundant']
     return print(prednames[action])
 
 

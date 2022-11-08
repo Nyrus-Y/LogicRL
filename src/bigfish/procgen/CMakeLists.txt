@@ -50,6 +50,7 @@ add_library(env
   src/games/dodgeball.cpp
   src/games/edodgeball.cpp
   src/games/bigfish.cpp
+  src/games/bigfishc.cpp
   src/games/bigfishm.cpp
   src/games/ebigfish.cpp
   src/games/ebigfishs.cpp

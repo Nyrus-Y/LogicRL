@@ -7,17 +7,14 @@ from torch.distributions import Categorical
 import os
 
 import gym
-import time
-import numpy as np
 import src.coinjump.coinjump_learn.env
 
-from src.valuation import RLValuationModule
-from src.facts_converter import FactsConverter
-from src.logic_utils import build_infer_module, get_lang
-from src.util import num_action_select_bm
-from src.nsfr_training import NSFReasoner
-from src.coinjump.coinjump_learn.models.mlpCriticController import MLPCriticController
-from src.util import plot_weights, plot_weights_multi
+from src.coinjump.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS
+import time
+import numpy as np
+
+# Original source: https://github.com/nikhilbarhate99/PPO-PyTorch/blob/master/PPO.py
+from src.coinjump.coinjump_learn.models.mlpController import MLPController
 
 device = torch.device('cuda:0')
 
@@ -30,7 +27,6 @@ class RolloutBuffer:
         self.logprobs = []
         self.rewards = []
         self.is_terminals = []
-        self.predictions = []
 
     def clear(self):
         del self.actions[:]
@@ -38,27 +34,40 @@ class RolloutBuffer:
         del self.logprobs[:]
         del self.rewards[:]
         del self.is_terminals[:]
-        del self.predictions[:]
 
 
-class NSFR_ActorCritic(nn.Module):
+class ActorCritic(nn.Module):
     def __init__(self, rng=None):
-        super(NSFR_ActorCritic, self).__init__()
+        super(ActorCritic, self).__init__()
 
         self.rng = random.Random() if rng is None else rng
-        # TODO change num of action
-        self.num_actions = 5
-        self.uniform = Categorical(
-            torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
 
-        self.actor = self.get_nsfr_model()
-        self.critic = MLPCriticController(out_size=1)
+        # self.uniform = Categorical(
+        #     torch.tensor([1.0 / CJA_NUM_EXPLICIT_ACTIONS for _ in range(CJA_NUM_EXPLICIT_ACTIONS)], device="cuda"))
+        self.uniform = Categorical(
+            torch.tensor([1.0 / 3 for _ in range(3)], device="cuda"))
+        self.actor = MLPController(has_softmax=True)
+        # self.actor = nn.Sequential(
+        #                nn.Linear(60, 64),
+        #                nn.Tanh(),
+        #                nn.Linear(64, 64),
+        #                nn.Tanh(),
+        #                nn.Linear(64, 9),
+        #                nn.Softmax(dim=-1)
+        #            )
+        self.critic = MLPController(has_softmax=False, out_size=1, special=True)
+        # self.critic = nn.Sequential(
+        #                nn.Linear(60, 64),
+        #                nn.Tanh(),
+        #                nn.Linear(64, 64),
+        #                nn.Tanh(),
+        #                nn.Linear(64, 1)
+        #            )
 
     def forward(self):
         raise NotImplementedError
 
     def act(self, state, epsilon=0.0):
-
         action_probs = self.actor(state)
 
         # e-greedy
@@ -82,26 +91,6 @@ class NSFR_ActorCritic(nn.Module):
 
         return action_logprobs, state_values, dist_entropy
 
-    def get_nsfr_model(self):
-        current_path = os.getcwd()
-        lark_path = os.path.join(current_path, '../..', 'lark/exp.lark')
-        lang_base_path = os.path.join(current_path, '../..', 'data/lang/')
-        # TODO
-        device = torch.device('cuda:0')
-        lang, clauses, bk, atoms = get_lang(
-            lark_path, lang_base_path, 'coinjump', 'coinjump_bm')
-
-        VM = RLValuationModule(lang=lang, device=device)
-        FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
-        # TODO
-
-        # m = len(clauses)
-        m = 5
-        IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=True, device=device)
-        # Neuro-Symbolic Forward Reasoner
-        NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses, train=True)
-        return NSFR
-
 
 class PPO:
     def __init__(self, lr_actor, lr_critic, optimizer, gamma, K_epochs, eps_clip):
@@ -111,13 +100,14 @@ class PPO:
         self.K_epochs = K_epochs
 
         self.buffer = RolloutBuffer()
-        self.policy = NSFR_ActorCritic().to(device)
+
+        self.policy = ActorCritic().to(device)
         self.optimizer = optimizer([
-            {'params': self.policy.actor.get_params(), 'lr': lr_actor},
+            {'params': self.policy.actor.parameters(), 'lr': lr_actor},
             {'params': self.policy.critic.parameters(), 'lr': lr_critic}
         ])
 
-        self.policy_old = NSFR_ActorCritic().to(device)
+        self.policy_old = ActorCritic().to(device)
         self.policy_old.load_state_dict(self.policy.state_dict())
 
         self.MseLoss = nn.MSELoss()
@@ -125,13 +115,11 @@ class PPO:
     def select_action(self, state, epsilon=0.0):
         # select random action with epsilon probability and policy probiability with 1-epsilon
         with torch.no_grad():
-            # state = torch.FloatTensor(state).to(device)
+            state = torch.FloatTensor(state).to(device)
             action, action_logprob = self.policy_old.act(state, epsilon=epsilon)
 
         self.buffer.states.append(state)
-        action = torch.squeeze(action)
         self.buffer.actions.append(action)
-        action_logprob = torch.squeeze(action_logprob)
         self.buffer.logprobs.append(action_logprob)
 
         return action.item()
@@ -188,21 +176,14 @@ class PPO:
         self.buffer.clear()
 
     def save(self, checkpoint_path):
-        torch.save(self.policy_old.state_dict(), checkpoint_path)
-        # torch.save(self.policy_old, checkpoint_path)
+        # torch.save(self.policy_old.state_dict(), checkpoint_path)
+        torch.save(self.policy_old, checkpoint_path)
 
     def load(self, checkpoint_path):
-        self.policy_old.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
-        self.policy.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
-        # self.policy_old = torch.load(checkpoint_path)
-        # self.policy = torch.load(checkpoint_path)
-
-    def get_predictions(self, state):
-        self.prediction = state
-        return self.prediction
-
-    def get_weights(self):
-        return self.policy.actor.get_params()
+        # self.policy_old.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
+        # self.policy.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
+        self.policy_old = torch.load(checkpoint_path)
+        self.policy = torch.load(checkpoint_path)
 
 
 # ===== ACTUAL TRAINING HERE =======
@@ -210,7 +191,7 @@ class PPO:
 def main():
     ####### initialize environment hyperparameters ######
 
-    random_seed = random.randint(0, 123456)  # set random seed if required (0 = no random seed)
+    random_seed = 123456  # set random seed if required (0 = no random seed)
     if random_seed:
         print("--------------------------------------------------------------------------------------------")
         print("setting random seed to ", random_seed)
@@ -223,18 +204,18 @@ def main():
     # env_name = "CoinJumpEnv-v0"
     # env_name = "CoinJumpEnvKD-v0"
     # env_name = "CoinJumpEnvDodge-v0"
-    env_name = "CoinJumpEnv-v2"
+    env_name = "CoinJumpEnv-v1"
 
     # max_ep_len = 1000  # max timesteps in one episode
     max_ep_len = 500  # max timesteps in one episode
     # max_training_timesteps = int(1e5)  # break training loop if timeteps > max_training_timesteps
     max_training_timesteps = 100000000  # break training loop if timeteps > max_training_timesteps
 
-    print_freq = max_ep_len * 5  # print avg reward in the interval (in num timesteps)
+    print_freq = max_ep_len * 10  # print avg reward in the interval (in num timesteps)
     log_freq = max_ep_len * 5  # log avg reward in the interval (in num timesteps)
-    # save_model_freq = int(2e4)  # save model frequency (in num timesteps)
-    # save_model_freq = 500000  # save model frequency (in num timesteps)
-    save_model_freq = 25000  # save model frequency (in num timesteps)
+    # save_model_freq = int(2e0000 4)  # save model frequency (in num timesteps)
+    save_model_freq = 500000  # save model frequency (in num timesteps)
+
     #####################################################
 
     ## Note : print/log frequencies should be > than max_ep_len
@@ -246,7 +227,6 @@ def main():
     update_timestep = max_ep_len * 5  # debug update policy every n episodes
     # update_timestep = 2  # update policy every n episodes
     # K_epochs = 80  # update policy for K epochs (= # update steps)
-    # K_epochs = 20
     K_epochs = 20  # update policy for K epochs (= # update steps)
     # eps_clip = 0.2  # clip parameter for PPO
     eps_clip = 0.2  # clip parameter for PPO
@@ -361,7 +341,7 @@ def main():
     print("============================================================================================")
 
     ################# training procedure ################
-    #
+
     # initialize a PPO agent
     ppo_agent = PPO(lr_actor, lr_critic, optimizer, gamma, K_epochs, eps_clip)
 
@@ -371,21 +351,9 @@ def main():
 
     print("============================================================================================")
 
-    image_directory = "image"
-    if not os.path.exists(image_directory):
-        os.makedirs(image_directory)
-
-    image_directory = image_directory + '/' + env_name + '/'
-    if not os.path.exists(image_directory):
-        os.makedirs(image_directory)
-
-    # checkpoint_path = directory + "PPO_{}_{}_{}.pth".format(env_name, random_seed, 0)
-
-    plot_weights_multi(ppo_agent.get_weights(), image_directory)
-
     # logging file
-    log_f = open(log_f_name, "w+")
-    log_f.write('episode,timestep,reward\n')
+    # log_f = open(log_f_name, "w+")
+    # log_f.write('episode,timestep,reward\n')
 
     # printing and logging variables
     print_running_reward = 0
@@ -397,7 +365,7 @@ def main():
     time_step = 0
     i_episode = 0
 
-    wandb.init(project="GETOUT-Beam Searched Rules", entity="nyrus")
+    wandb.init(project="GETOUT", entity="nyrus")
     # wandb.login(key=["3908b110c9e1ac6d5fd5f6bbe2c0cf4f7b5bcf8d")
     wandb.config = {
         "learning_rate_actor": 0.001,
@@ -406,7 +374,6 @@ def main():
         "gamma": 0.99,
         "eps_clip": 0.2
     }
-
     # training loop
     while time_step <= max_training_timesteps:
 
@@ -417,11 +384,17 @@ def main():
 
         for t in range(1, max_ep_len + 1):
 
+            # select action with policy
             action = ppo_agent.select_action(state, epsilon=epsilon)
-            # TODO
-            action = num_action_select_bm(action, V2=True)
-            # action = num_action_select(action)
+            # simplified action--- only left right up
+            action += 1
             state, reward, done, _ = env.step(action)
+
+            # simpler policy
+            if action in [3, 5, 6]:
+                reward -= 0.2
+            # elif action == 0:
+            #     reward += 0.1
 
             # saving reward and is_terminals
             ppo_agent.buffer.rewards.append(reward)
@@ -456,8 +429,6 @@ def main():
                 print("Elapsed Time  : ", time.time() - start_time)
                 print("--------------------------------------------------------------------------------------------")
 
-                # save image of weights
-                plot_weights_multi(ppo_agent.get_weights(), image_directory, time_step)
             # break; if the episode is over
             if done:
                 break
@@ -465,12 +436,12 @@ def main():
         print_running_reward += current_ep_reward
         print_running_episodes += 1
 
-        log_running_reward += current_ep_reward
-        log_running_episodes += 1
+        # log_running_reward += current_ep_reward
+        # log_running_episodes += 1
 
         i_episode += 1
 
-    log_f.close()
+    # log_f.close()
     env.close()
 
     # print total training time
