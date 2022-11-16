@@ -89,7 +89,7 @@ class NSFR_ActorCritic(nn.Module):
         # TODO
         device = torch.device('cuda:0')
         lang, clauses, bk, atoms = get_lang(
-            lark_path, lang_base_path, 'coinjump', 'coinjump_bm')
+            lark_path, lang_base_path, 'coinjump', 'coinjump_bm_3')
 
         VM = RLValuationModule(lang=lang, device=device)
         FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
@@ -384,8 +384,8 @@ def main():
     plot_weights_multi(ppo_agent.get_weights(), image_directory)
 
     # logging file
-    log_f = open(log_f_name, "w+")
-    log_f.write('episode,timestep,reward\n')
+    # log_f = open(log_f_name, "w+")
+    # log_f.write('episode,timestep,reward\n')
 
     # printing and logging variables
     print_running_reward = 0
@@ -465,12 +465,12 @@ def main():
         print_running_reward += current_ep_reward
         print_running_episodes += 1
 
-        log_running_reward += current_ep_reward
-        log_running_episodes += 1
+        # log_running_reward += current_ep_reward
+        # log_running_episodes += 1
 
         i_episode += 1
 
-    log_f.close()
+    # log_f.close()
     env.close()
 
     # print total training time

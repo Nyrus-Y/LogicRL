@@ -6,12 +6,10 @@ import torch.nn as nn
 from torch.distributions import Categorical
 import os
 
-import gym
-
 import time
 import numpy as np
 from src.bigfish.utils_procgen import InteractiveEnv
-from src.utils_bf import extract_state, simplify_action
+from src.utils_bf import extract_state, simplify_action, reward_shaping
 from procgen import ProcgenGym3Env
 
 from training.mlpController import MLPController
@@ -320,7 +318,7 @@ def main():
 
         # state = env.reset()
         reward, obs, done = env.observe()
-        state = extract_state(obs['positions'])
+        old_state = extract_state(obs['positions'], train=True)
         current_ep_reward = 0
 
         epsilon = epsilon_func(i_episode)
@@ -328,18 +326,19 @@ def main():
         for t in range(1, max_ep_len + 1):
 
             # select action with policy
-            action = ppo_agent.select_action(state, epsilon=epsilon)
+            action = ppo_agent.select_action(old_state, epsilon=epsilon)
             action = simplify_action(action)
             # state, reward, done, _ = env.step(action)
             env.act(action)
             reward, obs, done = env.observe()
-            state = extract_state(obs['positions'])
-            reward = reward[0]
-
+            new_state = extract_state(obs['positions'], train=True)
+            # reward = reward[0]
+            reward = reward_shaping(old_state, new_state, reward[0])
+            old_state = new_state
             # if action[0] == 4:
             #     reward += 0.001
-            if action[0] in [1, 3, 5, 7]:
-                reward += 0.001
+            # if action[0] in [1, 3, 5, 7]:
+            #     reward += 0.001
 
             # saving reward and is_terminals
             ppo_agent.buffer.rewards.append(reward)

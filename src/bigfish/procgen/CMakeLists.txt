@@ -52,8 +52,8 @@ add_library(env
   src/games/bigfish.cpp
   src/games/bigfishc.cpp
   src/games/bigfishm.cpp
-  src/games/ebigfish.cpp
   src/games/ebigfishs.cpp
+  src/games/ebigfish.cpp
   src/games/ebigfishl.cpp
   src/games/bossfight.cpp
   src/games/caveflyer.cpp

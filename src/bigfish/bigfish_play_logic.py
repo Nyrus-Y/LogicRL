@@ -3,12 +3,12 @@ import sys
 import gym3
 import numpy as np
 
-from procgen import ProcgenGym3Env
+from src.bigfish.procgen import ProcgenGym3Env
 from src.utils_bf import extract_reasoning_state, nsfr, explain, action_select
 
 INTERACTIVE = False
 
-env_name = "bigfishm"
+env_name = "bigfishc"
 
 env = ProcgenGym3Env(num=1, env_name=env_name, render_mode="rgb_array")
 env = gym3.ViewerWrapper(env, info_key="rgb")
@@ -29,9 +29,10 @@ total_reward = 0
 # action_space = [1, 3, 4, 5, 7]
 
 rew, obs, done = env.observe()
-extracted_reasoning_states = extract_reasoning_state(obs['positions'], env='color')
+extracted_reasoning_states = extract_reasoning_state(obs['positions'], env='size')
 
-explaining_env = 'color_bigfish'
+# explaining_env = 'color_bigfish'
+explaining_env = 'bigfish_simplified_actions'
 NSFR = nsfr(explaining_env)
 last_explaining = ""
 while NB_DONE < TO_SUCCEED:
@@ -46,7 +47,7 @@ while NB_DONE < TO_SUCCEED:
         print(explaining.head.pred.name)
         last_explaining = explaining.head.pred.name
 
-    extracted_reasoning_states = extract_reasoning_state(obs["positions"],env="color")
+    extracted_reasoning_states = extract_reasoning_state(obs["positions"], env="size")
     if done:
         print("--------------------------new game--------------------------")
     # print(f"reward : {rew}")

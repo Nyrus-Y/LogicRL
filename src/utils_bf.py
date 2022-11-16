@@ -18,7 +18,11 @@ def extract_state(obs, train=False):
     # return torch.tensor(state, device='cuda:0')
     state = state.tolist()
     if train:
-        return torch.tensor(state)
+        state = torch.nn.functional.normalize(torch.tensor(state), p=2, dim=0)
+        state[2] = 0
+        state[5] = -1  # small fish flag
+        state[8] = 1  # big fish flag
+        return state
     else:
         return state
 
@@ -70,6 +74,16 @@ def fuzzy_position(pos1, pos2, keyword):
     return result
 
 
+def reward_shaping(old_state, new_state, reward):
+    old_dis = abs(old_state[0] - old_state[3]) + abs(old_state[1] - old_state[4])
+    new_dis = abs(new_state[0] - new_state[3]) + abs(new_state[1] - new_state[4])
+    if (new_dis - old_dis) < 0:
+        reward += 0.01
+    else:
+        reward -= 0.01
+    return reward
+
+
 def simplify_action(action):
     """[
         ("LEFT", "DOWN"),
@@ -82,6 +96,7 @@ def simplify_action(action):
         ("RIGHT",),
         ("RIGHT", "UP")
     ]"""
+    #              [0, 1, 2, 3, 4]
     action_space = [1, 3, 4, 5, 7]
     ac_index = action[0].astype(int)
     action = action_space[ac_index]
@@ -112,7 +127,7 @@ def extract_reasoning_state(states, env="size"):
         extracted_state = extracted_state.unsqueeze(0)
         return extracted_state.cuda()
     elif env == "color":
-        # [agent, fish, green, red, X, Y]
+        # [agent, fish, green, red, r, X, Y]
         extracted_state = torch.zeros((3, 6))
         for i, state in enumerate(states):
             if i == 0:

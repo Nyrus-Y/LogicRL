@@ -49,7 +49,7 @@ class NSFR_ActorCritic(nn.Module):
         # TODO
         device = torch.device('cuda:0')
         lang, clauses, bk, atoms = get_lang(
-            lark_path, lang_base_path, 'coinjump', 'coinjump')
+            lark_path, lang_base_path, 'coinjump', 'coinjump_bm_3')
 
         VM = RLValuationModule(lang=lang, device=device)
         FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
@@ -179,12 +179,13 @@ def run():
             # TODO change sample function of different envs
 
             prediction = model(extracted_state)
+            prednames = model.get_prednames()
             # prediction[0][0] = 0
             # print(model.state_dict())
-            print(show_explaining(prediction, V2=True))
+            print(show_explaining(prediction, prednames))
             # print(model.state_dict())
             num = torch.argmax(prediction).cpu().item()
-            action = num_action_select(num, V2=True)
+            action = num_action_select(num, prednames)
             action = coin_jump_actions_from_unified(action)
         else:
 
