@@ -121,6 +121,7 @@ class Player(Entity):
             self.level.entities.remove(entity)
             self.level.add_key(1)
             self.level.take_reward(self.level.reward_values['key'])
+
         elif entity._entity_id == EntityID.DOOR:
             self.collisions[1] = True
             if self.level.get_key() > 0:

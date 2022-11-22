@@ -18,7 +18,7 @@ from src.coinjump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedL
 from src.coinjump.coinjump.coinjump.paramLevelGenerator_keys import ParameterizedLevelGenerator_Keys
 from src.coinjump.coinjump.coinjump.coinjump import CoinJump
 
-from src.coinjump.coinjump_learn.training.ppo_coinjump_logic_policy import NSFR_ActorCritic
+#from src.coinjump.coinjump_learn.training.ppo_coinjump_logic_policy import NSFR_ActorCritic
 from src.coinjump.coinjump_learn.models.mlpCriticController import MLPCriticController
 
 from src.valuation import RLValuationModule
@@ -144,8 +144,12 @@ def run():
     target_frame_duration = 1 / fps
     last_frame_time = 0
 
+    num_epi = 0
+    max_epi = 100
+    total_reward = 0
     last_explaining = None
-
+    epi_reward=0
+    # while True:
     while True:
         # control framerate
         current_frame_time = time.time()
@@ -157,11 +161,11 @@ def run():
         last_frame_time = current_frame_time  # save frame start time for next iteration
 
         # TODO change for reset env
-        if KEY_r in viewer.pressed_keys:
-            # coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
-            coin_jump = create_coinjump_instance(seed=seed, V1=True)
-            print("--------------------------     next game    --------------------------")
-            # coin_jump = create_coinjump_instance(seed=seed,Dodge_model=True)
+        # if KEY_r in viewer.pressed_keys:
+        #     # coin_jump = create_coinjump_instance(seed=seed, Key_Door_model=True)
+        #     coin_jump = create_coinjump_instance(seed=seed, V1=True)
+        #     print("--------------------------     next game    --------------------------")
+        # coin_jump = create_coinjump_instance(seed=seed,Dodge_model=True)
         # step game
         if not coin_jump.level.terminated:
 
@@ -182,25 +186,34 @@ def run():
             prednames = model.get_prednames()
             # prediction[0][0] = 0
             # print(model.state_dict())
-            print(show_explaining(prediction, prednames))
+            # print(show_explaining(prediction, prednames))
             # print(model.state_dict())
             num = torch.argmax(prediction).cpu().item()
             action = num_action_select(num, prednames)
             action = coin_jump_actions_from_unified(action)
         else:
-
+            coin_jump = create_coinjump_instance(seed=seed, V1=True)
+            print("epi_reward: ", epi_reward)
+            print("--------------------------     next game    --------------------------")
+            total_reward += epi_reward
+            epi_reward = 0
             action = []
-        reward = coin_jump.step(action)
+            num_epi += 1
 
+        reward = coin_jump.step(action)
+        # print(reward)
+        epi_reward += reward
         np_img = np.asarray(coin_jump.camera.screen)
-        viewer.show(np_img[:, :, :3])
+        # viewer.show(np_img[:, :, :3])
 
         # terminated = coin_jump.level.terminated
         # if terminated:
         #    break
-        if viewer.is_escape_pressed:
+        # if viewer.is_escape_pressed:
+        #     break
+        if num_epi >= max_epi:
             break
-
+    print("average episode reward: ", total_reward / max_epi)
     print("Terminated")
 
 

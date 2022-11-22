@@ -183,9 +183,9 @@ def num_action_select(action, prednames, KD=False, V1=False, V2=False, Dodge=Fal
     """
     if prednames[action] in ['jump']:
         return 3
-    elif prednames[action] in ['left_go_get_key','left_go_to_door']:
+    elif prednames[action] in ['left_go_get_key', 'left_go_to_door']:
         return 1
-    elif prednames[action] in ['right_go_get_key','right_go_to_door']:
+    elif prednames[action] in ['right_go_get_key', 'right_go_to_door']:
         return 2
 
     # if V1 or V2:
@@ -233,6 +233,7 @@ def num_action_select_bm(action, KD=False, V1=False, V2=False, Dodge=False):
     CJA_MOVE_RIGHT_DOWN: Final[int]= 8
     CJA_NUM_EXPLICIT_ACTIONS = 9
     """
+
     if V1 or V2:
         if action in [0, 6]:
             return 3
@@ -521,14 +522,13 @@ def plot_weights_multi(weights, image_directory, time_step=0):
     #     , 'LD1', 'LD2', 'LD3', 'LD4', 'LD5', 'LD6', 'LD7', 'LD8', 'LD9', 'LD10'
     #     , 'RK1', 'RK2', 'RK3', 'RK4', 'RK5', 'RK6', 'RK7', 'RK8', 'RK9', 'RK10'
     #     , 'RD1', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RD7', 'RD8', 'RD9', 'RD10']
-    y_label = ['J1', 'J2', 'J3'
-        , 'LK1', 'LK2', 'LK3'
-        , 'LD1', 'LD2', 'LD3'
-        , 'RK1', 'RK2', 'RK3'
-        , 'RD1', 'RD2', 'RD3']
-    # x_label = ['Jump', 'Left_k', 'Right_k', 'Left_d',
-    #            'Right_d', 'Stay', 'Jump_d', 'Left_n', 'Right_e',
-    #            'Stay_n']
+    # y_label = ['J1', 'J2', 'J3'
+    #     , 'LK1', 'LK2', 'LK3'
+    #     , 'LD1', 'LD2', 'LD3'
+    #     , 'RK1', 'RK2', 'RK3'
+    #     , 'RD1', 'RD2', 'RD3']
+    y_label = ['Jump', 'Left_k', 'Left_d',
+               'Right_k', 'Right_d']
     y = np.arange(len(y_label))
     width = 0.5
     # X = x - width * 3

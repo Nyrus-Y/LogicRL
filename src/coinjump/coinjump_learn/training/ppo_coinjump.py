@@ -1,6 +1,6 @@
 import math
 import random
-
+import wandb
 import torch
 import torch.nn as nn
 from torch.distributions import Categorical
@@ -167,6 +167,7 @@ class PPO:
             self.optimizer.zero_grad()
             loss.mean().backward()
             self.optimizer.step()
+            wandb.log({"loss": loss})
 
         # Copy new weights into old policy
         self.policy_old.load_state_dict(self.policy.state_dict())
@@ -210,10 +211,10 @@ def main():
     # max_training_timesteps = int(1e5)  # break training loop if timeteps > max_training_timesteps
     max_training_timesteps = 100000000  # break training loop if timeteps > max_training_timesteps
 
-    print_freq = max_ep_len * 10  # print avg reward in the interval (in num timesteps)
+    print_freq = max_ep_len * 5  # print avg reward in the interval (in num timesteps)
     log_freq = max_ep_len * 5  # log avg reward in the interval (in num timesteps)
     # save_model_freq = int(2e0000 4)  # save model frequency (in num timesteps)
-    save_model_freq = 500000  # save model frequency (in num timesteps)
+    save_model_freq = 250000  # save model frequency (in num timesteps)
 
     #####################################################
 
@@ -364,6 +365,16 @@ def main():
     time_step = 0
     i_episode = 0
 
+    wandb.init(project="GETOUT-Beam Searched Rules", entity="nyrus")
+    # wandb.login(key=["3908b110c9e1ac6d5fd5f6bbe2c0cf4f7b5bcf8d")
+    wandb.config = {
+        "learning_rate_actor": 0.001,
+        "learning_rate_critic": 0.0003,
+        "epochs": 20,
+        "gamma": 0.99,
+        "eps_clip": 0.2
+    }
+
     # training loop
     while time_step <= max_training_timesteps:
 
@@ -381,8 +392,8 @@ def main():
             state, reward, done, _ = env.step(action)
 
             # simpler policy
-            if action in [3, 5, 6]:
-                reward -= 0.2
+            # if action in [3, 5, 6]:
+            #     reward -= 0.2
             # elif action == 0:
             #     reward += 0.1
 
@@ -420,6 +431,7 @@ def main():
 
                 print_running_reward = 0
                 print_running_episodes = 0
+                wandb.log({'reward': print_avg_reward}, step=time_step)
 
             # save model weights
             if time_step % save_model_freq == 0:
@@ -438,8 +450,8 @@ def main():
         print_running_reward += current_ep_reward
         print_running_episodes += 1
 
-        log_running_reward += current_ep_reward
-        log_running_episodes += 1
+        # log_running_reward += current_ep_reward
+        # log_running_episodes += 1
 
         i_episode += 1
 

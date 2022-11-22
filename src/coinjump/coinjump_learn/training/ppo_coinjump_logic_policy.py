@@ -14,7 +14,7 @@ import src.coinjump.coinjump_learn.env
 from src.valuation import RLValuationModule
 from src.facts_converter import FactsConverter
 from src.logic_utils import build_infer_module, get_lang
-from src.util import num_action_select_bm
+from src.util import num_action_select
 from src.nsfr_training import NSFReasoner
 from src.coinjump.coinjump_learn.models.mlpCriticController import MLPCriticController
 from src.util import plot_weights, plot_weights_multi
@@ -89,7 +89,7 @@ class NSFR_ActorCritic(nn.Module):
         # TODO
         device = torch.device('cuda:0')
         lang, clauses, bk, atoms = get_lang(
-            lark_path, lang_base_path, 'coinjump', 'coinjump_bm_3')
+            lark_path, lang_base_path, 'coinjump', 'coinjump_bm_top1')
 
         VM = RLValuationModule(lang=lang, device=device)
         FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
@@ -203,6 +203,9 @@ class PPO:
 
     def get_weights(self):
         return self.policy.actor.get_params()
+
+    def get_prednames(self):
+        return self.policy.actor.get_prednames()
 
 
 # ===== ACTUAL TRAINING HERE =======
@@ -415,11 +418,12 @@ def main():
 
         epsilon = epsilon_func(i_episode)
 
+        prednames = ppo_agent.get_prednames()
         for t in range(1, max_ep_len + 1):
 
             action = ppo_agent.select_action(state, epsilon=epsilon)
             # TODO
-            action = num_action_select_bm(action, V2=True)
+            action = num_action_select(action, prednames)
             # action = num_action_select(action)
             state, reward, done, _ = env.step(action)
 
