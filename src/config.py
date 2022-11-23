@@ -1,0 +1,28 @@
+import torch
+import math
+
+max_ep_len = 500  # max timesteps in one episode
+max_training_timesteps = 100000000  # break training loop if timeteps > max_training_timesteps
+
+print_freq = max_ep_len * 5  # print avg reward in the interval (in num timesteps)
+log_freq = max_ep_len * 5  # log avg reward in the interval (in num timesteps)
+save_model_freq = 25000  # save model frequency (in num timesteps)
+
+#####################################################
+
+## Note : print/log frequencies should be > than max_ep_len
+
+################ PPO hyperparameters ################
+
+# update_timestep = max_ep_len * 4  # update policy every n episodes
+update_timestep = max_ep_len * 10  # update policy every n episodes
+
+K_epochs = 20  # update policy for K epochs (= # update steps)
+# eps_clip = 0.2  # clip parameter for PPO
+eps_clip = 0.2  # clip parameter for PPO
+gamma = 0.99  # discount factor
+
+optimizer = torch.optim.Adam
+lr_actor = 0.001  # learning rate for actor network
+lr_critic = 0.0003  # learning rate for critic network
+epsilon_func = lambda episode: math.exp(-episode / 500)

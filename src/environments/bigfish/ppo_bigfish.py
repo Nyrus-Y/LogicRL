@@ -74,7 +74,7 @@ class ActorCritic(nn.Module):
         return action_logprobs, state_values, dist_entropy
 
 
-class PPO:
+class NeuralPPO:
     def __init__(self, lr_actor, lr_critic, optimizer, gamma, K_epochs, eps_clip):
 
         self.gamma = gamma
