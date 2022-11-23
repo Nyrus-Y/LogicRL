@@ -1,6 +1,8 @@
 #include "mazegen.h"
 #include "object-ids.h"
 #include "cpp-utils.h"
+#include <iostream>
+
 
 struct Wall {
     int x1;
@@ -210,11 +212,10 @@ void MazeGen::generate_maze_no_dead_ends() {
 }
 
 // Generate a maze with doors
-void MazeGen::generate_maze_with_doors(int num_doors) {
+void MazeGen::generate_maze_with_doors(int *num_doors) {
     generate_maze();
 
     std::vector<int> forks;
-
     std::vector<int> adj_space;
     std::vector<int> adj_wall;
 
@@ -226,12 +227,13 @@ void MazeGen::generate_maze_with_doors(int num_doors) {
             if (adj_space.size() > 2) {
                 forks.push_back(i);
             }
+
         }
     }
 
-    std::vector<int> chosen = rand_gen->choose_n(forks, num_doors);
+    std::vector<int> chosen = rand_gen->choose_n(forks, *num_doors);
 
-    num_doors = (int)(chosen.size());
+    *num_doors = (int)(chosen.size());
 
     for (int i : chosen) {
         grid.set_index(i, DOOR_OBJ);
@@ -256,11 +258,11 @@ void MazeGen::generate_maze_with_doors(int num_doors) {
     std::set<int> s0;
     s0.insert(agent_cell);
 
-    for (int door_num = 0; door_num < num_doors + 1; door_num++) {
+    for (int door_num = 0; door_num < *num_doors + 1; door_num++) {
         std::set<int> s1;
         int found_door = -1;
 
-        if (door_num < num_doors) {
+        if (door_num < *num_doors) {
             found_door = expand_to_type(s0, s1, DOOR_OBJ);
             grid.set_index(found_door, DOOR_OBJ + door_num + 1);
             s0.insert(s1.begin(), s1.end());
@@ -274,10 +276,11 @@ void MazeGen::generate_maze_with_doors(int num_doors) {
             space_cells.push_back(x);
         }
 
-        fassert(space_cells.size() > 0);
+        // fassert(space_cells.size() > 0);
+
 
         int key_cell = rand_gen->choose_one(space_cells);
-        grid.set_index(key_cell, door_num == num_doors
+        grid.set_index(key_cell, door_num == *num_doors
                                      ? EXIT_OBJ
                                      : (KEY_OBJ + door_num + 1));
 

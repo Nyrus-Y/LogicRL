@@ -20,7 +20,7 @@ class MazeGen {
     MazeGen(RandGen *_rand_gen, int _maze_dim);
     void generate_maze();
     void generate_maze_no_dead_ends();
-    void generate_maze_with_doors(int num_doors);
+    void generate_maze_with_doors(int *num_doors);
     void place_objects(int start_obj, int num_objs);
 
   private:

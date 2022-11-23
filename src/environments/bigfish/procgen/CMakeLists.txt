@@ -47,30 +47,18 @@ add_library(env
   src/entity.cpp
   src/game.cpp
   src/game-registry.cpp
-  src/games/dodgeball.cpp
-  src/games/edodgeball.cpp
   src/games/bigfish.cpp
   src/games/bigfishc.cpp
   src/games/bigfishm.cpp
   src/games/ebigfishs.cpp
   src/games/ebigfish.cpp
   src/games/ebigfishl.cpp
-  src/games/bossfight.cpp
-  src/games/caveflyer.cpp
-  src/games/climber.cpp
+  src/games/edodgeball.cpp
   src/games/coinrun_old.cpp
   src/games/coinrun.cpp
   src/games/ecoinrun.cpp
-  src/games/fruitbot.cpp
+  src/games/eheist.cpp
   src/games/heist.cpp
-  src/games/jumper.cpp
-  src/games/leaper.cpp
-  src/games/maze.cpp
-  src/games/miner.cpp
-  src/games/ninja.cpp
-  src/games/chaser.cpp
-  src/games/plunder.cpp
-  src/games/starpilot.cpp
   src/mazegen.cpp
   src/randgen.cpp
   src/roomgen.cpp

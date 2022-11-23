@@ -114,7 +114,7 @@ class NSFR_ActorCritic(nn.Module):
         return NSFR
 
 
-class PPO:
+class LogicPPO:
     def __init__(self, lr_actor, lr_critic, optimizer, gamma, K_epochs, eps_clip):
 
         self.gamma = gamma
