@@ -1,55 +1,53 @@
-# Use-Knowledge-Representation-and-Reasoning-for-the-policy
+# LogicRL
 
 
 ## Installation
-The packages are specified in [requirements.txt](./requirements.txt). Please install the packages by:
+
+```bash
+pip install requirements.txt
 ```
-pip install -r requirements.txt
+
+## How to use
+
+example to play with a trained ppo agent
+```
+python3 play.py -s 0 -alg ppo -m coinjump -env CoinJumpEnvNeural-v0
 ```
 
-### PLAY with trained PPO agent
-Run the file in src/CoinJump/:
+example to train an logic agent for coinjump env using 'coinjump_5a' rules. 
+```
+python3 play.py -s 0 -alg logic -m coinjump -env CoinJumpEnvLogic-v0  -r 'coinjump_5a'
+```
 
-key_door:
-1. **run** coinjump_play_KD 
-2. input model: PPO_Key_Door.pth   
+Description About Args
 
-dodge_enemy:
-1. **run** coinjump_play_D 
-2. input model: PPO_Dodge.pth   
+* **--algorithm -alg**: 
 
-enemy and key_door:
-1. **run** coinjump_play_V1 
-2. input model: PPO_V1_enemy_door.pth 
+The algorithm to use for playing or training, choice: _ppo_, _logic_.
 
-### PLAY with pure Logic Policy
+* **--mode -m**:
 
-env include enemy,key and door: 
+Game mode to play or train with, choice: _coinjump_, _bigfish_, _heist_.
 
-**run** src/CoinJump/coinjump_play_V1_logic.py 
+* **--environment -env**: 
 
-env include enemy:
+the specific environment for playing or training, 
 
-**run** src/CoinJump/coinjump_D_logic.py
+e.g. _CoinJumpEnvNeural-v0_ is use to train neural agent of ppo contains key,door and enemy.
 
-env include key and door :
+_bigfishm_  contains one bigger fish and one smaller fish.
+_bigfishc_  contains one red fish and one green fish.
 
-**run** src/CoinJump/coinjump_KD_logic.py
+* **--rules -r**:
 
+_rules_ is required when train logic agent.
 
-### PLAY with trained Logic Policy
-env include enemy,key and door: 
+Logic agent require a set of data which provide the first order logic rules. e.g. '_coinjump_5a_' indicate the rules with 5 clauses.
 
-1. **run** src/CoinJump/coinjump_play_trained_LP.py
-2. input model coinjump_LP_10clauses.pth
+Dataset can be found in path: src/nsfr/data
 
+## Contributing
 
-### something else:
-here to choose model:
+## License
 
-path of models: src/ppo_coinjump_model
-
-
-here to define FOL:
-
-path of clasues: data/lang/coinjump
+[MIT](https://choosealicense.com/licenses/mit/)
