@@ -8,21 +8,21 @@ import torch.nn as nn
 import numpy as np
 import os
 
-from src.coinjump.coinjump.coinjump.actions import coin_jump_actions_from_unified
-from src.coinjump.coinjump.imageviewer import ImageViewer
-from src.util import extract_for_explaining, num_action_select, show_explaining
+from src.environments.coinjump.coinjump.coinjump.actions import coin_jump_actions_from_unified
+from src.environments.coinjump.coinjump.imageviewer import ImageViewer
+from src.environments.coinjump.utils_cj import extract_for_explaining, num_action_select
 
-from src.coinjump.coinjump.coinjump.paramLevelGenerator_keydoor import ParameterizedLevelGenerator_KeyDoor
-from src.coinjump.coinjump.coinjump.paramLevelGenerator_dodge import ParameterizedLevelGenerator_Dodge
-from src.coinjump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
-from src.coinjump.coinjump.coinjump.paramLevelGenerator_keys import ParameterizedLevelGenerator_Keys
-from src.coinjump.coinjump.coinjump.coinjump import CoinJump
+from src.environments.coinjump.coinjump.coinjump.paramLevelGenerator_keydoor import ParameterizedLevelGenerator_KeyDoor
+from src.environments.coinjump.coinjump.coinjump.paramLevelGenerator_dodge import ParameterizedLevelGenerator_Dodge
+from src.environments.coinjump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
+from src.environments.coinjump.coinjump.coinjump.paramLevelGenerator_keys import ParameterizedLevelGenerator_Keys
+from src.environments.coinjump.coinjump.coinjump.coinjump import CoinJump
 
 #from src.coinjump.coinjump_learn.training.ppo_coinjump_logic_policy import NSFR_ActorCritic
-from src.coinjump.coinjump_learn.models.mlpCriticController import MLPCriticController
+from src.environments.coinjump.coinjump_learn.models.mlpCriticController import MLPCriticController
 
 from src.valuation import RLValuationModule
-from src.facts_converter import FactsConverter
+from src.nsfr.facts_converter import FactsConverter
 from src.logic_utils import build_infer_module, get_lang
 from src.nsfr_training import NSFReasoner
 
@@ -217,16 +217,16 @@ def run():
     print("Terminated")
 
 
-def load_recording(replay_file):
-    with open(replay_file, 'rb') as f:
-        # data = {
-        #    'actions': actions, =[ACTION,, ...]
-        #    'meta': coinjump1.level.get_representation(),
-        #    'score': coinjump1.score
-        # }
-        data = pickle.load(f)
-        print("loading", data)
-        return data
+# def load_recording(replay_file):
+#     with open(replay_file, 'rb') as f:
+#         # data = {
+#         #    'actions': actions, =[ACTION,, ...]
+#         #    'meta': coinjump1.level.get_representation(),
+#         #    'score': coinjump1.score
+#         # }
+#         data = pickle.load(f)
+#         print("loading", data)
+#         return data
 
 
 if __name__ == "__main__":

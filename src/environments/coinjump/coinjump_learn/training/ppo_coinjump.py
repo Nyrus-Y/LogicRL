@@ -14,7 +14,7 @@ import time
 import numpy as np
 
 # Original source: https://github.com/nikhilbarhate99/PPO-PyTorch/blob/master/PPO.py
-from src.coinjump.coinjump_learn.models.mlpController import MLPController
+from src.environments.coinjump.coinjump_learn.models.mlpController import MLPController
 
 device = torch.device('cuda:0')
 
@@ -45,7 +45,7 @@ class ActorCritic(nn.Module):
         # self.uniform = Categorical(
         #     torch.tensor([1.0 / CJA_NUM_EXPLICIT_ACTIONS for _ in range(CJA_NUM_EXPLICIT_ACTIONS)], device="cuda"))
         self.uniform = Categorical(
-            torch.tensor([1.0 / 3 for _ in range(3)], device="cuda"))
+            torch.tensor([1.0 / 3 for _ in range(3)], device=device))
         self.actor = MLPController(has_softmax=True)
         # self.actor = nn.Sequential(
         #                nn.Linear(60, 64),

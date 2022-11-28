@@ -12,7 +12,7 @@ import numpy as np
 import src.coinjump.coinjump_learn.env
 
 from src.valuation import RLValuationModule
-from src.facts_converter import FactsConverter
+from src.nsfr.facts_converter import FactsConverter
 from src.logic_utils import build_infer_module, get_lang
 from src.util import num_action_select
 from src.nsfr_training import NSFReasoner
@@ -374,13 +374,13 @@ def main():
 
     print("============================================================================================")
 
-    image_directory = "image"
-    if not os.path.exists(image_directory):
-        os.makedirs(image_directory)
-
-    image_directory = image_directory + '/' + env_name + '/'
-    if not os.path.exists(image_directory):
-        os.makedirs(image_directory)
+    # image_directory = "image"
+    # if not os.path.exists(image_directory):
+    #     os.makedirs(image_directory)
+    #
+    # image_directory = image_directory + '/' + env_name + '/'
+    # if not os.path.exists(image_directory):
+    #     os.makedirs(image_directory)
 
     # checkpoint_path = directory + "PPO_{}_{}_{}.pth".format(env_name, random_seed, 0)
 
@@ -461,7 +461,7 @@ def main():
                 print("--------------------------------------------------------------------------------------------")
 
                 # save image of weights
-                plot_weights_multi(ppo_agent.get_weights(), image_directory, time_step)
+                # plot_weights_multi(ppo_agent.get_weights(), image_directory, time_step)
             # break; if the episode is over
             if done:
                 break

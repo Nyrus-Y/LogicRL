@@ -17,7 +17,7 @@ from src.coinjump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedL
 from src.coinjump.coinjump.coinjump.coinjump import CoinJump
 
 from src.coinjump.coinjump_learn.training.data_transform import extract_state, sample_to_model_input_V1, collate
-from src.coinjump.coinjump_learn.training.ppo_coinjump import ActorCritic
+from src.environments.coinjump.coinjump_learn.training.ppo_coinjump import ActorCritic
 
 KEY_r = 114
 

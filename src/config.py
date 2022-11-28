@@ -6,7 +6,7 @@ max_training_timesteps = 100000000  # break training loop if timeteps > max_trai
 
 print_freq = max_ep_len * 5  # print avg reward in the interval (in num timesteps)
 log_freq = max_ep_len * 5  # log avg reward in the interval (in num timesteps)
-save_model_freq = 25000  # save model frequency (in num timesteps)
+save_model_freq = 25000 * 2  # save model frequency (in num timesteps)
 
 #####################################################
 
