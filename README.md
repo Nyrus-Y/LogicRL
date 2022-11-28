@@ -34,7 +34,9 @@ _rules_ is required when train logic agent.
 
 Logic agent require a set of data which provide the first order logic rules. e.g. '_coinjump_5a_' indicate the rules with 5 clauses.
 
-Dataset can be found in path: _src/nsfr/data_
+So for new rules, just need to be added to the choice of argument '--rules'  
+
+dataset can be found in path: _src/nsfr/data_
   
 
 **Example to play with a trained ppo agent**
@@ -47,6 +49,15 @@ The trained model can be found in path: _models/coinjump_ or _models/bigfish_
 ```
 python3 train.py -s 0 -alg logic -m coinjump -env CoinJumpEnvLogic-v0  -r 'coinjump_5a'
 ```
+
+
+## TO BE DONE
+heist  
+refactor of functions  
+descripton of funtions  
+example agent of game  
+plot  
+a formal README  
 
 ## Contributing
 
