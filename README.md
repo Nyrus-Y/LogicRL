@@ -1,55 +1,75 @@
-# Use-Knowledge-Representation-and-Reasoning-for-the-policy
+# LogicRL
 
 
 ## Installation
-The packages are specified in [requirements.txt](./requirements.txt). Please install the packages by:
+
+```bash
+pip install requirements.txt
 ```
-pip install -r requirements.txt
+
+## How to use
+
+Description of Args
+
+* **--algorithm -alg**: 
+
+The algorithm to use for playing or training, choice: _ppo_, _logic_.
+
+* **--mode -m**:
+
+Game mode to play or train with, choice: _coinjump_, _bigfish_, _heist_.
+
+* **--environment -env**: 
+
+the specific environment for playing or training, 
+
+e.g. _CoinJumpEnvNeural-v0_ is use to train neural agent of ppo contains key,door and enemy.
+
+_bigfishm_  contains one bigger fish and one smaller fish.  
+_bigfishc_  contains one red fish and one green fish. agent need to avoid red fish and eat green fish.
+
+* **--rules -r**:
+
+_rules_ is required when train logic agent.
+
+Logic agent require a set of data which provide the first order logic rules.  
+
+e.g. '_coinjump_5a_' indicate the rules with 5 clauses.
+
+So for new rules, just need to be added to the choice of argument '--rules' and dataset.  
+
+dataset can be found in folder: _src/nsfr/data_
+
+'--rules' is also for some situation like using reward shaping:  
+
+e.g. 'ppo_simple_policy' can be helpful when train ppo agent of coinjump
+
+
+  
+
+**Example to play with a trained ppo agent**
+```
+python3 play.py -s 0 -alg ppo -m coinjump -env CoinJumpEnvNeural-v0  
+```  
+The trained model can be found in folder: _models/coinjump_ or _models/bigfish_
+
+**Example to train an logic agent for coinjump env using 'coinjump_5a' rules.**
+```
+python3 train.py -s 0 -alg logic -m coinjump -env CoinJumpEnvLogic-v0  -r 'coinjump_5a'
 ```
 
-### PLAY with trained PPO agent
-Run the file in src/CoinJump/:
+model will be saved to folder: checkpoints 
 
-key_door:
-1. **run** coinjump_play_KD 
-2. input model: PPO_Key_Door.pth   
+## TO BE DONE
+heist  
+refactor of functions  
+descripton of funtions  
+example agent of game  
+plot  
+a formal README  
 
-dodge_enemy:
-1. **run** coinjump_play_D 
-2. input model: PPO_Dodge.pth   
+## Contributing
 
-enemy and key_door:
-1. **run** coinjump_play_V1 
-2. input model: PPO_V1_enemy_door.pth 
+## License
 
-### PLAY with pure Logic Policy
-
-env include enemy,key and door: 
-
-**run** src/CoinJump/coinjump_play_V1_logic.py 
-
-env include enemy:
-
-**run** src/CoinJump/coinjump_D_logic.py
-
-env include key and door :
-
-**run** src/CoinJump/coinjump_KD_logic.py
-
-
-### PLAY with trained Logic Policy
-env include enemy,key and door: 
-
-1. **run** src/CoinJump/coinjump_play_trained_LP.py
-2. input model coinjump_LP_10clauses.pth
-
-
-### something else:
-here to choose model:
-
-path of models: src/ppo_coinjump_model
-
-
-here to define FOL:
-
-path of clasues: data/lang/coinjump
+[MIT](https://choosealicense.com/licenses/mit/)
