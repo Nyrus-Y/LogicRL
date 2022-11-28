@@ -32,7 +32,9 @@ _bigfishc_  contains one red fish and one green fish. agent need to avoid red fi
 
 _rules_ is required when train logic agent.
 
-Logic agent require a set of data which provide the first order logic rules. e.g. '_coinjump_5a_' indicate the rules with 5 clauses.
+Logic agent require a set of data which provide the first order logic rules.  
+
+e.g. '_coinjump_5a_' indicate the rules with 5 clauses.
 
 So for new rules, just need to be added to the choice of argument '--rules'  
 
