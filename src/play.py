@@ -51,8 +51,9 @@ def main():
     # parser.add_argument("--load", help="Pytorch file to load if continue training",
     #                     action="store_true", dest="load", default=False)
     # args = ['-s 1', '-alg ppo', '-m coinjump', '-env CoinJumpEnvNeural']
-    args = ['-m', 'bigfish', '-alg', 'logic', '-env', 'bigfishm','-r','bigfish_simplified_actions']
-    args = parser.parse_args(args)
+    # args = ['-m', 'bigfish', '-alg', 'logic', '-env', 'bigfishm','-r','bigfish_simplified_actions']
+    # args = parser.parse_args(args)
+    args = parser.parse_args()
 
     # fix seed
     # seed = random.randint(0, 123456)

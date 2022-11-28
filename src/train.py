@@ -39,8 +39,9 @@ def main():
     parser.add_argument("--load", help="Pytorch file to load if continue training",
                         action="store_true", dest="load", default=False)
 
-    args = ['-s', 0, '-m', 'bigfish', '-alg', 'logic', '-env', 'bigfishm', '-r', 'bigfish_simplified_actions']
-    args = parser.parse_args(args)
+    #args = ['-s', 0, '-m', 'bigfish', '-alg', 'logic', '-env', 'bigfishm', '-r', 'bigfish_simplified_actions']
+    #args = parser.parse_args(args)
+    args = parser.parse_args()
 
     #####################################################
     # load environment
