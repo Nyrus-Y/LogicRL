@@ -66,7 +66,7 @@ refactor of functions
 descripton of funtions  
 example agent of game  
 plot  
-a formal README  
+a formal README...    
 
 ## Contributing
 
