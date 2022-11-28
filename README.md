@@ -36,6 +36,10 @@ Logic agent require a set of data which provide the first order logic rules. e.g
 
 So for new rules, just need to be added to the choice of argument '--rules'  
 
+'--rules' is also for some situation like using reward shaping:  
+
+e.g. 'ppo_simple_policy' can be helpful when train ppo agent of coinjump
+
 dataset can be found in path: _src/nsfr/data_
   
 
