@@ -9,7 +9,7 @@ pip install requirements.txt
 
 ## How to use
 
-Description About Args
+Description of Args
 
 * **--algorithm -alg**: 
 
