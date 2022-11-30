@@ -30,7 +30,7 @@ def load_model(model_path, args, set_eval=True):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--seed", help="Seed for pytorch + env",
+    parser.add_argument("-s", "--seed", help="Seed for pytorch + env", default=0,
                         required=False, action="store", dest="seed", type=int)
     parser.add_argument("-alg", "--algorithm", help="algorithm that to use",
                         action="store", dest="alg", required=True,
@@ -57,15 +57,16 @@ def main():
 
     # fix seed
     # seed = random.randint(0, 123456)
-    # make_deterministic(seed)
+    make_deterministic(args.seed)
 
     # load trained_model
     if args.model_file is None:
         # read filename from stdin
         current_path = os.path.dirname(__file__)
-        model_name = input('Enter file name: ')
-
-        model_file = os.path.join(current_path, 'models', args.m, args.alg, model_name)
+        # model_name = input('Enter file name: ')
+        #
+        # model_file = os.path.join(current_path, 'models', args.m, args.alg, model_name)
+        model_file = "/home/quentin/Documents/logicRL/src/models/coinjump/ppo/ppo_seed_0_epi_34390.pth"
 
     else:
         model_file = pathlib.Path(args.model_file)

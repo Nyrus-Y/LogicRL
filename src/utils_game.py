@@ -33,7 +33,7 @@ def render_coinjump(model, args):
         return viewer
 
     def create_coinjump_instance(seed=None):
-        seed = random.randint(0, 100000000) if seed is None else seed
+        seed = random.randint(0, 100000000)
 
         # level_generator = DummyGenerator()
 
@@ -44,7 +44,8 @@ def render_coinjump(model, args):
 
         return coin_jump
 
-    seed = random.seed() if args.seed is None else int(args.seed)
+    seed = random.randint(0, 100000000)
+    print(seed)
     coin_jump = create_coinjump_instance(seed=seed)
     viewer = setup_image_viewer(coin_jump)
 

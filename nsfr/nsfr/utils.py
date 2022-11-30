@@ -23,6 +23,7 @@ device = torch.device('cpu')
 #     NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses)
 #     return NSFR
 
+print("Quentin is the best !")
 
 def get_nsfr_model(args):
     current_path = os.getcwd()

@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 from torch.distributions import Categorical
-from src.nsfr.utils import get_nsfr_model
+from nsfr.utils import get_nsfr_model
 from .MLPController.mlpCriticController import MLPCriticController
 from .MLPController.mlpbigfish import MLPBigfish
 

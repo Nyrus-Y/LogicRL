@@ -4,14 +4,18 @@
 ## Installation
 
 ```bash
-pip install requirements.txt
+pip install -r requirements.txt
+```
+from the nsfr folder:
+```bash
+pip install -e . # installs in dev mode
 ```
 
 ## How to use
 
 Description of Args
 
-* **--algorithm -alg**: 
+* **--algorithm -alg**:
 
 The algorithm to use for playing or training, choice: _ppo_, _logic_.
 
@@ -19,9 +23,9 @@ The algorithm to use for playing or training, choice: _ppo_, _logic_.
 
 Game mode to play or train with, choice: _coinjump_, _bigfish_, _heist_.
 
-* **--environment -env**: 
+* **--environment -env**:
 
-the specific environment for playing or training, 
+the specific environment for playing or training,
 
 e.g. _CoinJumpEnvNeural-v0_ is use to train neural agent of ppo contains key,door and enemy.
 
@@ -45,7 +49,7 @@ dataset can be found in folder: _src/nsfr/data_
 e.g. 'ppo_simple_policy' can be helpful when train ppo agent of coinjump
 
 
-  
+
 
 **Example to play with a trained ppo agent**
 ```
@@ -58,7 +62,7 @@ The trained model can be found in folder: _models/coinjump_ or _models/bigfish_
 python3 train.py -s 0 -alg logic -m coinjump -env CoinJumpEnvLogic-v0  -r 'coinjump_5a'
 ```
 
-model will be saved to folder: checkpoints 
+model will be saved to folder: checkpoints
 
 ## TO BE DONE
 heist  
