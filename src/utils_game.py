@@ -159,7 +159,7 @@ def render_heist(model, args):
         env.act(action)
         rew, obs, done = env.observe()
         if i % 40 == 0:
-            print("\n"*30)
+            print("\n"*50)
             print(obs["positions"])
         i += 1
         # state = extract_state_bf(obs["positions"], args)

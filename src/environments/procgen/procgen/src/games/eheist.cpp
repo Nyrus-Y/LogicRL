@@ -84,7 +84,6 @@ class EHeistLKGame : public BasicAbstractGame {
     void handle_agent_collision(const std::shared_ptr<Entity> &obj) override {
         BasicAbstractGame::handle_agent_collision(obj);
 
-        std::cout << "coucou" << '\n';
         if (obj->type == EXIT) {
             step_data.done = true;
             step_data.reward = COMPLETION_BONUS;
@@ -248,6 +247,14 @@ class EHeistLKGame : public BasicAbstractGame {
         data[1] = agent->y;
 
         // int32_t key_count = (int)entities.size() - 1;
+
+        // for (int i=0; i < 3; i++){ // remove doors
+        //   data[4*i+4] = -1.;
+        //   data[4*i+5] = -1.;
+        // }
+        for (int i=2; i < 27; i++){ // remove doors
+          data[i] = 0.;
+        }
 
         int offset;
         for (int i = 0; i < entities.size(); i++){
