@@ -517,7 +517,40 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
         s.high.float32 = 2.0f;
         observation_types.push_back(s);
     }
-    }
+    } else if (env_name == "eheist"){
+      {
+          struct libenv_tensortype s;
+          strcpy(s.name, "positions");
+          s.scalar_type = LIBENV_SCALAR_TYPE_REAL;
+          s.dtype = LIBENV_DTYPE_FLOAT32;
+          s.shape[0] = 7;
+          s.shape[1] = 2;
+          s.ndim = 2;
+          s.low.float32 = 0.25f;
+          s.high.float32 = 2.0f;
+          observation_types.push_back(s);
+      }
+      {
+          struct libenv_tensortype s;
+          strcpy(s.name, "agent_pos");
+          s.scalar_type = LIBENV_SCALAR_TYPE_DISCRETE;
+          s.dtype = LIBENV_DTYPE_INT32;
+          s.shape[0] = 2;
+          s.ndim = 1;
+          s.low.int32 = 0;
+          s.high.int32 = INT32_MAX;
+          info_types.push_back(s);
+      }
+      {
+          struct libenv_tensortype s;
+          strcpy(s.name, "key_count");
+          s.scalar_type = LIBENV_SCALAR_TYPE_DISCRETE;
+          s.dtype = LIBENV_DTYPE_INT32;
+          s.ndim = 0,
+          s.low.int32 = 0;
+          s.high.int32 = INT32_MAX;
+          info_types.push_back(s);
+      }
     // } else if (env_name == "ecoinrun") {
     //   {
     //       struct libenv_tensortype s;
@@ -531,22 +564,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
     //       info_types.push_back(s);
     //   }
     // }
-
-    // if (env_name == "heist" || env_name[0] == 'e'){
-    //   {
-    //       struct libenv_tensortype s;
-    //       strcpy(s.name, "agent_pos");
-    //       s.scalar_type = LIBENV_SCALAR_TYPE_DISCRETE;
-    //       s.dtype = LIBENV_DTYPE_INT32;
-    //       s.shape[0] = 2;
-    //       s.ndim = 1,
-    //       s.low.int32 = 0;
-    //       s.high.int32 = INT32_MAX;
-    //       info_types.push_back(s);
-    //   }
-    // }
-
-    else if (env_name == "bigfishm"){
+    } else if (env_name == "bigfishm"){
     {
         struct libenv_tensortype s; // table of all fish
         strcpy(s.name, "fish_pos");
@@ -554,7 +572,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
         s.dtype = LIBENV_DTYPE_FLOAT32;
         s.shape[0] = 20; // Max possible fish 20
         s.shape[1] = 3;
-        s.ndim = 2,
+        s.ndim = 2;
         s.low.float32 = 0.25f;
         s.high.float32 = 2.0f;
         info_types.push_back(s);
@@ -564,7 +582,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
         strcpy(s.name, "fish_count");
         s.scalar_type = LIBENV_SCALAR_TYPE_DISCRETE;
         s.dtype = LIBENV_DTYPE_INT32;
-        s.ndim = 0,
+        s.ndim = 0;
         s.low.int32 = 0;
         s.high.int32 = INT32_MAX;
         info_types.push_back(s);
@@ -575,7 +593,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
         s.scalar_type = LIBENV_SCALAR_TYPE_DISCRETE;
         s.dtype = LIBENV_DTYPE_INT32;
         s.shape[0] = 20;
-        s.ndim = 1,
+        s.ndim = 1;
         s.low.int32 = 0;
         s.high.int32 = INT32_MAX;
         info_types.push_back(s);

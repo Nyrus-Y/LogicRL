@@ -21,7 +21,7 @@ class ActorCritic(nn.Module):
             self.num_action = 3
             self.actor = MLPCoinjump(has_softmax=True)
             self.critic = MLPCoinjump(has_softmax=False, out_size=1)
-        elif args.m == 'bigfish':
+        elif args.m == 'bigfish' or args.m == "heist":
             self.num_action = 5
             self.actor = MLPBigfish(has_softmax=True)
             self.critic = MLPBigfish(has_softmax=False, out_size=1)

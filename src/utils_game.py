@@ -79,8 +79,6 @@ def render_coinjump(model, args):
                 prediction = model(extracted_state)
                 action = prediction_to_action_cj(prediction, args, prednames)
                 print(show_explaining(prediction, prednames))
-                # num = torch.argmax(prediction).cpu().item()
-                # action = num_action_select(num, prednames)
                 action = coin_jump_actions_from_unified(action)
             elif args.alg == 'ppo':
                 model_input = sample_to_model_input_V1((extract_state(coin_jump), []))
@@ -88,6 +86,9 @@ def render_coinjump(model, args):
                 model_input = model_input['state']
                 prediction = model(model_input)
                 action = coin_jump_actions_from_unified(torch.argmax(prediction).cpu().item() + 1)
+            elif args.alg == 'random':
+                action = coin_jump_actions_from_unified(random.randint(0, 10))
+            # action = agent.act(coin_jump.state)
         else:
             coin_jump = create_coinjump_instance(seed=seed)
             print("epi_reward: ", round(epi_reward, 2))
@@ -129,11 +130,36 @@ def render_bigfish(model, args):
         prediction = model(state)
         prediction = torch.argmax(prediction)
         action = prediction_to_action_bf(prediction, args, model)
-        # state, reward, done, _ = env.step(action)
         env.act(action)
         rew, obs, done = env.observe()
+        print(obs["positions"])
         state = extract_state_bf(obs["positions"], args)
 
 
 def render_heist(model, args):
-    pass
+    seed = random.seed() if args.seed is None else int(args.seed)
+
+    # env_name = "bigfishm"
+    env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
+    env = gym3.ViewerWrapper(env, info_key="rgb")
+
+    reward, obs, done = env.observe()
+    # print(obs["positions"])
+
+    # state = extract_state_bf(obs['positions'], args)
+
+    # print(model.state_dict())
+    i = 0
+    while True:
+        # select action with policy
+        # prediction = model(state)
+        # prediction = torch.argmax(prediction)
+        # action = prediction_to_action_bf(prediction, args, model)
+        action = np.random.randint([9])
+        env.act(action)
+        rew, obs, done = env.observe()
+        if i % 40 == 0:
+            print("\n"*30)
+            print(obs["positions"])
+        i += 1
+        # state = extract_state_bf(obs["positions"], args)

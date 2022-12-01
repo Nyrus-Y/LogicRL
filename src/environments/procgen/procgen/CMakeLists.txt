@@ -58,6 +58,7 @@ add_library(env
   src/games/coinrun.cpp
   src/games/ecoinrun.cpp
   src/games/heist.cpp
+  src/games/eheist.cpp
   src/mazegen.cpp
   src/randgen.cpp
   src/roomgen.cpp

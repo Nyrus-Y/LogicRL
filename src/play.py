@@ -17,6 +17,8 @@ def load_model(model_path, args, set_eval=True):
             model = ActorCritic(args)
         elif args.alg == 'logic':
             model = NSFR_ActorCritic(args)
+        if args.alg == 'random':
+            model = ActorCritic(args)
         model.load_state_dict(state_dict=torch.load(f))
 
     model = model.actor
@@ -34,14 +36,14 @@ def main():
                         required=False, action="store", dest="seed", type=int)
     parser.add_argument("-alg", "--algorithm", help="algorithm that to use",
                         action="store", dest="alg", required=True,
-                        choices=['ppo', 'logic'])
+                        choices=['ppo', 'logic', 'random'])
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=True, action="store", dest="m",
                         choices=['coinjump', 'bigfish', 'heist'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
                         choices=['CoinJumpEnvLogic-v0', 'CoinJumpEnvNeural-v0',
-                                 'bigfishm', 'bigfishc', 'heist'])
+                                 'bigfishm', 'bigfishc', 'heist', 'eheist'])
     parser.add_argument("-r", "--rules", dest="rules", default=None,
                         required=False, choices=['coinjump_5a', 'bigfish_simplified_actions', 'heist'])
     parser.add_argument("-mo", "--model_file", dest="model_file", default=None)
@@ -62,11 +64,12 @@ def main():
     # load trained_model
     if args.model_file is None:
         # read filename from stdin
-        current_path = os.path.dirname(__file__)
+        # current_path = os.path.dirname(__file__)
         # model_name = input('Enter file name: ')
         #
         # model_file = os.path.join(current_path, 'models', args.m, args.alg, model_name)
-        model_file = "/home/quentin/Documents/logicRL/src/models/coinjump/ppo/ppo_seed_0_epi_34390.pth"
+        # model_file = "/home/quentin/Documents/logicRL/src/models/coinjump/ppo/ppo_seed_0_epi_34390.pth"
+        model_file = "/home/quentin/Documents/logicRL/src/models/bigfish/ppo/ppo_bigfishm_seed_0_epi_1646.pth"
 
     else:
         model_file = pathlib.Path(args.model_file)
