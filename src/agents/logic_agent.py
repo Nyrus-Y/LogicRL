@@ -5,8 +5,11 @@ import torch.nn as nn
 
 from torch.distributions import Categorical
 from nsfr.utils import get_nsfr_model
-from .MLPController.mlpCriticController import MLPCriticController
 from .MLPController.mlpbigfish import MLPBigfish
+from .MLPController.mlpcoinjump import MLPCoinjump
+from .utils_coinjump import extract_state_coinjump, preds_to_action_coinjump, action_map_coinjump
+from .utils_bigfish import extract_state_bigfish, preds_to_action_bigfish, action_map_bigfish
+from .utils_heist import extract_state_heist, action_map_heist
 
 device = torch.device('cuda:0')
 
@@ -15,12 +18,12 @@ class NSFR_ActorCritic(nn.Module):
     def __init__(self, args, rng=None):
         super(NSFR_ActorCritic, self).__init__()
         self.rng = random.Random() if rng is None else rng
-
-        self.actor = get_nsfr_model(args)
-        if args.m == 'bigfish':
-            self.critic = MLPBigfish(out_size=1)
-        elif args.m == 'coinjump':
-            self.critic = MLPCriticController(out_size=1)
+        self.args = args
+        self.actor = get_nsfr_model(self.args, train=True)
+        if self.args.m == 'bigfish' or self.args.m == 'heist':
+            self.critic = MLPBigfish(out_size=1, logic=True)
+        elif self.args.m == 'coinjump':
+            self.critic = MLPCoinjump(out_size=1, logic=True)
 
         self.prednames = self.get_prednames()
         self.num_actions = len(self.prednames)
@@ -58,24 +61,6 @@ class NSFR_ActorCritic(nn.Module):
     def get_prednames(self):
         return self.actor.get_prednames()
 
-    # def get_nsfr_model(self, args):
-    #     current_path = os.getcwd()
-    #     lark_path = os.path.join(current_path, 'lark/exp.lark')
-    #     lang_base_path = os.path.join(current_path, 'data/lang/')
-    #     # TODO
-    #     device = torch.device('cuda:0')
-    #     lang, clauses, bk, atoms = get_lang(
-    #         lark_path, lang_base_path, args.env, args.rules)
-    #
-    #     VM = RLValuationModule(lang=lang, device=device)
-    #     FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
-    #     # m = len(clauses)
-    #     m = 5
-    #     IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=True, device=device)
-    #     # Neuro-Symbolic Forward Reasoner
-    #     NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses, train=True)
-    #     return NSFR
-
 
 class LogicPPO:
     def __init__(self, lr_actor, lr_critic, optimizer, gamma, K_epochs, eps_clip, args):
@@ -83,20 +68,29 @@ class LogicPPO:
         self.gamma = gamma
         self.eps_clip = eps_clip
         self.K_epochs = K_epochs
-
         self.buffer = RolloutBuffer()
-        self.policy = NSFR_ActorCritic(args).to(device)
+        self.args = args
+        self.policy = NSFR_ActorCritic(self.args).to(device)
         self.optimizer = optimizer([
             {'params': self.policy.actor.get_params(), 'lr': lr_actor},
             {'params': self.policy.critic.parameters(), 'lr': lr_critic}
         ])
 
-        self.policy_old = NSFR_ActorCritic(args).to(device)
+        self.policy_old = NSFR_ActorCritic(self.args).to(device)
         self.policy_old.load_state_dict(self.policy.state_dict())
-
         self.MseLoss = nn.MSELoss()
+        self.prednames = self.get_prednames()
 
     def select_action(self, state, epsilon=0.0):
+
+        # extract state for different games
+        if self.args.m == 'coinjump':
+            state = extract_state_coinjump(state)
+        elif self.args.m == 'bigfish':
+            state = extract_state_bigfish(state['positions'], self.args)
+        elif self.args.m == 'eheist':
+            state = extract_state_heist(state['positions'])
+
         # select random action with epsilon probability and policy probiability with 1-epsilon
         with torch.no_grad():
             # state = torch.FloatTensor(state).to(device)
@@ -108,7 +102,17 @@ class LogicPPO:
         action_logprob = torch.squeeze(action_logprob)
         self.buffer.logprobs.append(action_logprob)
 
-        return action.item()
+        # different games use different action system, need to map it to the correct action.
+        # action of logic game means a String, need to map string to the correct action,
+        action = action.item()
+        if self.args.m == 'coinjump':
+            action = action_map_coinjump(action, self.args, self.prednames)
+        elif self.args.m == 'bigfish':
+            action = action_map_bigfish(action, self.args, self.prednames)
+        elif self.args.m == 'eheist':
+            action = action_map_heist(action, self.args, self.prednames)
+
+        return action
 
     def update(self):
         # Monte Carlo estimate of returns
@@ -180,6 +184,42 @@ class LogicPPO:
 
     def get_prednames(self):
         return self.policy.actor.get_prednames()
+
+
+class LogicPlayer:
+    def __init__(self, args, model):
+        self.args = args
+        self.model = model
+        self.prednames = model.get_prednames()
+
+    def act(self, state):
+        # TODO how to do if-else only once?
+        if self.args.m == 'coinjump':
+            action = self.coinjump_actor(state)
+        elif self.args.m == 'bigfish':
+            action = self.bigfish_actor(state)
+        elif self.args.m == 'heist':
+            action = self.heist_actor(state)
+        return action
+
+    def coinjump_actor(self, coinjump, show_explaining=False):
+        extracted_state = extract_state_coinjump(coinjump)
+        predictions = self.model(extracted_state)
+        prediction = torch.argmax(predictions).cpu().item()
+        if show_explaining:
+            print(self.prednames[prediction])
+        action = preds_to_action_coinjump(prediction, self.prednames)
+        return action
+
+    def bigfish_actor(self, state):
+        state = extract_state_bigfish(state, self.args)
+        predictions = self.model(state)
+        action = torch.argmax(predictions)
+        action = preds_to_action_bigfish(action, self.prednames)
+        return action
+
+    def heist_actor(self, state):
+        pass
 
 
 class RolloutBuffer:

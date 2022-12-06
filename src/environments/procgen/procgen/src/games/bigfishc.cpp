@@ -115,9 +115,9 @@ class BigFishC : public BasicAbstractGame {
                 small_positions.insert(std::pair<std::string, float> ("y", ent->y));
                 small_positions.insert(std::pair<std::string, float> ("type", ent->type));
                 small_positions.insert(std::pair<std::string, float> ("rx", ent->rx));
-                } 
+                }
                 else {
-                large_fish_count++;    
+                large_fish_count++;
                 large_positions.insert(std::pair<std::string, float> ("x", ent->x));
                 large_positions.insert(std::pair<std::string, float> ("y", ent->y));
                 large_positions.insert(std::pair<std::string, float> ("type", ent->type));
@@ -132,21 +132,21 @@ class BigFishC : public BasicAbstractGame {
         data[0] = agent->x;
         data[1] = agent->y;
         data[2] = agent->type;
-        // data[3] = agent->rx;
+        data[3] = agent->rx;
         int32_t fish_count = (int) entities.size() - 1;
-        *(int32_t * )(info_bufs[info_name_to_offset.at("fish_count")]) = fish_count;
+        // *(int32_t * )(info_bufs[info_name_to_offset.at("fish_count")]) = fish_count;
         int32_t fish_alive = 0;
 
         // std::cout << "Smol" << small_fish_count << std::endl;
-        data[3] = small_positions["x"];
-        data[4] = small_positions["y"];
-        data[5] = small_positions["type"];
-        // data[7] = small_positions["rx"];
+        data[4] = small_positions["x"];
+        data[5] = small_positions["y"];
+        data[6] = small_positions["type"];
+        data[7] = small_positions["rx"];
         // std::cout << "bij" << small_fish_count+large_fish_count <<std::endl;
-        data[6] = large_positions["x"];
-        data[7] = large_positions["y"];
-        data[8] = large_positions["type"];
-        // data[11] = large_positions["rx"];
+        data[8] = large_positions["x"];
+        data[9] = large_positions["y"];
+        data[10] = large_positions["type"];
+        data[11] = large_positions["rx"];
 
         if (fish_eaten >= FISH_QUOTA) {
             step_data.done = true;
@@ -190,7 +190,8 @@ class BigFishC : public BasicAbstractGame {
         // float ent_r = (FISH_MAX_R - FISH_MIN_R) * pow(rand_gen.rand01(), 1.4) + FISH_MIN_R;
         // float agent_size = agent->rx;
         float ent_r = agent->rx;
-        float ent_y = rand_gen.rand01() * (main_height - 2 * ent_r);
+        float ent_y = rand_gen.randrange(0, main_height);
+        //float ent_y = rand_gen.rand01() * (main_height - 2 * ent_r);
         // ent_y = std::clamp(ent_y, agent->y - main_height/8, agent->y + main_height/8);
         float moves_right = rand_gen.rand01() < .5;
         float ent_vx = (.15 + rand_gen.rand01() * .25) * (moves_right ? 1 : -1);
@@ -233,43 +234,8 @@ class BigFishC : public BasicAbstractGame {
         // data[c*3+2] = rx;
     }
 
-    // void set_ID(const std::string & name, int32_t id, int32_t c){
-    //     int32_t *data = (int32_t *)(info_bufs[info_name_to_offset.at(name)]);
-    //     data[c] = id;
-    // }
-
-    // void set_pos(const std::string & name, float_t x, float_t y, float_t rx){
-    //     int32_t *data = (int32_t *)(info_bufs[info_name_to_offset.at(name)]);
-    //     data[0] = x;
-    //     data[1] = y;
-    //     data[2] = rx;
-    // }
-
     void observe() override {
         Game::observe();
-        // float_t *data = (float *)(info_bufs[info_name_to_offset.at("agent_pos")]);
-        // data[0] = agent->x;
-        // data[1] = agent->y;
-        // data[2] = agent->rx;
-
-        // int32_t fish_count = (int)entities.size() - 1;
-        // *(int32_t *)(info_bufs[info_name_to_offset.at("fish_count")]) = fish_count;
-        // int32_t fish_alive = 0;
-
-        // for (int i = 0; i < (int)entities.size(); i++) {
-        //     auto ent = entities[i];
-        //     if (ent->type == FISH) {
-        //         if (ent->x > 0 && ent->x < main_width){
-        //             set_ID("fish_id", ent->get_id(), fish_alive);
-        //             set_pos_array("fish_pos", ent->x, ent->y, ent->rx, fish_alive);
-        //         }
-        //         fish_alive++;
-        //     }
-        // }
-        // for (int i = fish_alive; i < (int)entities.size(); i++){
-        //     set_ID("fish_id", 0, fish_alive);
-        //     set_pos_array("fish_pos", UNDEFINED_POSITION, UNDEFINED_POSITION, UNDEFINED_POSITION, fish_alive); 
-        // }
     }
 };
 

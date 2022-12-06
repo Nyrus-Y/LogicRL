@@ -1,24 +1,22 @@
 import argparse
-import numpy as np
 import torch
-import random
 import os
-import pathlib
 
 from utils import make_deterministic
 from utils_game import render_coinjump, render_bigfish, render_heist
-from agents.neural_agent import ActorCritic
-from agents.logic_agent import NSFR_ActorCritic
+from agents.neural_agent import ActorCritic, NeuralPlayer
+from agents.logic_agent import NSFR_ActorCritic, LogicPlayer
+from agents.random_agent import RandomPlayer
+
+device = torch.device('cuda:0')
 
 
 def load_model(model_path, args, set_eval=True):
     with open(model_path, "rb") as f:
         if args.alg == 'ppo':
-            model = ActorCritic(args)
+            model = ActorCritic(args).to(device)
         elif args.alg == 'logic':
-            model = NSFR_ActorCritic(args)
-        if args.alg == 'random':
-            model = ActorCritic(args)
+            model = NSFR_ActorCritic(args).to(device)
         model.load_state_dict(state_dict=torch.load(f))
 
     model = model.actor
@@ -42,47 +40,41 @@ def main():
                         choices=['coinjump', 'bigfish', 'heist'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['CoinJumpEnvLogic-v0', 'CoinJumpEnvNeural-v0',
-                                 'bigfishm', 'bigfishc', 'heist', 'eheist'])
+                        choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist'])
     parser.add_argument("-r", "--rules", dest="rules", default=None,
                         required=False, choices=['coinjump_5a', 'bigfish_simplified_actions', 'heist'])
     parser.add_argument("-mo", "--model_file", dest="model_file", default=None)
-
-    # parser.add_argument("--recover", help="Recover from the last trained agent",
-    #                     action="store_true", dest="recover", default=False)
-    # parser.add_argument("--load", help="Pytorch file to load if continue training",
-    #                     action="store_true", dest="load", default=False)
-    # args = ['-s 1', '-alg ppo', '-m coinjump', '-env CoinJumpEnvNeural']
-    # args = ['-m', 'bigfish', '-alg', 'logic', '-env', 'bigfishm','-r','bigfish_simplified_actions']
-    # args = parser.parse_args(args)
+    # arg = ['-m', 'coinjump', '-alg', 'ppo', '-env', 'coinjumpEnv']
     args = parser.parse_args()
 
     # fix seed
-    # seed = random.randint(0, 123456)
     make_deterministic(args.seed)
 
     # load trained_model
-    if args.model_file is None:
-        # read filename from stdin
-        # current_path = os.path.dirname(__file__)
-        # model_name = input('Enter file name: ')
-        #
-        # model_file = os.path.join(current_path, 'models', args.m, args.alg, model_name)
-        # model_file = "/home/quentin/Documents/logicRL/src/models/coinjump/ppo/ppo_seed_0_epi_34390.pth"
-        model_file = "/home/quentin/Documents/logicRL/src/models/bigfish/ppo/ppo_bigfishm_seed_0_epi_1646.pth"
-
+    if args.alg != 'random':
+        # read filename from models
+        current_path = os.path.dirname(__file__)
+        model_name = input('Enter file name: ')
+        model_file = os.path.join(current_path, 'models', args.m, args.alg, model_name)
+        model = load_model(model_file, args)
     else:
-        model_file = pathlib.Path(args.model_file)
+        model = None
 
-    model = load_model(model_file, args)
+    #### create agent
+    if args.alg == 'ppo':
+        agent = NeuralPlayer(args, model)
+    elif args.alg == 'logic':
+        agent = LogicPlayer(args, model)
+    elif args.alg == 'random':
+        agent = RandomPlayer(args)
 
     #### Continue to render
     if args.m == 'coinjump':
-        render_coinjump(model, args)
+        render_coinjump(agent, args)
     elif args.m == 'bigfish':
-        render_bigfish(model, args)
+        render_bigfish(agent, args)
     elif args.m == 'heist':
-        render_heist(model, args)
+        render_heist(agent, args)
 
 
 if __name__ == "__main__":

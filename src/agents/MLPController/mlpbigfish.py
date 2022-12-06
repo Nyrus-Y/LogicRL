@@ -4,9 +4,9 @@ import numpy as np
 
 class MLPBigfish(torch.nn.Module):
 
-    def __init__(self, has_softmax=False, out_size=5, as_dict=False, special=False):
+    def __init__(self, has_softmax=False, out_size=5, logic=False):
         super().__init__()
-        self.as_dict = as_dict
+        self.logic = logic
         self.device = torch.device('cuda:0')
         encoding_max_entities = 3
         encoding_entity_features = 3
@@ -18,16 +18,15 @@ class MLPBigfish(torch.nn.Module):
             torch.nn.Linear(10, out_size)
         ]
 
-        self.special = special
-
         if has_softmax:
             modules.append(torch.nn.Softmax(dim=-1))
 
         self.mlp = torch.nn.Sequential(*modules)
 
     def forward(self, state):
-        # state = self.convert_states(state)
-        features = state.cpu()
+        if self.logic:
+            state = self.convert_states(state)
+        features = state
         y = self.mlp(features)
         return y
 

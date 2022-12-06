@@ -5,6 +5,9 @@ import random
 from torch.distributions import Categorical
 from .MLPController.mlpcoinjump import MLPCoinjump
 from .MLPController.mlpbigfish import MLPBigfish
+from .utils_coinjump import extract_state, sample_to_model_input, collate, action_map_coinjump
+from .utils_bigfish import simplify_action, action_map_bigfish
+from .utils_heist import action_map_heist
 
 device = torch.device('cuda:0')
 
@@ -14,14 +17,14 @@ class ActorCritic(nn.Module):
         super(ActorCritic, self).__init__()
 
         self.rng = random.Random() if rng is None else rng
-
+        self.args = args
         # self.uniform = Categorical(
         #     torch.tensor([1.0 / CJA_NUM_EXPLICIT_ACTIONS for _ in range(CJA_NUM_EXPLICIT_ACTIONS)], device="cuda"))
-        if args.m == 'coinjump':
+        if self.args.m == 'coinjump':
             self.num_action = 3
             self.actor = MLPCoinjump(has_softmax=True)
             self.critic = MLPCoinjump(has_softmax=False, out_size=1)
-        elif args.m == 'bigfish' or args.m == "heist":
+        elif self.args.m == 'bigfish' or self.args.m == "heist":
             self.num_action = 5
             self.actor = MLPBigfish(has_softmax=True)
             self.critic = MLPBigfish(has_softmax=False, out_size=1)
@@ -33,6 +36,7 @@ class ActorCritic(nn.Module):
         raise NotImplementedError
 
     def act(self, state, epsilon=0.0):
+
         action_probs = self.actor(state)
 
         # e-greedy
@@ -63,31 +67,53 @@ class NeuralPPO:
         self.gamma = gamma
         self.eps_clip = eps_clip
         self.K_epochs = K_epochs
-
+        self.args = args
         self.buffer = RolloutBuffer()
-
-        self.policy = ActorCritic(args).to(device)
+        self.policy = ActorCritic(self.args).to(device)
         self.optimizer = optimizer([
             {'params': self.policy.actor.parameters(), 'lr': lr_actor},
             {'params': self.policy.critic.parameters(), 'lr': lr_critic}
         ])
 
-        self.policy_old = ActorCritic(args).to(device)
+        self.policy_old = ActorCritic(self.args).to(device)
         self.policy_old.load_state_dict(self.policy.state_dict())
 
         self.MseLoss = nn.MSELoss()
 
     def select_action(self, state, epsilon=0.0):
+
+        # extract state info for different games
+        if self.args.m == 'coinjump':
+            model_input = sample_to_model_input((extract_state(state), []))
+            model_input = collate([model_input])
+            state = model_input['state']
+            state = torch.cat([state['base'], state['entities']], dim=1)
+        elif self.args.m == 'bigfish':
+            state = state['positions'].reshape(-1)
+            # return torch.tensor(state, device='cuda:0')
+            state = torch.tensor(state.tolist()).to(device)
+            # state = torch.reshape(torch.tensor(state), (-1,)).cuda()
+        elif self.args.m == 'heist':
+            pass
         # select random action with epsilon probability and policy probiability with 1-epsilon
         with torch.no_grad():
             # state = torch.FloatTensor(state).to(device)
             action, action_logprob = self.policy_old.act(state, epsilon=epsilon)
 
         self.buffer.states.append(state)
+        action = torch.squeeze(action)
         self.buffer.actions.append(action)
+        action_logprob = torch.squeeze(action_logprob)
         self.buffer.logprobs.append(action_logprob)
 
-        return action.item()
+        if self.args.m == 'coinjump':
+            action = action_map_coinjump(action.item(), self.args)
+        elif self.args.m == 'bigfish':
+            action = action_map_bigfish(action.item(), self.args)
+        elif self.args.m == 'eheist':
+            action = action_map_heist(action.item(), self.args)
+
+        return action
 
     def update(self):
         # Monte Carlo estimate of returns
@@ -149,6 +175,44 @@ class NeuralPPO:
         self.policy.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
         # self.policy_old = torch.load(checkpoint_path)
         # self.policy = torch.load(checkpoint_path)
+
+
+class NeuralPlayer:
+    def __init__(self, args, model=None):
+        self.args = args
+        self.model = model
+        self.device = torch.device('cuda:0')
+
+    def act(self, state):
+        # TODO how to do if-else only once?
+        if self.args.m == 'coinjump':
+            action = self.coinjump_actor(state)
+        elif self.args.m == 'bigfish':
+            action = self.bigfish_actor(state)
+        elif self.args.m == 'heist':
+            action = self.heist_actor(state)
+        return action
+
+    def coinjump_actor(self, coinjump):
+        model_input = sample_to_model_input((extract_state(coinjump), []))
+        model_input = collate([model_input])
+        state = model_input['state']
+        state = torch.cat([state['base'], state['entities']], dim=1)
+        prediction = self.model(state)
+        # action = coin_jump_actions_from_unified(torch.argmax(prediction).cpu().item() + 1)
+        action = torch.argmax(prediction).cpu().item() + 1
+        return action
+
+    def bigfish_actor(self, state):
+        state = state.reshape(-1)
+        state = state.tolist()
+        predictions = self.model(torch.tensor(state).cuda())
+        action = torch.argmax(predictions)
+        action = simplify_action(action)
+        return action
+
+    def heist_actor(self, state):
+        pass
 
 
 class RolloutBuffer:

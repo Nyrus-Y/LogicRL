@@ -13,20 +13,10 @@ from .valuation_bf import BFValuationModule
 device = torch.device('cpu')
 
 
-# def get_nsfr_model(lang, clauses, atoms, bk, device):
-#     VM = RLValuationModule(
-#         lang=lang, device=device)
-#     FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
-#     IM = build_infer_module(clauses, atoms, lang,
-#                             m=len(clauses), infer_step=2, train=True, device=device)
-#     # Neuro-Symbolic Forward Reasoner
-#     NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses)
-#     return NSFR
-
-def get_nsfr_model(args):
-    current_path = os.getcwd()
-    lark_path = os.path.join(current_path, 'nsfr/lark/exp.lark')
-    lang_base_path = os.path.join(current_path, 'nsfr/data/lang/')
+def get_nsfr_model(args, train=False):
+    current_path = os.path.dirname(__file__)
+    lark_path = os.path.join(current_path, 'lark/exp.lark')
+    lang_base_path = os.path.join(current_path, 'data/lang/')
     # TODO
     device = torch.device('cuda:0')
     lang, clauses, bk, atoms = get_lang(
@@ -38,21 +28,30 @@ def get_nsfr_model(args):
     FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
     m = len(clauses)
     # m = 5
-    IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=True, device=device)
+    IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=train, device=device)
     # Neuro-Symbolic Forward Reasoner
-    NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses, train=True)
+    NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses, train=train)
     return NSFR
 
 
-def get_nsfr(env_name):
-    current_path = os.getcwd()
+def get_nsfr(mode, rule):
+    current_path = os.path.dirname(__file__)
     lark_path = os.path.join(current_path, 'lark/exp.lark')
     lang_base_path = os.path.join(current_path, 'data/lang/')
 
     device = torch.device('cuda:0')
     lang, clauses, bk, atoms = get_lang(
-        lark_path, lang_base_path, 'coinjump', env_name)
-    NSFR = get_nsfr_model(lang, clauses, atoms, bk, device)
+        lark_path, lang_base_path, mode, rule)
+    if mode == 'coinjump':
+        VM = RLValuationModule(lang=lang, device=device)
+    elif mode == 'bigfish':
+        VM = BFValuationModule(lang=lang, device=device)
+    FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
+    m = len(clauses)
+    # m = 5
+    IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=True, device=device)
+    # Neuro-Symbolic Forward Reasoner
+    NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses, train=True)
     return NSFR
 
 
@@ -64,10 +63,9 @@ def explaining_nsfr(NSFR, extracted_states):
     return explaining
 
 
-def get_predictions(extracted_states, NSFR, prednames):
+def get_predictions(extracted_states, NSFR):
     V_T = NSFR(extracted_states)
-    predicts = NSFR.predict_multi(v=V_T, prednames=prednames)
-
+    predicts = NSFR.print_explaining(V_T)
     return predicts
 
 

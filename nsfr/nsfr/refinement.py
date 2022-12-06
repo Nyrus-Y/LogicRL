@@ -1,6 +1,6 @@
 import itertools
-from fol.logic import Atom, Clause, FuncTerm, Var
-from fol.logic_ops import subs
+from .fol.logic import Atom, Clause, FuncTerm, Var
+from .fol.logic_ops import subs
 
 
 # TODOL refine_from_modeb, generate_by_refinement

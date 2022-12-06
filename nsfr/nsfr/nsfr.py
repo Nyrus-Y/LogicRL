@@ -22,22 +22,7 @@ class NSFReasoner(nn.Module):
         self.bk = bk
         self.clauses = clauses
         self._train = train
-        # TODO change possible action here
-        # 2 C D
-        # self.prednames = ['jump', 'stay']
-        # 4 C KD
-        # self.prednames = ['left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-        #                   'right_go_to_door']
-        # 6C V1
-        # self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-        #                   'right_go_to_door']
-        # self.prednames = ['jump','jump','jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-        #                   'right_go_to_door']
         self.prednames = self.get_prednames()
-        # 10C V2
-        # self.prednames = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door',
-        #                   'right_go_to_door', 'stay', 'jump_over_door', 'left_for_nothing', 'right_go_to_enemy',
-        #                   'stay_for_nothing']
 
     def get_params(self):
         return self.im.get_params()  # + self.fc.get_params()
@@ -56,14 +41,9 @@ class NSFReasoner(nn.Module):
         V_0 = self.fc(zs, self.atoms, self.bk)
         # perform T-step forward-chaining reasoning
         V_T = self.im(V_0)
-        #if self.train:
+        # only return probs of actions
         actions = self.get_predictions(V_T, prednames=self.prednames)
         return actions
-
-        # self.print_valuation_batch(V_T)
-        # action = torch.argmax(predictions)
-        # text = self.generate_captions(V_T, self.atoms, 4, 0.3)
-        # return V_T
 
     def predict(self, v, predname):
         """Extracting a value from the valuation tensor using a given predicate.
@@ -75,8 +55,6 @@ class NSFReasoner(nn.Module):
 
     def predict_multi(self, v, prednames):
         """Extracting values from the valuation tensor using given predicates.
-
-        prednames = ['kp1', 'kp2', 'kp3']
         """
         # v: batch * |atoms|
         target_indices = []
@@ -116,10 +94,9 @@ class NSFReasoner(nn.Module):
                     print(self.atoms[i], ': ', round(v[i], 3))
 
     def print_explaining(self, predicts):
-        clauses = self.clauses
         predicts = predicts.detach().cpu().numpy()
         index = np.argmax(predicts[0])
-        return clauses[index]
+        return self.prednames[index]
 
     def get_valuation_text(self, valuation):
         text_batch = ''  # texts for each batch

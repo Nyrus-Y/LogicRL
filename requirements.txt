@@ -1,11 +1,15 @@
 ### NSFR
-#torch>=1.8.1
+torch==1.12.1
 lark-parser
 sklearn
+gym
+gym3
+filelock
+pyglet
 torchsummary
 setuptools>=58.5.3
 tensorboard
-numpy>=1.18.5
+numpy
 torchvision
 tqdm>=4.41.0
 matplotlib>=3.2.2
@@ -15,4 +19,5 @@ PyYAML>=5.3.1
 scipy>=1.4.1
 seaborn
 pandas
-rtpt
+cmake
+###qt

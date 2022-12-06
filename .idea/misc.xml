@@ -3,5 +3,5 @@
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$/src/bigfish/procgen">
     <contentRoot DIR="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.9 (procgen)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 (LogicRL)" project-jdk-type="Python SDK" />
 </project>

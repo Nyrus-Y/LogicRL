@@ -1,8 +1,7 @@
-from nsfr_utils import get_nsfr_cgen_model
-from tensor_encoder import TensorEncoder
-from infer import ClauseBodyInferModule
-# from eval_clause import EvalInferModule
-from refinement import RefinementGenerator
+from .nsfr_utils import get_nsfr_cgen_model
+from .tensor_encoder import TensorEncoder
+from .infer import ClauseBodyInferModule
+from .refinement import RefinementGenerator
 from tqdm import tqdm
 import torch
 import numpy as np

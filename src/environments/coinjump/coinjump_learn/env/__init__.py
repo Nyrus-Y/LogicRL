@@ -2,30 +2,13 @@ import gym
 
 gym.envs.register(
     id='CoinJumpEnv-v0',
-    entry_point='src.environments.coinjump.coinjump_learn.env.coinJumpEnv:CoinJumpEnv',
+    entry_point='environments.coinjump.coinjump_learn.env.coinJumpEnv:CoinJumpEnv',
     max_episode_steps=300,
 )
 
-gym.envs.register(
-    id='CoinJumpEnvDodge-v0',
-    entry_point='src.environments.coinjump.coinjump_learn.env.coinJumpEnvD:CoinJumpEnvD',
-    max_episode_steps=300,
-)
 
 gym.envs.register(
-    id='CoinJumpEnvKD-v0',
-    entry_point='src.environments.coinjump.coinjump_learn.env.coinJumpEnvKD:CoinJumpEnvKD',
-    max_episode_steps=300,
-)
-
-gym.envs.register(
-    id='CoinJumpEnvNeural-v0',
-    entry_point='src.environments.coinjump.coinjump_learn.env.CoinJumpEnvNeural:CoinJumpEnvNeural',
-    max_episode_steps=300,
-)
-
-gym.envs.register(
-    id='CoinJumpEnvLogic-v0',
-    entry_point='src.environments.coinjump.coinjump_learn.env.CoinJumpEnvLogic:CoinJumpEnvLogic',
+    id='CoinJumpEnv-v1',
+    entry_point='environments.coinjump.coinjump_learn.env.CoinJumpEnvV1:CoinJumpEnvV1',
     max_episode_steps=300,
 )

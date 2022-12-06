@@ -6,12 +6,11 @@ from .hud import HUD
 from .level import Level
 from .trackingCamera import TrackingCamera
 from .resource_loader import ResourceLoader
-
+from .player_v1 import Player
 
 class CoinJump:
 
-    def __init__(self, render=True, resource_path=None, start_on_first_action=False, Dodge_model=False,
-                 Key_Door_model=False, V1=False,keys=False):
+    def __init__(self, render=True, resource_path=None, start_on_first_action=False):
         self.zoom = 32
 
         if resource_path is None:
@@ -20,22 +19,8 @@ class CoinJump:
                                               no_loading=not render) if render else None
 
         """ change here to choose  mode """
-        if Dodge_model:
-            from .player_dodge import Player
-            self.score = 0
-        elif Key_Door_model:
-            from .player_keydoor import Player
-            self.score = 50.0
-        elif V1:
-            from .player_V1 import Player
-            self.score = 100.0
-        elif keys:
-            from .player_keys import Player
-            self.score = 100.0
-        else:
-            from .player import Player
-            self.score = 20.0
 
+        self.score = 100.0
         self.level = Level(27, 16)
         self.player = Player(self.level, 2, 2, self.resource_loader)
         self.level.entities.append(self.player)
@@ -60,7 +45,10 @@ class CoinJump:
 
         # start stepping the game only after the first action.
         if self.start_on_first_action and not self.has_started:
-            la = len(action)
+            if isinstance(action, int):
+                la = 0
+            else:
+                la = len(action)
             if la == 0 or (la == 1 and action[0] == CoinJumpActions.NOOP):
                 return None
             else:

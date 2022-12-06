@@ -1,16 +1,19 @@
 import random
-import sys
 
 import gym
 import numpy as np
 from gym import spaces
 
-from src.environments.coinjump.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS, coin_jump_actions_from_unified
+from src.environments.coinjump.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS
 from src.environments.coinjump.coinjump.coinjump.helpers import create_coinjump_instance
-from src.agents.utils_coinjump import extract_state, sample_to_model_input
 
 
-class CoinJumpEnv(gym.Env):
+class CoinJumpEnvV1(gym.Env):
+    """
+    Coinjump:include enemy, key and door.
+    trained with mlp
+    """
+
     # metadata = {'render.modes': ['human']}
     metadata = {'render.modes': []}
 
@@ -71,23 +74,20 @@ class CoinJumpEnv(gym.Env):
                  use this for learning.
         """
         # self._take_action(action)
-        reward = self.coinjump.step(coin_jump_actions_from_unified(action))
+        reward = self.coinjump.step(action)
         # reward = self._get_reward()
         ob = self.observe_state()
         episode_over = self.coinjump.level.terminated
-        return ob, reward, episode_over, {}
+        return ob, reward, episode_over, {}, {}
 
     def observe_state(self):
         # transform to model input with no action specified
-        ob = sample_to_model_input((extract_state(self.coinjump), None), no_dict=True)
-        # if no_dict=False: we get a dict with ob['base'] and ob['entities'] entries
-        return ob
+        return self.coinjump
 
     def create_new_coinjump(self):
-        self.coinjump = create_coinjump_instance(
-            seed=self.rng.randint(0, 1000000000), print_seed=False, render=False,
-            resource_path=None, start_on_first_action=False,
-            generator_args=self._generator_args, **self._kwargs)
+        self.coinjump = create_coinjump_instance(seed=self.rng.randint(0, 1000000000), print_seed=False, render=False,
+                                                 resource_path=None, start_on_first_action=False,
+                                                 generator_args=self._generator_args, **self._kwargs)
 
     def reset(self):
         self.create_new_coinjump()
@@ -100,16 +100,11 @@ class CoinJumpEnv(gym.Env):
 
     # def _take_action(self, action):
     #    self.coinjump1.step(action)
+    def get_coinjump(self):
+        return self.coinjump
 
     def _get_reward(self):
         return self.coinjump.level.get_reward()
 
     def _seed(self, seed):
         self.rng = random.Random(seed)
-
-
-# gym.envs.register(
-#     id='CoinJumpEnv-v0',
-#     entry_point='src.environments.coinjump_learn.env.coinJumpEnv:CoinJumpEnv',
-#     max_episode_steps=300,
-# )

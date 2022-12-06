@@ -65,12 +65,10 @@ python3 train.py -s 0 -alg logic -m coinjump -env CoinJumpEnvLogic-v0  -r 'coinj
 model will be saved to folder: checkpoints
 
 ## TO BE DONE
-heist  
-refactor of functions  
-descripton of funtions  
-example agent of game  
+heist
 plot  
-a formal README...    
+a formal README...   
+beam search
 
 ## Contributing
 
