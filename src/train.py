@@ -11,6 +11,7 @@ from environments.procgen.procgen import ProcgenGym3Env
 from utils import make_deterministic, initialize_game, env_step
 from config import *
 from tqdm import tqdm
+from rtpt import RTPT
 
 
 def main():
@@ -137,6 +138,11 @@ def main():
     time_step = 0
     i_episode = 0
 
+    rtpt = RTPT(name_initials='QD', experiment_name='LogicRL',
+                max_iterations=max_training_timesteps)
+
+    # Start the RTPT tracking
+    rtpt.start()
     # training loop
     pbar = tqdm(total=max_training_timesteps)
     while time_step <= max_training_timesteps:
@@ -157,6 +163,7 @@ def main():
 
             time_step += 1
             pbar.update(1)
+            rtpt.step()
             current_ep_reward += reward
 
             # update PPO agent
