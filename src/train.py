@@ -10,6 +10,7 @@ from agents.neural_agent import NeuralPPO
 from environments.procgen.procgen import ProcgenGym3Env
 from utils import make_deterministic, initialize_game, env_step
 from config import *
+from tqdm import tqdm
 
 
 def main():
@@ -137,6 +138,7 @@ def main():
     i_episode = 0
 
     # training loop
+    pbar = tqdm(total=max_training_timesteps)
     while time_step <= max_training_timesteps:
         #  initialize game
         state = initialize_game(env, args)
@@ -154,6 +156,7 @@ def main():
             agent.buffer.is_terminals.append(done)
 
             time_step += 1
+            pbar.update(1)
             current_ep_reward += reward
 
             # update PPO agent
@@ -196,6 +199,7 @@ def main():
         log_running_episodes += 1
 
         i_episode += 1
+
 
     env.close()
 

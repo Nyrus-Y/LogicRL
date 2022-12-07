@@ -26,7 +26,10 @@ def initialize_game(env, args):
 def env_step(action, env, args):
     """take step of each game"""
     if args.m == 'coinjump':
-        state, reward, done, _, info = env.step(action)
+        try:
+            state, reward, done, _, info = env.step(action)
+        except ValueError:
+            state, reward, done, info = env.step(action)
         # perhaps need some reward shaping
         if args.rules == 'ppo_simple_policy':
             # simpler policy
