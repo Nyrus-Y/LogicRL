@@ -1,5 +1,6 @@
 # LogicRL
-
+This is the code for RL agents using logic.
+![](image/LogicRL.png)
 
 ## Installation
 
