@@ -78,7 +78,7 @@ class CoinJumpEnvV1(gym.Env):
         # reward = self._get_reward()
         ob = self.observe_state()
         episode_over = self.coinjump.level.terminated
-        return ob, reward, episode_over, {}
+        return ob, reward, episode_over, {}, {}
 
     def observe_state(self):
         # transform to model input with no action specified
