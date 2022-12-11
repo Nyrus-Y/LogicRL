@@ -4,7 +4,7 @@ import time
 import gym
 import sys
 sys.path.insert(0,'../')
-import environments.coinjump.coinjump_learn.env
+import environments.coinjump.env
 from agents.logic_agent import LogicPPO
 from agents.neural_agent import NeuralPPO
 from environments.procgen.procgen import ProcgenGym3Env
@@ -31,14 +31,14 @@ def main():
                         choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist'])
     parser.add_argument("-r", "--rules", dest="rules", default=None,
                         required=False,
-                        choices=['coinjump_5a', 'bigfish_simplified_actions', 'heist', 'ppo_simple_policy'])
+                        choices=['coinjump_5a', 'bigfish_simplified_actions', 'eheist_1', 'ppo_simple_policy'])
     parser.add_argument("--recover", help="Recover from the last trained agent",
                         action="store_true", dest="recover", default=False)
     parser.add_argument("--load", help="Pytorch file to load if continue training",
                         action="store_true", dest="load", default=False)
 
-    # args = ['-m', 'coinjump', '-alg', 'logic', '-env', 'CoinJumpEnv-v1','-r','coinjump_5a']
-    args = parser.parse_args()
+    args = ['-m', 'heist', '-alg', 'ppo', '-env', 'eheist']
+    args = parser.parse_args(args)
 
     #####################################################
     # load environment

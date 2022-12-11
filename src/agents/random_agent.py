@@ -2,9 +2,6 @@ import random
 import numpy as np
 
 
-# from src.environments.coinjump.coinjump.coinjump.actions import coin_jump_actions_from_unified
-
-
 class RandomPlayer:
     def __init__(self, args):
         self.args = args

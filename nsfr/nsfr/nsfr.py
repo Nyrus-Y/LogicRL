@@ -41,6 +41,7 @@ class NSFReasoner(nn.Module):
         V_0 = self.fc(zs, self.atoms, self.bk)
         # perform T-step forward-chaining reasoning
         V_T = self.im(V_0)
+        # self.print_probs(V_T)
         # only return probs of actions
         actions = self.get_predictions(V_T, prednames=self.prednames)
         return actions
@@ -97,6 +98,10 @@ class NSFReasoner(nn.Module):
         predicts = predicts.detach().cpu().numpy()
         index = np.argmax(predicts[0])
         return self.prednames[index]
+
+    def print_probs(self, V_T):
+        for i, atom in enumerate(self.atoms):
+            print(V_T[0][i], atom)
 
     def get_valuation_text(self, valuation):
         text_batch = ''  # texts for each batch

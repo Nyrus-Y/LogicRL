@@ -28,9 +28,6 @@ class TypeValuationFunction(nn.Module):
         """
         z_type = z[:, 0:4]  # [1, 0, 0, 0] * [1.0, 0, 0, 0] .sum = 0.0  type(obj1, key):0.0
         prob = (a * z_type).sum(dim=1)
-
-        # b = (a * z_type).sum(dim=1)
-        # c = torch.max(prob - noise).unsqueeze(0)
         return prob
 
 

@@ -16,8 +16,8 @@ from agents.neural_agent import ActorCritic
 from environments.coinjump.coinjump.coinjump.actions import coin_jump_actions_from_unified
 
 from nsfr.utils import extract_for_cgen_explaining
-from nsfr.nsfr_utils import get_nsfr_model, update_initial_clauses, get_prob, get_data_loader
-from nsfr.logic_utils import get_lang, get_searched_clauses
+from nsfr.nsfr_utils import get_nsfr_model
+from nsfr.logic_utils import get_lang
 from nsfr.mode_declaration import get_mode_declarations
 from nsfr.clause_generator import ClauseGenerator
 from torch.utils.tensorboard import SummaryWriter
@@ -78,63 +78,6 @@ def get_args():
     parser.add_argument("--pre-searched", action="store_true", help="Using pre searched clauses.")
     args = parser.parse_args()
     return args
-
-
-#
-# def predict(NSFR, loader, args, device, th=None):
-#     predicted_list = []
-#     target_list = []
-#     count = 0
-#     ###NSFR = discretise_NSFR(NSFR, args, device)
-#     # NSFR.print_program()
-#
-#     for i, sample in tqdm(enumerate(loader, start=0)):
-#         # to cuda
-#         imgs, target_set = map(lambda x: x.to(device), sample)
-#
-#         # infer and predict the target probability
-#         V_T = NSFR(imgs)
-#         predicted = get_prob(V_T, NSFR, args)
-#         predicted_list.append(predicted.detach())
-#         target_list.append(target_set.detach())
-#         # if args.plot:
-#         #     imgs = to_plot_images_kandinsky(imgs)
-#         #     captions = generate_captions(
-#         #         V_T, NSFR.atoms, NSFR.pm.e, th=0.3)
-#         #     save_images_with_captions(
-#         #         imgs, captions, folder='result/kandinsky/' + args.dataset + '/' + split + '/', img_id_start=count, dataset=args.dataset)
-#         count += V_T.size(0)  # batch size
-#
-#     predicted = torch.cat(predicted_list, dim=0).detach().cpu().numpy()
-#     target_set = torch.cat(target_list, dim=0).to(
-#         torch.int64).detach().cpu().numpy()
-#
-#     if th == None:
-#         fpr, tpr, thresholds = roc_curve(target_set, predicted, pos_label=1)
-#         accuracy_scores = []
-#         print('ths', thresholds)
-#         for thresh in thresholds:
-#             accuracy_scores.append(accuracy_score(
-#                 target_set, [m > thresh for m in predicted]))
-#
-#         accuracies = np.array(accuracy_scores)
-#         max_accuracy = accuracies.max()
-#         max_accuracy_threshold = thresholds[accuracies.argmax()]
-#         rec_score = recall_score(
-#             target_set, [m > thresh for m in predicted], average=None)
-#
-#         print('target_set: ', target_set, target_set.shape)
-#         print('predicted: ', predicted, predicted.shape)
-#         print('accuracy: ', max_accuracy)
-#         print('threshold: ', max_accuracy_threshold)
-#         print('recall: ', rec_score)
-#
-#         return max_accuracy, rec_score, max_accuracy_threshold
-#     else:
-#         accuracy = accuracy_score(target_set, [m > th for m in predicted])
-#         rec_score = recall_score(
-#             target_set, [m > th for m in predicted], average=None)
-#         return accuracy, rec_score, th
 
 
 def setup_image_viewer(coinjump):

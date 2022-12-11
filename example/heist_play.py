@@ -2,10 +2,11 @@ import gym3
 import argparse
 import numpy as np
 import sys
-sys.path.insert(0,'../')
+
+sys.path.insert(0, '../')
 from src.environments.procgen.procgen import ProcgenGym3Env
 from nsfr.utils import get_nsfr_model, get_predictions
-from src.agents.utils_bigfish import extract_state_bigfish
+from src.agents.utils_heist import extract_state_heist
 
 
 def explaining_to_action(explaining):
@@ -25,16 +26,16 @@ def explaining_to_action(explaining):
 def run():
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
-                        required=False, action="store", dest="m", default='bigfish',
-                        choices=['bigfish'])
+                        required=False, action="store", dest="m", default='heist',
+                        choices=['heist'])
     parser.add_argument("-alg", "--algorithm", help="algorithm that to use",
                         action="store", dest="alg", required=False, default='logic',
                         choices=['logic'])
-    parser.add_argument("-r", "--rules", dest="rules", default='bigfish_simplified_actions',
-                        required=False, choices=['bigfish_simplified_actions'])
+    parser.add_argument("-r", "--rules", dest="rules", default='eheist_1',
+                        required=False, choices=['eheist_1'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
-                        required=False, action="store", dest="env", default='bigfishm',
-                        choices=['bigfishm', 'bigfishc'])
+                        required=False, action="store", dest="env", default='eheist',
+                        choices=['eheist'])
     args = parser.parse_args()
 
     env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
@@ -54,7 +55,7 @@ def run():
     # action_space = [1, 3, 4, 5, 7]
 
     rew, obs, done = env.observe()
-    extracted_state = extract_state_bigfish(obs['positions'], args)
+    extracted_state = extract_state_heist(obs['positions'], args)
 
     last_explaining = ""
     while NB_DONE < TO_SUCCEED:
@@ -68,7 +69,7 @@ def run():
             print(explaining)
             last_explaining = explaining
 
-        extracted_state = extract_state_bigfish(obs["positions"], args)
+        extracted_state = extract_state_heist(obs["positions"], args)
         if done:
             print("--------------------------new game--------------------------")
         # print(f"reward : {rew}")

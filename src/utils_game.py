@@ -23,7 +23,7 @@ def render_coinjump(agent, args):
 
         # level_generator = DummyGenerator()
 
-        coin_jump = CoinJump(V1=True)
+        coin_jump = CoinJump()
         level_generator = ParameterizedLevelGenerator_V1()
         level_generator.generate(coin_jump, seed=seed)
         coin_jump.render()
@@ -108,7 +108,8 @@ def render_heist(agent, args):
         action = agent.act(obs['positions'])
         env.act(action)
         rew, obs, done = env.observe()
+        # print(rew[0])
         # if i % 40 == 0:
         #     print("\n" * 50)
-        #     print(obs["positions"])
+        # print(obs["positions"])
         i += 1

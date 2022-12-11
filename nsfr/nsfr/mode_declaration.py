@@ -164,9 +164,9 @@ def get_mode_declarations_coinjump(lang, obj_num):
 def get_mode_declarations(args, lang, obj_num):
     if args.dataset_type == 'coinjump':
         return get_mode_declarations_coinjump(lang, obj_num)
-    if args.dataset_type == 'kandinsky':
+    if args.dataset_type == 'bigfish':
         return get_mode_declarations_kandinsky(lang, obj_num)
-    elif args.dataset_type == 'clevr':
+    elif args.dataset_type == 'heist':
         return get_mode_declarations_clevr(lang, obj_num)
     else:
         assert False, "Invalid data type."

@@ -9,12 +9,13 @@
 const std::string NAME = "eheist";
 
 const float COMPLETION_BONUS = 10.0f;
+const float STEP_PENALTY = 0.0f;
 
 const int LOCKED_DOOR = 1;
 const int KEY = 2;
 const int EXIT = 9;
 const int KEY_ON_RING = 11;
-
+const int AGENT = 0;
 
 class EHeistLKGame : public BasicAbstractGame {
   public:
@@ -26,7 +27,7 @@ class EHeistLKGame : public BasicAbstractGame {
 
     EHeistLKGame()
         : BasicAbstractGame(NAME) {
-        timeout = 200;
+        timeout = 100;
         maze_gen = nullptr;
         has_useful_vel_info = false;
 
@@ -86,13 +87,14 @@ class EHeistLKGame : public BasicAbstractGame {
 
         if (obj->type == EXIT) {
             step_data.done = true;
-            step_data.reward = COMPLETION_BONUS;
+            step_data.reward += COMPLETION_BONUS;
             step_data.level_complete = true;
         } else if (obj->type == KEY) {
             obj->x = 0.;
             obj->y = 0.;
             obj->will_erase = true;
             has_keys[obj->image_theme] = true;
+            step_data.reward += COMPLETION_BONUS/4.0;
         } else if (obj->type == LOCKED_DOOR) {
             int door_num = obj->image_theme;
             num_locks_unlocked[door_num] = true;
@@ -104,7 +106,7 @@ class EHeistLKGame : public BasicAbstractGame {
             if (std::count(num_locks_unlocked.begin(), num_locks_unlocked.end(), true) == num_keys) {
 
                 step_data.done = true;
-                step_data.reward = COMPLETION_BONUS/4.0;
+                step_data.reward += COMPLETION_BONUS/4.0;
                 step_data.level_complete = true;
             }
         }
@@ -241,7 +243,7 @@ class EHeistLKGame : public BasicAbstractGame {
         BasicAbstractGame::game_step();
 
         agent->face_direction(action_vx, action_vy);
-
+        step_data.reward += STEP_PENALTY;
         float_t *data = (float *)(obs_bufs[obs_name_to_offset.at("positions")]);
         data[0] = agent->x;
         data[1] = agent->y;
@@ -257,6 +259,7 @@ class EHeistLKGame : public BasicAbstractGame {
         }
 
         int offset;
+        int colorEnt = 1;
         for (int i = 0; i < entities.size(); i++){
             auto ent = entities[i];
             offset = ent->image_theme;

@@ -2,8 +2,8 @@ import torch
 import math
 
 max_ep_len = 500  # max timesteps in one episode
-max_training_timesteps = 700000  # break training loop if timeteps > max_training_timesteps
-# max_training_timesteps = 100000000  # break training loop if timeteps > max_training_timesteps
+#max_training_timesteps = 700000  # break training loop if timeteps > max_training_timesteps
+max_training_timesteps = 100000000  # break training loop if timeteps > max_training_timesteps
 
 print_freq = max_ep_len * 5  # print avg reward in the interval (in num timesteps)
 log_freq = max_ep_len * 5  # log avg reward in the interval (in num timesteps)
@@ -13,7 +13,7 @@ save_model_freq = 25000 * 2  # save model frequency (in num timesteps)
 
 ## Note : print/log frequencies should be > than max_ep_len
 
-################ PPO hyperparameters ################
+################ hyperparameters ################
 
 # update_timestep = max_ep_len * 4  # update policy every n episodes
 update_timestep = max_ep_len * 10  # update policy every n episodes

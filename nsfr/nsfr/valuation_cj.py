@@ -1,6 +1,7 @@
-from .valuation_func_bf import *
+from .valuation_func_cj import *
 
-class BFValuationModule(nn.Module):
+
+class CJValuationModule(nn.Module):
     """A module to call valuation functions.
         Attrs:
             lang (language): The language.
@@ -11,15 +12,14 @@ class BFValuationModule(nn.Module):
             dataset (str): The dataset.
     """
 
-    def __init__(self, lang, device):
+    def __init__(self, lang, device, pretrained=True):
         super().__init__()
         self.lang = lang
-        self.colors = ["green", "red"]
         self.device = device
         self.layers, self.vfs = self.init_valuation_functions(
-            device)
+            device, pretrained)
 
-    def init_valuation_functions(self, device):
+    def init_valuation_functions(self, device, pretrained):
         """
             Args:
                 device (device): The device.
@@ -33,50 +33,37 @@ class BFValuationModule(nn.Module):
         vfs = {}  # pred name -> valuation function
         v_type = TypeValuationFunction()
         vfs['type'] = v_type
-        layers.append(v_type)
 
-        v_color = ColorValuationFunction()
-        vfs['color'] = v_color
-        layers.append(v_color)
-
-        v_on_top = OnTopValuationFunction()
-        vfs['on_top'] = v_on_top
-        layers.append(v_on_top)
-
-        v_high_level = HighLevelValuationFunction()
-        vfs['high_level'] = v_high_level
-        layers.append(v_high_level)
-
-        v_low_level = LowLevelValuationFunction()
-        vfs['low_level'] = v_low_level
-        layers.append(v_low_level)
+        # TODO
+        v_closeby = ClosebyValuationFunction(device)
+        vfs['closeby'] = v_closeby
+        # vfs['closeby'].load_state_dict(torch.load(
+        #     '../src/weights/neural_predicates/closeby_pretrain.pt', map_location=device))
+        # vfs['closeby'].eval()
+        layers.append(v_closeby)
+        # print('Pretrained  neural predicate closeby have been loaded!')
 
         v_on_left = OnLeftValuationFunction()
         vfs['on_left'] = v_on_left
         layers.append(v_on_left)
 
-        v_at_bottom = AtBottomValuationFunction()
-        vfs['at_bottom'] = v_at_bottom
-        layers.append(v_at_bottom)
-
         v_on_right = OnRightValuationFunction()
         vfs['on_right'] = v_on_right
         layers.append(v_on_right)
 
-        v_closeby = ClosebyValuationFunction(device)
-        vfs['closeby'] = v_closeby
-        layers.append(v_closeby)
+        v_have_key = HaveKeyValuationFunction()
+        vfs['have_key'] = v_have_key
+        layers.append(v_have_key)
 
-        v_bigger = BiggerValuationFunction()
-        vfs['is_bigger_than'] = v_bigger
-        layers.append(v_bigger)
+        v_not_have_key = NotHaveKeyValuationFunction()
+        vfs['not_have_key'] = v_not_have_key
+        layers.append(v_have_key)
 
-        v_smaller = SmallerValuationFunction()
-        vfs['is_smaller_than'] = v_smaller
-        layers.append(v_smaller)
-        return nn.ModuleList(
-            [v_type, v_color, v_on_top, v_on_left, v_at_bottom, v_on_right, v_closeby, v_bigger, v_smaller,
-             v_high_level, v_low_level]), vfs
+        v_safe = SafeValuationFunction()
+        vfs['safe'] = v_safe
+        layers.append(v_safe)
+
+        return nn.ModuleList([v_type, v_closeby, v_on_left, v_on_right, v_have_key, v_not_have_key, v_safe]), vfs
 
     def forward(self, zs, atom):
         """Convert the object-centric representation to a valuation tensor.
@@ -143,5 +130,3 @@ class BFValuationModule(nn.Module):
         onehot = torch.zeros(batch_size, length, ).to(self.device)
         onehot[:, i] = 1.0
         return onehot
-
-
