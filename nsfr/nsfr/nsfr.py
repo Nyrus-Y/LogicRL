@@ -41,7 +41,7 @@ class NSFReasoner(nn.Module):
         V_0 = self.fc(zs, self.atoms, self.bk)
         # perform T-step forward-chaining reasoning
         V_T = self.im(V_0)
-        # self.print_probs(V_T)
+        #self.print_probs(V_T)
         # only return probs of actions
         actions = self.get_predictions(V_T, prednames=self.prednames)
         return actions

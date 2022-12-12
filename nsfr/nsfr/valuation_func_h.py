@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import math
 
+
 ################################
 # Valuation functions for heist #
 ################################
@@ -54,6 +55,32 @@ class ColorValuationFunction(nn.Module):
         prob = (a * z_type).sum(dim=1)
 
         return prob
+
+
+class CloseValuationFunction(nn.Module):
+    """The function v_closeby.
+    """
+
+    def __init__(self):
+        super(CloseValuationFunction, self).__init__()
+
+    def forward(self, z_1, z_2):
+        """
+        Args:
+            z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
+            [agent, key, door, blue, green, red, got_key, X, Y]
+
+        Returns:
+            A batch of probabilities.
+        """
+        c_1 = z_1[:, -2:]
+        c_2 = z_2[:, -2:]
+
+        dis_x = abs(c_1[:, 0] - c_2[:, 0])
+        dis_y = abs(c_1[:, 1] - c_2[:, 1])
+        dis = dis_x[:] + dis_y[:] + 0.99
+        result = 1 / dis
+        return result
 
 
 class ClosebyVerticalValuationFunction(nn.Module):
@@ -279,15 +306,15 @@ def fuzzy_position(pos1, pos2, keyword):
 
     if keyword == 'top':
         probs = 1 - abs(degree[:] - 90) / 90
-        result = torch.where((180 >= degree) & (degree >= 0), probs*0.9, 0)
+        result = torch.where((180 >= degree) & (degree >= 0), probs * 0.9, 0)
     elif keyword == 'left':
         probs = (abs(degree[:]) - 90) / 90
-        result = torch.where((degree <= -90) | (degree >= 90), probs*0.9, 0)
+        result = torch.where((degree <= -90) | (degree >= 90), probs * 0.9, 0)
     elif keyword == 'bottom':
         probs = 1 - abs(degree[:] + 90) / 90
-        result = torch.where((0 >= degree) & (degree >= -180), probs*0.9, 0)
+        result = torch.where((0 >= degree) & (degree >= -180), probs * 0.9, 0)
     elif keyword == 'right':
         probs = 1 - abs(degree[:]) / 90
-        result = torch.where((90 >= degree) & (degree >= -90), probs*0.9, 0)
+        result = torch.where((90 >= degree) & (degree >= -90), probs * 0.9, 0)
 
     return result

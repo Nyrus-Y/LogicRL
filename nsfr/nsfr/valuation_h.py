@@ -63,6 +63,10 @@ class HValuationModule(nn.Module):
         vfs['not_have_key'] = v_not_have_key
         layers.append(v_have_key)
 
+        v_close = CloseValuationFunction()
+        vfs['close'] = v_close
+        layers.append(v_close)
+
         v_closeby_vertical = ClosebyVerticalValuationFunction()
         vfs['closeby_vertical'] = v_closeby_vertical
         layers.append(v_closeby_vertical)
@@ -72,7 +76,7 @@ class HValuationModule(nn.Module):
         layers.append(v_closeby_horizontal)
 
         return nn.ModuleList([v_type, v_color, v_on_top, v_at_bottom, v_on_left, v_on_right, v_have_key,
-                              v_not_have_key, v_closeby_vertical, v_closeby_horizontal,
+                              v_not_have_key, v_close,v_closeby_vertical, v_closeby_horizontal,
                               ]), vfs
 
     def forward(self, zs, atom):
