@@ -2,6 +2,7 @@ import random
 import time
 import gym3
 import numpy as np
+import os
 from environments.procgen.procgen import ProcgenGym3Env
 from environments.coinjump.coinjump.imageviewer import ImageViewer
 from environments.coinjump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
@@ -19,10 +20,8 @@ def render_coinjump(agent, args):
         return viewer
 
     def create_coinjump_instance(seed=None):
-        seed = random.randint(0, 100000000)
 
         # level_generator = DummyGenerator()
-
         coin_jump = CoinJump()
         level_generator = ParameterizedLevelGenerator_V1()
         level_generator.generate(coin_jump, seed=seed)
@@ -113,3 +112,4 @@ def render_heist(agent, args):
         #     print("\n" * 50)
         # print(obs["positions"])
         i += 1
+

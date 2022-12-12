@@ -37,8 +37,8 @@ def main():
     parser.add_argument("--load", help="Pytorch file to load if continue training",
                         action="store_true", dest="load", default=False)
 
-    args = ['-m', 'heist', '-alg', 'ppo', '-env', 'eheist']
-    args = parser.parse_args(args)
+    # args = ['-m', 'heist', '-alg', 'ppo', '-env', 'eheist']
+    args = parser.parse_args()
 
     #####################################################
     # load environment

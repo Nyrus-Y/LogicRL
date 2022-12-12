@@ -134,28 +134,3 @@ def extract_for_cgen_explaining(coin_jump):
     extracted_states = simulate_prob(extracted_states, num_of_object, key_picked)
 
     return torch.tensor(extracted_states, device="cuda:0")
-
-
-def plot_weight(weights, image_directory, time_step=0):
-    weights = torch.softmax(weights, dim=1)
-    sns.set()
-    sns.set_style('white')
-    plt.figure(figsize=(15, 5))
-    plt.ylim([0, 1])
-    # x_label = ['jump', 'left_key', 'right_key', 'left_door',
-    #            'right_door', 'stay']
-    x_label = ['jump', 'left_key', 'right_key', 'left_door',
-               'right_door', 'stay', 'jump_door', 'left_nothing', 'right_enemy',
-               'stay_nothing']
-
-    for i, W in enumerate(weights):
-        W_ = W.detach().cpu().numpy()
-        plt.bar(range(1, len(W_) + 1), W_, alpha=1, label='C' + str(i))
-
-    plt.xticks(range(1, len(x_label) + 1), x_label)
-    plt.ylabel('Weights')
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
-    plt.savefig(image_directory + 'W_' + str(time_step) + '.png', bbox_inches='tight')
-
-    plt.show()
-    plt.close()

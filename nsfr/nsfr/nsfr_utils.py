@@ -1,14 +1,8 @@
-import os
-import numpy as np
-import matplotlib.pyplot as plt
-import torch
-
 from .facts_converter import FactsConverter
 from .nsfr_bm import NSFReasoner
 from .logic_utils import build_infer_module, build_clause_infer_module, build_clause_body_infer_module
 from .valuation_cj import CJValuationModule
 
-attrs = ['color', 'shape', 'material', 'size']
 
 def update_initial_clauses(clauses, obj_num):
     print(len(clauses))
