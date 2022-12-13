@@ -57,15 +57,15 @@ def get_args():
     parser.add_argument('-m', "--model", required=True, help="the game mode for beam-search", dest='m',
                         choices=['coinjump', 'bigfish', 'heist'])
     parser.add_argument('-t', "--t-beam", type=int, default=3, help="Number of rule expantion of clause generation.")
-    parser.add_argument('-n', "--n-beam", type=int, default=12, help="The size of the beam.")
+    parser.add_argument('-n', "--n-beam", type=int, default=8, help="The size of the beam.")
     parser.add_argument("--n-max", type=int, default=50, help="The maximum number of clauses.")
     parser.add_argument("--s", type=int, default=1, help="The size of the logic program.")
     parser.add_argument('--scoring', type=bool, help='beam search rules with scored rule by trained ppo agent',
                         default=False, dest='scoring')
     parser.add_argument('-d', '--dataset', required=False, help='the dataset to load if scoring', dest='d',
                         choices=['coinjump.json'])
-    arg = ['-m', 'heist', '-r', 'eheist_root']
-    args = parser.parse_args(arg)
+    # arg = ['-m', 'heist', '-r', 'eheist_root']
+    args = parser.parse_args()
     return args
 
 
