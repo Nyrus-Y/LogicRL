@@ -6,10 +6,7 @@ import torch
 def make_deterministic(seed):
     random.seed(seed)
     np.random.seed(seed)
-    # environment.seed(seed)
     torch.manual_seed(seed)
-    # torch.backends.cudnn.deterministic = True
-    # torch.backends.cudnn.benchmark = False
     print(f"Set all environment deterministic to seed {seed}")
 
 
@@ -31,7 +28,7 @@ def env_step(action, env, args):
         if args.rules == 'ppo_simple_policy':
             # simpler policy
             if action in [3]:
-                reward -= 0.2
+                reward += -0.2
     elif args.m == 'bigfish' or args.m == 'heist':
         env.act(action)
         reward, state, done = env.observe()

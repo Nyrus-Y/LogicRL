@@ -29,9 +29,9 @@ def render_coinjump(agent, args):
 
         return coin_jump
 
-    seed = random.randint(0, 100000000)
-    print(seed)
-    coin_jump = create_coinjump_instance(seed=seed)
+    # seed = random.randint(0, 100000000)
+    # print(seed)
+    coin_jump = create_coinjump_instance()
     viewer = setup_image_viewer(coin_jump)
 
     # frame rate limiting
@@ -57,7 +57,7 @@ def render_coinjump(agent, args):
         if not coin_jump.level.terminated:
             action = agent.act(coin_jump)
         else:
-            coin_jump = create_coinjump_instance(seed=seed)
+            coin_jump = create_coinjump_instance()
             print("epi_reward: ", round(epi_reward, 2))
             print("--------------------------     next game    --------------------------")
             total_reward += epi_reward

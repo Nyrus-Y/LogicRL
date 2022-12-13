@@ -1,4 +1,0 @@
-object:obj1,obj2,obj3,obj4
-type:agent,key,door
-color:blue,green,red
-image:img

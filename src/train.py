@@ -3,8 +3,11 @@ import os
 import time
 import gym
 import sys
-sys.path.insert(0,'../')
+import wandb
 import environments.coinjump.env
+
+sys.path.insert(0, '../')
+
 from agents.logic_agent import LogicPPO
 from agents.neural_agent import NeuralPPO
 from environments.procgen.procgen import ProcgenGym3Env
@@ -12,6 +15,7 @@ from utils import make_deterministic, initialize_game, env_step
 from config import *
 from tqdm import tqdm
 from rtpt import RTPT
+from make_graph import plot_weights_beam, plot_weights
 
 
 def main():
@@ -29,16 +33,16 @@ def main():
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
                         choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist'])
-    parser.add_argument("-r", "--rules", dest="rules", default=None,
-                        required=False,
-                        choices=['coinjump_5a', 'bigfish_simplified_actions', 'eheist_1', 'ppo_simple_policy'])
+    parser.add_argument("-r", "--rules", dest="rules", default=None, required=False,
+                        choices=['coinjump_5a', 'coinjump_bs', 'bigfish_simplified_actions', 'bigfishc', 'eheist_1',
+                                 'eheist_2', 'ppo_simple_policy'])
     parser.add_argument("--recover", help="Recover from the last trained agent",
                         action="store_true", dest="recover", default=False)
     parser.add_argument("--load", help="Pytorch file to load if continue training",
                         action="store_true", dest="load", default=False)
-
-    # args = ['-m', 'heist', '-alg', 'ppo', '-env', 'eheist']
-    args = parser.parse_args()
+    parser.add_argument('-p', '--plot', help="plot the image of weighs", type=bool, default=False, dest='plot')
+    args = ['-m', 'coinjump', '-alg', 'logic', '-env', 'CoinJumpEnv-v1', '-r', 'coinjump_bs', '-s', '0', '-p', 'True']
+    args = parser.parse_args(args)
 
     #####################################################
     # load environment
@@ -51,6 +55,23 @@ def main():
     print("training environment name : " + args.env)
     make_deterministic(args.seed)
     #####################################################
+    config = {
+        "seed": args.seed,
+        "learning_rate_actor": lr_actor,
+        "learning_rate_critic": lr_critic,
+        "epochs": K_epochs,
+        "gamma": gamma,
+        "eps_clip": eps_clip,
+        "max_steps": max_training_timesteps,
+        "eps start": 1.0,
+        "eps end": 0.02,
+        "max_ep_len": max_ep_len,
+        "update_freq": max_ep_len * 2,
+        "save_freq": max_ep_len * 50,
+    }
+
+    runs_name = str(args.rules) + '_' + str(args.seed)
+    wandb.init(project="GETOUT-BS", entity="nyrus", config=config, name=runs_name)
 
     ################### checkpointing ###################
 
@@ -110,7 +131,6 @@ def main():
         agent = NeuralPPO(lr_actor, lr_critic, optimizer, gamma, K_epochs, eps_clip, args)
     elif args.alg == "logic":
         agent = LogicPPO(lr_actor, lr_critic, optimizer, gamma, K_epochs, eps_clip, args)
-        # prednames = agent.get_prednames()
 
     # track total training time
     start_time = time.time()
@@ -126,14 +146,15 @@ def main():
     if not os.path.exists(image_directory):
         os.makedirs(image_directory)
 
-    # plot_weights(agent.get_weights(), image_directory)
+    if args.plot:
+        if args.alg == 'logic':
+            plot_weights_beam(agent.get_weights(), image_directory)
+        elif args.alg == 'ppo':
+            plot_weights(agent.get_weights(), image_directory)
 
     # printing and logging variables
     print_running_reward = 0
     print_running_episodes = 0
-
-    log_running_reward = 0
-    log_running_episodes = 0
 
     time_step = 0
     i_episode = 0
@@ -178,7 +199,7 @@ def main():
 
                 print("Episode : {} \t\t Timestep : {} \t\t Average Reward : {}".format(i_episode, time_step,
                                                                                         print_avg_reward))
-
+                wandb.log({'reward': print_avg_reward}, step=time_step)
                 print_running_reward = 0
                 print_running_episodes = 0
 
@@ -194,7 +215,11 @@ def main():
                 print("--------------------------------------------------------------------------------------------")
 
                 # save image of weights
-                # plot_weights(agent.get_weights(), image_directory, time_step)
+                if args.plot:
+                    if args.alg == 'logic':
+                        plot_weights_beam(agent.get_weights(), image_directory, time_step)
+                    elif args.alg == 'ppo':
+                        plot_weights(agent.get_weights(), image_directory, time_step)
             # break; if the episode is over
             if done:
                 break
@@ -202,11 +227,7 @@ def main():
         print_running_reward += current_ep_reward
         print_running_episodes += 1
 
-        log_running_reward += current_ep_reward
-        log_running_episodes += 1
-
         i_episode += 1
-
 
     env.close()
 

@@ -2,7 +2,7 @@ import os
 import random
 import torch
 import torch.nn as nn
-
+import wandb
 from torch.distributions import Categorical
 from nsfr.utils import get_nsfr_model
 from .MLPController.mlpbigfish import MLPBigfish
@@ -21,16 +21,17 @@ class NSFR_ActorCritic(nn.Module):
         self.rng = random.Random() if rng is None else rng
         self.args = args
         self.actor = get_nsfr_model(self.args, train=True)
+        self.prednames = self.get_prednames()
         if self.args.m == 'bigfish':
             self.critic = MLPBigfish(out_size=1, logic=True)
         elif self.args.m == 'coinjump':
             self.critic = MLPCoinjump(out_size=1, logic=True)
         elif self.args.m == 'heist':
             self.critic = MLPHeist(out_size=1, logic=True)
-        self.prednames = self.get_prednames()
         self.num_actions = len(self.prednames)
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
+
 
     def forward(self):
         raise NotImplementedError
@@ -159,7 +160,7 @@ class LogicPPO:
             self.optimizer.zero_grad()
             loss.mean().backward()
             self.optimizer.step()
-            # wandb.log({"loss": loss})
+            wandb.log({"loss": loss})
 
         # Copy new weights into old policy
         self.policy_old.load_state_dict(self.policy.state_dict())
