@@ -31,6 +31,7 @@ class MLPBigfish(torch.nn.Module):
         return y
 
     def convert_states(self, states):
+        #TODO improve the code for better efficiency?
         states = states[:, :, -3:].cpu().numpy()
         # converted_states = torch.empty(0,device=self.device)
         converted_states = np.empty((states.shape[0], 9))

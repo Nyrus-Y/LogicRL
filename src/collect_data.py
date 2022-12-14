@@ -1,0 +1,169 @@
+import random
+import json
+import torch
+import os
+import pathlib
+
+from argparse import ArgumentParser
+from environments.coinjump.coinjump.imageviewer import ImageViewer
+from environments.coinjump.coinjump.coinjump.coinjump import CoinJump
+from environments.coinjump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
+from agents.utils_coinjump import extract_state, sample_to_model_input, collate
+from agents.neural_agent import ActorCritic
+from tqdm import tqdm
+from nsfr.utils import extract_for_cgen_explaining
+
+KEY_r = 114
+device = torch.device('cuda:0')
+
+
+class RolloutBuffer:
+    def __init__(self):
+        self.actions = []
+        self.logic_states = []
+        self.neural_states = []
+        self.action_probs = []
+        self.logprobs = []
+        self.reward = []
+        self.terminated = []
+        self.predictions = []
+
+    def clear(self):
+        del self.actions[:]
+        del self.logic_states[:]
+        del self.neural_states[:]
+        del self.action_probs[:]
+        del self.logprobs[:]
+        del self.reward[:]
+        del self.terminated[:]
+        del self.predictions[:]
+
+    def save_data(self):
+        dict = {'actions': self.actions, 'logic_states': self.logic_states, 'neural_states': self.neural_states,
+                'action_probs': self.action_probs, 'logprobs': self.logprobs, 'reward': self.rewards,
+                'terminated': self.terminated, 'predictions': self.predictions}
+
+        current_path = os.path.dirname(__file__)
+        path = os.path.join(current_path, 'data', 'coinjump.json')
+        with open(path, 'w') as f:
+            json.dump(dict, f)
+        print('data collected')
+
+
+def setup_image_viewer(coinjump):
+    viewer = ImageViewer(
+        "coinjump1",
+        coinjump.camera.height,
+        coinjump.camera.width,
+        monitor_keyboard=True,
+        # relevant_keys=set('W','A','S','D','SPACE')
+    )
+    return viewer
+
+
+def create_coinjump_instance(seed=None):
+    seed = random.randint(0, 100000000) if seed is None else seed
+
+    # level_generator = DummyGenerator()
+    coin_jump = CoinJump(start_on_first_action=False)
+    level_generator = ParameterizedLevelGenerator_V1()
+
+    level_generator.generate(coin_jump, seed=seed)
+    coin_jump.render()
+
+    return coin_jump
+
+
+def parse_args():
+    parser = ArgumentParser("Loads a model and lets it play coinjump")
+    parser.add_argument("-m", "--mode", help="the game mode you want to play with",
+                        required=True, action="store", dest="m", default='coinjump',
+                        choices=['coinjump'])
+    parser.add_argument("-env", "--environment", help="environment of game to use",
+                        required=True, action="store", dest="env", default='CoinJumpEnv-v1',
+                        choices=['CoinJumpEnv-v1'])
+    parser.add_argument("-mo", "--model_file", dest="model_file", default=None)
+    parser.add_argument("-s", "--seed", dest="seed", type=int)
+    arg = ['-m', 'coinjump', '-env', 'CoinJumpEnv-v1']
+    args = parser.parse_args(arg)
+
+    # TODO change path of model
+    if args.model_file is None:
+        # read filename from stdin
+        current_path = os.path.dirname(__file__)
+        model_name = input('Enter file name: ')
+        model_file = os.path.join(current_path, 'models', 'coinjump', 'ppo', model_name)
+        # model_file = f"../src/ppo_coinjump_model/{input('Enter file name: ')}"
+
+    else:
+        model_file = pathlib.Path(args.model_file)
+
+    return args, model_file
+
+
+def load_model(model_path, args, set_eval=True):
+    with open(model_path, "rb") as f:
+        model = ActorCritic(args).to(device)
+        model.load_state_dict(state_dict=torch.load(f))
+    if isinstance(model, ActorCritic):
+        model = model.actor
+        model.as_dict = True
+
+    if set_eval:
+        model = model.eval()
+
+    return model
+
+
+def run():
+
+    args, model_file = parse_args()
+
+    model = load_model(model_file, args)
+
+    seed = random.seed() if args.seed is None else int(args.seed)
+
+    coin_jump = create_coinjump_instance(seed=seed)
+    # viewer = setup_image_viewer(coin_jump)
+
+    # frame rate limiting
+    fps = 10
+
+    buffer = RolloutBuffer()
+
+    # collect data
+    max_states = 10000
+    max_states = 10000
+    save_frequence = 3
+    step = 0
+    collected_states = 0
+    for i in tqdm(range(max_states)):
+        # step game
+        step += 1
+
+        if not coin_jump.level.terminated:
+            model_input = sample_to_model_input((extract_state(coin_jump), []))
+            model_input = collate([model_input])
+            state = model_input['state']
+            neural_state = torch.cat([state['base'], state['entities']], dim=1)
+            prediction = model(neural_state)
+            # 1 left 2 right 3 up
+            action = torch.argmax(prediction).cpu().item() + 1
+
+            logic_state = extract_for_cgen_explaining(coin_jump)
+            if step % save_frequence == 0:
+                collected_states += 1
+                buffer.logic_states.append(logic_state.detach().tolist())
+                buffer.actions.append(torch.argmax(prediction.detach()).tolist())
+                buffer.action_probs.append(prediction.detach().tolist())
+                buffer.neural_states.append(neural_state.tolist())
+        else:
+            coin_jump = create_coinjump_instance(seed=seed)
+            action = 0
+
+        reward = coin_jump.step(action)
+
+    buffer.save_data()
+
+if __name__ == "__main__":
+    run()

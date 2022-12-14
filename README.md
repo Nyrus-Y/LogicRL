@@ -14,6 +14,18 @@ pip install -e . # installs in dev mode
 
 ## How to use
 
+
+**Example to play with a trained ppo agent**
+```
+python3 play.py -s 0 -alg ppo -m coinjump -env CoinJumpEnvNeural-v0  
+```  
+The trained model can be found in folder: _models/coinjump_ or _models/bigfish_
+
+**Example to train an logic agent for coinjump env using 'coinjump_5a' rules.**
+```
+python3 train.py -s 0 -alg logic -m coinjump -env CoinJumpEnvLogic-v0  -r 'coinjump_5a'
+```
+
 Description of Args
 
 * **--algorithm -alg**:
@@ -47,29 +59,26 @@ dataset can be found in folder: _src/nsfr/data_
 
 '--rules' is also for some situation like using reward shaping:  
 
-e.g. 'ppo_simple_policy' can be helpful when train ppo agent of coinjump
-
-
-
-
-**Example to play with a trained ppo agent**
-```
-python3 play.py -s 0 -alg ppo -m coinjump -env CoinJumpEnvNeural-v0  
-```  
-The trained model can be found in folder: _models/coinjump_ or _models/bigfish_
-
-**Example to train an logic agent for coinjump env using 'coinjump_5a' rules.**
-```
-python3 train.py -s 0 -alg logic -m coinjump -env CoinJumpEnvLogic-v0  -r 'coinjump_5a'
-```
-
+e.g. 'ppo_simple_policy' can be helpful when train ppo agent of coinjump  
 model will be saved to folder: checkpoints
 
+**Using Beam Search to find a set of rules**
+
+With scoring:
+```
+python3 beam_search.py -m coinjump -r coinjump_root -t 3 -n 8 --scoring True -d coinjump.json  
+``` 
+
+Without scoring:
+``` 
+python3 beam_search.py -m bigfish -r bigfishm_root -t 3 -n 8 
+``` 
+* **--t**:  Number of rule expansion of clause generation.
+* **--n**:  The size of the beam.
+* **--scoring**: To score the searched rules, a dataset of states information is required.
+* **-d**: The name of dataset to be used for scoring.
 ## TO BE DONE
-heist
-plot  
-a formal README...   
-beam search
+README
 
 ## Contributing
 

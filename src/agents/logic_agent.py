@@ -2,11 +2,12 @@ import os
 import random
 import torch
 import torch.nn as nn
-
+import wandb
 from torch.distributions import Categorical
 from nsfr.utils import get_nsfr_model
 from .MLPController.mlpbigfish import MLPBigfish
 from .MLPController.mlpcoinjump import MLPCoinjump
+from .MLPController.mlpheist import MLPHeist
 from .utils_coinjump import extract_state_coinjump, preds_to_action_coinjump, action_map_coinjump
 from .utils_bigfish import extract_state_bigfish, preds_to_action_bigfish, action_map_bigfish
 from .utils_heist import extract_state_heist, action_map_heist
@@ -20,15 +21,17 @@ class NSFR_ActorCritic(nn.Module):
         self.rng = random.Random() if rng is None else rng
         self.args = args
         self.actor = get_nsfr_model(self.args, train=True)
-        if self.args.m == 'bigfish' or self.args.m == 'heist':
+        self.prednames = self.get_prednames()
+        if self.args.m == 'bigfish':
             self.critic = MLPBigfish(out_size=1, logic=True)
         elif self.args.m == 'coinjump':
             self.critic = MLPCoinjump(out_size=1, logic=True)
-
-        self.prednames = self.get_prednames()
+        elif self.args.m == 'heist':
+            self.critic = MLPHeist(out_size=1, logic=True)
         self.num_actions = len(self.prednames)
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
+
 
     def forward(self):
         raise NotImplementedError
@@ -88,8 +91,8 @@ class LogicPPO:
             state = extract_state_coinjump(state)
         elif self.args.m == 'bigfish':
             state = extract_state_bigfish(state['positions'], self.args)
-        elif self.args.m == 'eheist':
-            state = extract_state_heist(state['positions'])
+        elif self.args.m == 'heist':
+            state = extract_state_heist(state['positions'], self.args)
 
         # select random action with epsilon probability and policy probiability with 1-epsilon
         with torch.no_grad():
@@ -157,7 +160,7 @@ class LogicPPO:
             self.optimizer.zero_grad()
             loss.mean().backward()
             self.optimizer.step()
-            # wandb.log({"loss": loss})
+            wandb.log({"loss": loss})
 
         # Copy new weights into old policy
         self.policy_old.load_state_dict(self.policy.state_dict())

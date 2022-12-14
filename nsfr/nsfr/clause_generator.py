@@ -1,4 +1,4 @@
-from .nsfr_utils import get_nsfr_cgen_model
+from .utils_beam import get_nsfr_cgen_model
 from .tensor_encoder import TensorEncoder
 from .infer import ClauseBodyInferModule
 from .refinement import RefinementGenerator
@@ -21,70 +21,16 @@ class ClauseGenerator(object):
         max number of atoms in body of clauses
     """
 
-    def __init__(self, args, NSFR, lang, facts, buffer, mode_declarations, device,
-                 no_xil=False):
+    def __init__(self, args, NSFR, lang, facts, mode_declarations, device, buffer=None):
         self.args = args
         self.NSFR = NSFR
         self.lang = lang
         self.facts = facts
         self.mode_declarations = mode_declarations
         self.device = device
-        self.no_xil = no_xil
         self.rgen = RefinementGenerator(lang=lang, mode_declarations=mode_declarations)
-        # self.pos_loader = pos_data_loader
         self.buffer = buffer
         self.bce_loss = torch.nn.BCELoss()
-
-        # self.labels = torch.cat([
-        #    torch.ones((len(self.ilp_problem.pos), )),
-        # ], dim=0).to(device)
-
-    def _is_valid(self, clause):
-        obj_num = len([b for b in clause.body if b.pred.name == 'in'])
-        attr_body = [b for b in clause.body if b.pred.name != 'in']
-        attr_vars = []
-        for b in attr_body:
-            dtypes = b.pred.dtypes
-            for i, term in enumerate(b.terms):
-                if dtypes[i].name == 'object' and term.is_var():
-                    attr_vars.append(term)
-
-        attr_vars = list(set(attr_vars))
-
-        # print(clause, obj_num, attr_vars)
-        return obj_num == len(attr_vars)  # or len(attr_body) == 0
-
-    def _cf0(self, clause):
-        """Confounded rule for CLEVR-Hans.
-        not gray
-        """
-        for bi in clause.body:
-            if bi.pred.name == 'color' and str(bi.terms[-1]) == 'gray':
-                return True
-        return False
-
-    def _cf1(self, clause):
-        """not metal sphere.
-        """
-        for bi in clause.body:
-            for bj in clause.body:
-                if bi.pred.name == 'material' and str(bi.terms[-1]) == 'gray':
-                    if bj.pred.name == 'shape' and str(bj.terms[-1]) == 'sphere':
-                        return True
-        return False
-
-    def _is_confounded(self, clause):
-        if self.no_xil:
-            return False
-        if self.args.dataset_type == 'kandinsky':
-            return False
-        else:
-            if self.args.dataset == 'clevr-hans0':
-                return self._cf0(clause)
-            elif self.args.dataset == 'clevr-hans1':
-                return self._cf1(clause)
-            else:
-                return False
 
     def generate(self, C_0, gen_mode='beam', T_beam=7, N_beam=20, N_max=100):
         """
@@ -96,7 +42,6 @@ class ClauseGenerator(object):
         gen_mode : string
             a generation mode
             'beam' - with beam-searching
-            'naive' - without beam-searching
         T_beam : int
             number of steps in beam-searching
         N_beam : int
@@ -110,8 +55,6 @@ class ClauseGenerator(object):
         """
         if gen_mode == 'beam':
             return self.beam_search(C_0, T_beam=T_beam, N_beam=N_beam, N_max=N_max)
-        elif gen_mode == 'naive':
-            return self.naive(C_0, T_beam=T_beam, N_max=N_max)
 
     def beam_search_clause(self, clause, T_beam=7, N_beam=20, N_max=100, th=0.98):
         """
@@ -132,12 +75,10 @@ class ClauseGenerator(object):
             a set of generated clauses
         """
         step = 0
-        init_step = 0
         B = [clause]
         C = set()
         C_dic = {}
         B_ = []
-        lang = self.lang
 
         while step < T_beam:
             # print('Beam step: ', str(step),  'Beam: ', len(B))
@@ -146,12 +87,10 @@ class ClauseGenerator(object):
             for c in B:
                 refs_i = self.rgen.refinement_clause(c)
                 # remove invalid clauses
-                ###refs_i = [x for x in refs_i if self._is_valid(x)]
                 # remove already appeared refs
                 refs_i = list(set(refs_i).difference(set(B_)))
                 B_.extend(refs_i)
                 refs.extend(refs_i)
-                # if self._is_valid(c) and not self._is_confounded(c):
                 C = C.union(set([c]))
                 #     print("Added: ", c)
 
@@ -228,37 +167,24 @@ class ClauseGenerator(object):
     def eval_clauses(self, clauses):
         C = len(clauses)
         predname = self.get_predname(clauses)
+
         print("Eval clauses: ", len(clauses))
-        # update infer module with new clauses
-        # NSFR = update_nsfr_clauses(self.NSFR, clauses, self.bk_clauses, self.device)
-        # NSFR = get_nsfr_model(self.args, self.lang, clauses, self.NSFR.atoms, self.NSFR.bk, self.bk_clauses,
-        #                      self.device)
         NSFR = get_nsfr_cgen_model(self.args, self.lang, clauses, self.NSFR.atoms, self.NSFR.bk, self.device)
-        # TE = TensorEncoder(lang=self.lang, facts=self.facts, clauses=clauses, device=self.device)
-        # I = TE.encode()
-        # CIM = ClauseBodyInferModule(I, device=self.device)
-        # TODO: Compute loss for validation data , score is bce loss
-        # N C B G
-        predicted_list_list = []
-
-        score = torch.zeros((C,)).to(self.device)
-        N_data = 0
-        # List(C*B*G)
-
-        # shape: (num_clauses, num_buffers, num_atoms)
-        scores_cba = NSFR.clause_eval(torch.stack(self.buffer.logic_states))
-        # shape: (num_clauses, num_buffers)
-        body_scores = torch.stack([NSFR.predict(score_i, predname=predname) for score_i in scores_cba])
-
-        # body_probs =
 
         # return sum in terms of buffers
         # take product: action prob of policy * body scores
         # shape: (num_clauses, )
-        action_probs, actions = self.get_action_probs(predname)
-        # scores = torch.sum(self.buffer.action_buffer * body_scores, dim=1)
-        scores = self.scoring(action_probs, body_scores, actions)
-
+        if self.args.scoring:
+            # shape: (num_clauses, num_buffers, num_atoms)
+            scores_cba = NSFR.clause_eval(self.buffer.logic_states)
+            # shape: (num_clauses, num_buffers)
+            body_scores = torch.stack([NSFR.predict(score_i, predname=predname) for score_i in scores_cba])
+            if self.args.m == 'coinjump':
+                action_probs, actions = self.get_action_probs_cj(predname)
+                # scores = torch.sum(self.buffer.action_buffer * body_scores, dim=1)
+                scores = self.scoring(action_probs, body_scores, actions)
+        else:
+            scores = torch.zeros((C,)).to(self.device)
         return scores
 
         # for i, sample in enumerate(self.buffer.logic_states, start=0):
@@ -297,8 +223,9 @@ class ClauseGenerator(object):
         predname = clauses[0].head.pred.name
         return predname
 
-    def get_action_probs(self, predname):
-        action_probs = torch.stack(self.buffer.action_probs, dim=1).squeeze(0)
+    def get_action_probs_cj(self, predname):
+        # action_probs = torch.stack(self.buffer.action_probs, dim=1).squeeze(0)
+        action_probs = self.buffer.action_probs.squeeze(1)
         action_list = action_probs.tolist()
         actions = [i.index(max(i)) for i in action_list]
         if 'jump' in predname:

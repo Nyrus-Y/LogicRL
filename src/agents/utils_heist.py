@@ -1,9 +1,68 @@
+import numpy as np
+import torch
+
+device = torch.device('cuda:0')
 
 
+def extract_state_heist(state, args):
+    """
+    [X,Y]
+    [agent,key_b,door_b,key_g,door_g,key_r,door_r]
+    """
+    states = torch.from_numpy(state).squeeze()
+    if args.alg == 'logic':
+        if args.env == "eheist":
+            # input shape: [X,Y]* [agent,key_b,door_b,key_g,door_g,key_r,door_r]
+            # output shape:[agent, key, door, blue, green, red ,got_key, X, Y]
+            extracted_state = torch.tensor([
+                [1, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 1, 0, 1, 0, 0, 0, 0, 0],
+                [0, 0, 1, 1, 0, 0, 0, 0, 0],
+                [0, 1, 0, 0, 1, 0, 0, 0, 0],
+                [0, 0, 1, 0, 1, 0, 0, 0, 0],
+                [0, 1, 0, 0, 0, 1, 0, 0, 0],
+                [0, 0, 1, 0, 0, 1, 0, 0, 0]], dtype=torch.float64)
+            extracted_state[:, -2:] = states[:]
+            for i, state in enumerate(extracted_state):
+                if state[-1] == 0:
+                    extracted_state[i] = torch.zeros((1, 9))
+                elif i in [2, 4, 6] and state[-1] != 0 and extracted_state[i - 1][1] == 0:
+                    extracted_state[i][-3] = 1
 
-def extract_state_heist(state):
-    pass
+    extracted_state = extracted_state.unsqueeze(0)
+    return extracted_state.to(device)
 
 
-def action_map_heist(action, args, prednames=None):
-    pass
+def simplify_action_heist(action):
+    """simplify actions from 9 to 5
+    """
+    # model_ouput  [0, 1, 2, 3, 4]
+    action_space = [1, 3, 4, 5, 7]
+    action = action_space[action]
+    return np.array([action])
+
+
+def preds_to_action_bigfish(action, prednames):
+    """
+    map explaining to action
+    action_space = [1, 3, 4, 5, 7]
+    """
+    if 'up' in prednames[action]:
+        return np.array([5])
+    elif 'down' in prednames[action]:
+        return np.array([3])
+    elif 'left' in prednames[action]:
+        return np.array([1])
+    elif 'right' in prednames[action]:
+        return np.array([7])
+    elif 'idle' in prednames[action]:
+        return np.array([4])
+
+
+def action_map_heist(prediction, args, prednames=None):
+    """map model action to game action"""
+    if args.alg == 'ppo':
+        action = simplify_action_heist(prediction)
+    elif args.alg == 'logic':
+        action = preds_to_action_bigfish(prediction, prednames)
+    return action

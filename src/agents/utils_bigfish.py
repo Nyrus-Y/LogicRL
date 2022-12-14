@@ -27,7 +27,7 @@ def extract_state_bigfish(obs, args):
             extracted_state = extracted_state.unsqueeze(0)
             return extracted_state.cuda()
         elif args.env == "bigfishc":
-            # input shape: [X, Y, color, radius]
+            # input shape: [X, Y, color]
             # output shape: [agent, fish, green, red, X, Y]
             extracted_state = torch.zeros((3, 6))
             for i, state in enumerate(states):
@@ -48,7 +48,7 @@ def extract_state_bigfish(obs, args):
             return extracted_state.cuda()
 
 
-def simplify_action(action):
+def simplify_action_bf(action):
     """simplify actions from 9 to 5
     """
     # model_ouput  [0, 1, 2, 3, 4]
@@ -77,7 +77,7 @@ def preds_to_action_bigfish(action, prednames):
 def action_map_bigfish(prediction, args, prednames=None):
     """map model action to game action"""
     if args.alg == 'ppo':
-        action = simplify_action(prediction)
+        action = simplify_action_bf(prediction)
     elif args.alg == 'logic':
         action = preds_to_action_bigfish(prediction, prednames)
     return action

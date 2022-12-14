@@ -5,9 +5,10 @@ import random
 from torch.distributions import Categorical
 from .MLPController.mlpcoinjump import MLPCoinjump
 from .MLPController.mlpbigfish import MLPBigfish
+from .MLPController.mlpheist import MLPHeist
 from .utils_coinjump import extract_state, sample_to_model_input, collate, action_map_coinjump
-from .utils_bigfish import simplify_action, action_map_bigfish
-from .utils_heist import action_map_heist
+from .utils_bigfish import simplify_action_bf, action_map_bigfish
+from .utils_heist import  simplify_action_heist, action_map_heist
 
 device = torch.device('cuda:0')
 
@@ -18,17 +19,18 @@ class ActorCritic(nn.Module):
 
         self.rng = random.Random() if rng is None else rng
         self.args = args
-        # self.uniform = Categorical(
-        #     torch.tensor([1.0 / CJA_NUM_EXPLICIT_ACTIONS for _ in range(CJA_NUM_EXPLICIT_ACTIONS)], device="cuda"))
         if self.args.m == 'coinjump':
             self.num_action = 3
             self.actor = MLPCoinjump(has_softmax=True)
             self.critic = MLPCoinjump(has_softmax=False, out_size=1)
-        elif self.args.m == 'bigfish' or self.args.m == "heist":
+        elif self.args.m == 'bigfish':
             self.num_action = 5
             self.actor = MLPBigfish(has_softmax=True)
             self.critic = MLPBigfish(has_softmax=False, out_size=1)
-
+        elif self.args.m == "heist":
+            self.num_action = 5
+            self.actor = MLPHeist(has_softmax=True)
+            self.critic = MLPHeist(has_softmax=False, out_size=1)
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_action for _ in range(3)], device=device))
 
@@ -94,7 +96,8 @@ class NeuralPPO:
             state = torch.tensor(state.tolist()).to(device)
             # state = torch.reshape(torch.tensor(state), (-1,)).cuda()
         elif self.args.m == 'heist':
-            pass
+            state = state['positions'].reshape(-1)
+            state = torch.tensor(state.tolist()).to(device)
         # select random action with epsilon probability and policy probiability with 1-epsilon
         with torch.no_grad():
             # state = torch.FloatTensor(state).to(device)
@@ -110,7 +113,7 @@ class NeuralPPO:
             action = action_map_coinjump(action.item(), self.args)
         elif self.args.m == 'bigfish':
             action = action_map_bigfish(action.item(), self.args)
-        elif self.args.m == 'eheist':
+        elif self.args.m == 'heist':
             action = action_map_heist(action.item(), self.args)
 
         return action
@@ -208,11 +211,16 @@ class NeuralPlayer:
         state = state.tolist()
         predictions = self.model(torch.tensor(state).cuda())
         action = torch.argmax(predictions)
-        action = simplify_action(action)
+        action = simplify_action_bf(action)
         return action
 
     def heist_actor(self, state):
-        pass
+        state = state.reshape(-1)
+        state = state.tolist()
+        predictions = self.model(torch.tensor(state).cuda())
+        action = torch.argmax(predictions)
+        action = simplify_action_heist(action)
+        return action
 
 
 class RolloutBuffer:

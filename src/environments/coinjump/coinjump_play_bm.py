@@ -339,7 +339,7 @@ def run():
 
     print('data collected')
 
-    env_name = 'coinjump_search'
+    env_name = 'coinjump_root'
     current_path = os.getcwd()
     lark_path = os.path.join(current_path, 'lark/exp.lark')
     lang_base_path = os.path.join(current_path, 'data/lang/')

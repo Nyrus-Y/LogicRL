@@ -61,8 +61,8 @@ class BigFishC : public BasicAbstractGame {
             else {
                 step_data.reward += POSITIVE_REWARD;
                 obj->will_erase = true;
-                agent->rx += r_inc;
-                agent->ry += r_inc;
+                //agent->rx += r_inc;
+                //agent->ry += r_inc;
                 fish_eaten += 1;
             }
     }
@@ -132,21 +132,21 @@ class BigFishC : public BasicAbstractGame {
         data[0] = agent->x;
         data[1] = agent->y;
         data[2] = agent->type;
-        data[3] = agent->rx;
+        //data[3] = agent->rx;
         int32_t fish_count = (int) entities.size() - 1;
         // *(int32_t * )(info_bufs[info_name_to_offset.at("fish_count")]) = fish_count;
         int32_t fish_alive = 0;
 
         // std::cout << "Smol" << small_fish_count << std::endl;
-        data[4] = small_positions["x"];
-        data[5] = small_positions["y"];
-        data[6] = small_positions["type"];
-        data[7] = small_positions["rx"];
+        data[3] = small_positions["x"];
+        data[4] = small_positions["y"];
+        data[5] = small_positions["type"];
+        //data[7] = small_positions["rx"];
         // std::cout << "bij" << small_fish_count+large_fish_count <<std::endl;
-        data[8] = large_positions["x"];
-        data[9] = large_positions["y"];
-        data[10] = large_positions["type"];
-        data[11] = large_positions["rx"];
+        data[6] = large_positions["x"];
+        data[7] = large_positions["y"];
+        data[8] = large_positions["type"];
+        //data[11] = large_positions["rx"];
 
         if (fish_eaten >= FISH_QUOTA) {
             step_data.done = true;

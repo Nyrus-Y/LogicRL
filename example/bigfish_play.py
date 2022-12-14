@@ -9,6 +9,7 @@ from src.agents.utils_bigfish import extract_state_bigfish
 
 
 def explaining_to_action(explaining):
+    """map explaining to action"""
     if 'up' in explaining:
         return np.array([5])
     elif 'down' in explaining:
@@ -63,7 +64,6 @@ def run():
 
         rew, obs, done = env.observe()
 
-        # print(explaining)
         if last_explaining != explaining:
             print(explaining)
             last_explaining = explaining

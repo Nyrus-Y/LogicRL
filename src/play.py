@@ -45,9 +45,8 @@ def main():
     parser.add_argument("-r", "--rules", dest="rules", default=None,
                         required=False, choices=['coinjump_5a', 'bigfish_simplified_actions', 'heist'])
     parser.add_argument("-mo", "--model_file", dest="model_file", default=None)
-    # arg = ['-m', 'coinjump', '-alg', 'ppo', '-env', 'coinjumpEnv']
+    # arg = ['-m', 'heist', '-alg', 'logic', '-env', 'eheist', '-r', '']
     args = parser.parse_args()
-
     # fix seed
     make_deterministic(args.seed)
 

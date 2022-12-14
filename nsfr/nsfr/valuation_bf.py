@@ -1,8 +1,4 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from .valuation_func_bigfish import *
-
+from .valuation_func_bf import *
 
 class BFValuationModule(nn.Module):
     """A module to call valuation functions.
@@ -55,33 +51,17 @@ class BFValuationModule(nn.Module):
         vfs['low_level'] = v_low_level
         layers.append(v_low_level)
 
-        # v_on_top_left = OnTopLeftValuationFunction()
-        # vfs['on_top_left'] = v_on_top_left
-        # layers.append(v_on_top_left)
-
         v_on_left = OnLeftValuationFunction()
         vfs['on_left'] = v_on_left
         layers.append(v_on_left)
-
-        # v_at_bottom_left = AtBottomLeftValuationFunction()
-        # vfs['at_bottom_left'] = v_at_bottom_left
-        # layers.append(v_at_bottom_left)
 
         v_at_bottom = AtBottomValuationFunction()
         vfs['at_bottom'] = v_at_bottom
         layers.append(v_at_bottom)
 
-        # v_at_bottom_right = AtBottomRightValuationFunction()
-        # vfs['at_bottom_right'] = v_at_bottom_right
-        # layers.append(v_at_bottom_right)
-
         v_on_right = OnRightValuationFunction()
         vfs['on_right'] = v_on_right
         layers.append(v_on_right)
-
-        # v_on_top_right = OnTopRightValuationFunction()
-        # vfs['on_top_right'] = v_on_top_right
-        # layers.append(v_on_top_right)
 
         v_closeby = ClosebyValuationFunction(device)
         vfs['closeby'] = v_closeby
@@ -96,8 +76,7 @@ class BFValuationModule(nn.Module):
         layers.append(v_smaller)
         return nn.ModuleList(
             [v_type, v_color, v_on_top, v_on_left, v_at_bottom, v_on_right, v_closeby, v_bigger, v_smaller,
-             v_high_level,
-             v_low_level]), vfs
+             v_high_level, v_low_level]), vfs
 
     def forward(self, zs, atom):
         """Convert the object-centric representation to a valuation tensor.
@@ -164,3 +143,5 @@ class BFValuationModule(nn.Module):
         onehot = torch.zeros(batch_size, length, ).to(self.device)
         onehot[:, i] = 1.0
         return onehot
+
+
