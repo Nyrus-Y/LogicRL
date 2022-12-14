@@ -40,13 +40,13 @@ def main():
                         choices=['coinjump', 'bigfish', 'heist'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist'])
+                        choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist', 'eheistc1', 'eheistc2'])
     parser.add_argument("-r", "--rules", dest="rules", default=None, required=False,
                         choices=['coinjump_5a', 'coinjump_bs', 'bigfish_simplified_actions', 'bigfishc', 'eheist_1',
                                  'eheist_2'])
     parser.add_argument("-mo", "--model_file", dest="model_file", default=None)
-    # arg = ['-m', 'heist', '-alg', 'logic', '-env', 'eheist', '-r', '']
-    args = parser.parse_args()
+    arg = ['-m', 'heist', '-alg', 'ppo', '-env', 'eheistc1']
+    args = parser.parse_args(arg)
     # fix seed
     make_deterministic(args.seed)
 

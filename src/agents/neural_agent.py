@@ -6,9 +6,10 @@ from torch.distributions import Categorical
 from .MLPController.mlpcoinjump import MLPCoinjump
 from .MLPController.mlpbigfish import MLPBigfish
 from .MLPController.mlpheist import MLPHeist
-from .utils_coinjump import extract_state, sample_to_model_input, collate, action_map_coinjump
-from .utils_bigfish import simplify_action_bf, action_map_bigfish
-from .utils_heist import  simplify_action_heist, action_map_heist
+from .utils_coinjump import extract_state, sample_to_model_input, collate, action_map_coinjump, \
+    extract_neural_state_coinjump
+from .utils_bigfish import simplify_action_bf, action_map_bigfish, extract_neural_state_bigfish
+from .utils_heist import simplify_action_heist, action_map_heist, extract_neural_state_heist
 
 device = torch.device('cuda:0')
 
@@ -86,18 +87,19 @@ class NeuralPPO:
 
         # extract state info for different games
         if self.args.m == 'coinjump':
-            model_input = sample_to_model_input((extract_state(state), []))
-            model_input = collate([model_input])
-            state = model_input['state']
-            state = torch.cat([state['base'], state['entities']], dim=1)
+            state = extract_neural_state_coinjump(state, self.args)
+            # model_input = sample_to_model_input((extract_state(state), []))
+            # model_input = collate([model_input])
+            # state = model_input['state']
+            # state = torch.cat([state['base'], state['entities']], dim=1)
         elif self.args.m == 'bigfish':
-            state = state['positions'].reshape(-1)
-            # return torch.tensor(state, device='cuda:0')
-            state = torch.tensor(state.tolist()).to(device)
-            # state = torch.reshape(torch.tensor(state), (-1,)).cuda()
+            state = extract_neural_state_bigfish(state, self.args)
+            # state = state['positions'].reshape(-1)
+            # state = torch.tensor(state.tolist()).to(device)
         elif self.args.m == 'heist':
-            state = state['positions'].reshape(-1)
-            state = torch.tensor(state.tolist()).to(device)
+            state = extract_neural_state_heist(state, self.args)
+            # state = state['positions'].reshape(-1)
+            # state = torch.tensor(state.tolist()).to(device)
         # select random action with epsilon probability and policy probiability with 1-epsilon
         with torch.no_grad():
             # state = torch.FloatTensor(state).to(device)
@@ -187,7 +189,6 @@ class NeuralPlayer:
         self.device = torch.device('cuda:0')
 
     def act(self, state):
-        # TODO how to do if-else only once?
         if self.args.m == 'coinjump':
             action = self.coinjump_actor(state)
         elif self.args.m == 'bigfish':
@@ -197,27 +198,30 @@ class NeuralPlayer:
         return action
 
     def coinjump_actor(self, coinjump):
-        model_input = sample_to_model_input((extract_state(coinjump), []))
-        model_input = collate([model_input])
-        state = model_input['state']
-        state = torch.cat([state['base'], state['entities']], dim=1)
+        state = extract_neural_state_coinjump(coinjump, self.args)
+        # model_input = sample_to_model_input((extract_state(coinjump), []))
+        # model_input = collate([model_input])
+        # state = model_input['state']
+        # state = torch.cat([state['base'], state['entities']], dim=1)
         prediction = self.model(state)
         # action = coin_jump_actions_from_unified(torch.argmax(prediction).cpu().item() + 1)
         action = torch.argmax(prediction).cpu().item() + 1
         return action
 
     def bigfish_actor(self, state):
-        state = state.reshape(-1)
-        state = state.tolist()
-        predictions = self.model(torch.tensor(state).cuda())
+        state = extract_neural_state_bigfish(state, self.args)
+        # state = state.reshape(-1)
+        # state = state.tolist()
+        predictions = self.model(state)
         action = torch.argmax(predictions)
         action = simplify_action_bf(action)
         return action
 
     def heist_actor(self, state):
-        state = state.reshape(-1)
-        state = state.tolist()
-        predictions = self.model(torch.tensor(state).cuda())
+        state = extract_neural_state_heist(state, self.args)
+        # state = state.reshape(-1)
+        # state = state.tolist()
+        predictions = self.model(state)
         action = torch.argmax(predictions)
         action = simplify_action_heist(action)
         return action

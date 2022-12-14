@@ -9,8 +9,8 @@ class MLPHeist(torch.nn.Module):
         self.logic = logic
         self.device = torch.device('cuda:0')
         encoding_max_entities = 7
-        encoding_entity_features = 2
-        self.num_in_features = encoding_entity_features * encoding_max_entities  # 9
+        encoding_entity_features = 4
+        self.num_in_features = encoding_entity_features * encoding_max_entities
 
         modules = [
             torch.nn.Linear(self.num_in_features, 20),
@@ -26,8 +26,8 @@ class MLPHeist(torch.nn.Module):
         self.mlp = torch.nn.Sequential(*modules)
 
     def forward(self, state):
-        if self.logic:
-            state = self.convert_states(state)
+        # if self.logic:
+        #     state = self.convert_states(state)
         features = state
         y = self.mlp(features)
         return y

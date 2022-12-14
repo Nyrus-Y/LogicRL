@@ -9,7 +9,7 @@ from src.environments.coinjump.coinjump.imageviewer import ImageViewer
 from src.environments.coinjump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
 from src.environments.coinjump.coinjump.coinjump.coinjump import CoinJump
 from nsfr.utils import get_nsfr_model, get_predictions
-from src.agents.utils_coinjump import extract_state_coinjump
+from src.agents.utils_coinjump import extract_logic_state_coinjump
 
 
 
@@ -95,7 +95,7 @@ def run():
         if not coin_jump.level.terminated:
 
             # extract state for expextracted_statelaining
-            extracted_state = extract_state_coinjump(coin_jump)
+            extracted_state = extract_logic_state_coinjump(coin_jump)
             explaining = get_predictions(extracted_state, nsfr)
             action = explaining_to_action(explaining)
 

@@ -88,16 +88,16 @@ def plot_weights_beam(weights, image_directory, time_step=0):
     #     , 'LD1', 'LD2', 'LD3', 'LD4', 'LD5', 'LD6', 'LD7', 'LD8', 'LD9', 'LD10', 'LD11', 'LD12', 'LD13', 'LD14', 'LD15'
     #     , 'RK1', 'RK2', 'RK3', 'RK4', 'RK5', 'RK6', 'RK7', 'RK8', 'RK9', 'RK10', 'RK11', 'RK12', 'RK13', 'RK14', 'RK15'
     #     , 'RD1', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RD7', 'RD8', 'RD9', 'RD10', 'RD11', 'RD12', 'RD13', 'RD14', 'RD15']
-    y_label = ['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7', 'J8', 'J9', 'J10'
-        , 'LK1', 'LK2', 'LK3', 'LK4', 'LK5', 'LK6', 'LK7', 'LK8', 'LK9', 'LK10'
-        , 'LD1', 'LD2', 'LD3', 'LD4', 'LD5', 'LD6', 'LD7', 'LD8', 'LD9', 'LD10'
-        , 'RK1', 'RK2', 'RK3', 'RK4', 'RK5', 'RK6', 'RK7', 'RK8', 'RK9', 'RK10'
-        , 'RD1', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RD7', 'RD8', 'RD9', 'RD10']
-    # y_label = ['J1', 'J2', 'J3'
-    #     , 'LK1', 'LK2', 'LK3'
-    #     , 'LD1', 'LD2', 'LD3'
-    #     , 'RK1', 'RK2', 'RK3'
-    #     , 'RD1', 'RD2', 'RD3']
+    # y_label = ['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7', 'J8', 'J9', 'J10'
+    #     , 'LK1', 'LK2', 'LK3', 'LK4', 'LK5', 'LK6', 'LK7', 'LK8', 'LK9', 'LK10'
+    #     , 'LD1', 'LD2', 'LD3', 'LD4', 'LD5', 'LD6', 'LD7', 'LD8', 'LD9', 'LD10'
+    #     , 'RK1', 'RK2', 'RK3', 'RK4', 'RK5', 'RK6', 'RK7', 'RK8', 'RK9', 'RK10'
+    #     , 'RD1', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RD7', 'RD8', 'RD9', 'RD10']
+    y_label = ['J1', 'J2', 'J3'
+        , 'LK1', 'LK2', 'LK3'
+        , 'LD1', 'LD2', 'LD3'
+        , 'RK1', 'RK2', 'RK3'
+        , 'RD1', 'RD2', 'RD3']
     # y_label = ['Jump', 'Left_k', 'Left_d',
     # 'Right_k', 'Right_d']
     y = np.arange(len(y_label))

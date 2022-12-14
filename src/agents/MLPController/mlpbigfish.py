@@ -24,14 +24,13 @@ class MLPBigfish(torch.nn.Module):
         self.mlp = torch.nn.Sequential(*modules)
 
     def forward(self, state):
-        if self.logic:
-            state = self.convert_states(state)
+        # if self.logic:
+        #     state = self.convert_states(state)
         features = state
         y = self.mlp(features)
         return y
 
     def convert_states(self, states):
-        #TODO improve the code for better efficiency?
         states = states[:, :, -3:].cpu().numpy()
         # converted_states = torch.empty(0,device=self.device)
         converted_states = np.empty((states.shape[0], 9))

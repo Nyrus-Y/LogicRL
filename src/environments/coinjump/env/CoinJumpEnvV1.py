@@ -85,7 +85,7 @@ class CoinJumpEnvV1(gym.Env):
         return self.coinjump
 
     def create_new_coinjump(self):
-        self.coinjump = create_coinjump_instance(seed=self.rng.randint(0, 1000000000), print_seed=False, render=False,
+        self.coinjump = create_coinjump_instance(print_seed=False, render=False,
                                                  resource_path=None, start_on_first_action=False,
                                                  generator_args=self._generator_args, **self._kwargs)
 
@@ -105,6 +105,3 @@ class CoinJumpEnvV1(gym.Env):
 
     def _get_reward(self):
         return self.coinjump.level.get_reward()
-
-    def _seed(self, seed):
-        self.rng = random.Random(seed)

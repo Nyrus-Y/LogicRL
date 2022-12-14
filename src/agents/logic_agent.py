@@ -8,9 +8,11 @@ from nsfr.utils import get_nsfr_model
 from .MLPController.mlpbigfish import MLPBigfish
 from .MLPController.mlpcoinjump import MLPCoinjump
 from .MLPController.mlpheist import MLPHeist
-from .utils_coinjump import extract_state_coinjump, preds_to_action_coinjump, action_map_coinjump
-from .utils_bigfish import extract_state_bigfish, preds_to_action_bigfish, action_map_bigfish
-from .utils_heist import extract_state_heist, action_map_heist
+from .utils_coinjump import extract_logic_state_coinjump, preds_to_action_coinjump, action_map_coinjump, \
+    extract_neural_state_coinjump
+from .utils_bigfish import extract_logic_state_bigfish, preds_to_action_bigfish, action_map_bigfish, \
+    extract_neural_state_bigfish
+from .utils_heist import extract_logic_state_heist, action_map_heist, extract_neural_state_heist
 
 device = torch.device('cuda:0')
 
@@ -32,32 +34,32 @@ class NSFR_ActorCritic(nn.Module):
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
 
-
     def forward(self):
         raise NotImplementedError
 
-    def act(self, state, epsilon=0.0):
+    def act(self, logic_state, epsilon=0.0):
 
-        action_probs = self.actor(state)
+        action_probs = self.actor(logic_state)
 
         # e-greedy
         if self.rng.random() < epsilon:
             # random action with epsilon probability
             dist = self.uniform
+            action = dist.sample()
         else:
             dist = Categorical(action_probs)
-
-        action = dist.sample()
+            action = (action_probs[0] == max(action_probs[0])).nonzero(as_tuple=True)[0].squeeze(0).to(device)
+        # action = dist.sample()
         action_logprob = dist.log_prob(action)
 
         return action.detach(), action_logprob.detach()
 
-    def evaluate(self, state, action):
-        action_probs = self.actor(state)
+    def evaluate(self, neural_state, logic_state, action):
+        action_probs = self.actor(logic_state)
         dist = Categorical(action_probs)
         action_logprobs = dist.log_prob(action)
         dist_entropy = dist.entropy()
-        state_values = self.critic(state)
+        state_values = self.critic(neural_state)
 
         return action_logprobs, state_values, dist_entropy
 
@@ -88,18 +90,22 @@ class LogicPPO:
 
         # extract state for different games
         if self.args.m == 'coinjump':
-            state = extract_state_coinjump(state)
+            logic_state = extract_logic_state_coinjump(state, self.args)
+            neural_state = extract_neural_state_coinjump(state, self.args)
         elif self.args.m == 'bigfish':
-            state = extract_state_bigfish(state['positions'], self.args)
+            logic_state = extract_logic_state_bigfish(state, self.args)
+            neural_state = extract_neural_state_bigfish(state, self.args)
         elif self.args.m == 'heist':
-            state = extract_state_heist(state['positions'], self.args)
+            logic_state = extract_logic_state_heist(state, self.args)
+            neural_state = extract_neural_state_heist(state, self.args)
 
         # select random action with epsilon probability and policy probiability with 1-epsilon
         with torch.no_grad():
             # state = torch.FloatTensor(state).to(device)
-            action, action_logprob = self.policy_old.act(state, epsilon=epsilon)
+            action, action_logprob = self.policy_old.act(logic_state, epsilon=epsilon)
 
-        self.buffer.states.append(state)
+        self.buffer.neural_states.append(neural_state)
+        self.buffer.logic_states.append(logic_state)
         action = torch.squeeze(action)
         self.buffer.actions.append(action)
         action_logprob = torch.squeeze(action_logprob)
@@ -112,7 +118,7 @@ class LogicPPO:
             action = action_map_coinjump(action, self.args, self.prednames)
         elif self.args.m == 'bigfish':
             action = action_map_bigfish(action, self.args, self.prednames)
-        elif self.args.m == 'eheist':
+        elif self.args.m == 'heist':
             action = action_map_heist(action, self.args, self.prednames)
 
         return action
@@ -132,14 +138,17 @@ class LogicPPO:
         rewards = (rewards - rewards.mean()) / (rewards.std() + 1e-7)
 
         # convert list to tensor
-        old_states = torch.squeeze(torch.stack(self.buffer.states, dim=0)).detach().to(device)
+
+        old_neural_states = torch.squeeze(torch.stack(self.buffer.neural_states, dim=0)).detach().to(device)
+        old_logic_states = torch.squeeze(torch.stack(self.buffer.logic_states, dim=0)).detach().to(device)
         old_actions = torch.squeeze(torch.stack(self.buffer.actions, dim=0)).detach().to(device)
         old_logprobs = torch.squeeze(torch.stack(self.buffer.logprobs, dim=0)).detach().to(device)
 
         # Optimize policy for K epochs
         for _ in range(self.K_epochs):
             # Evaluating old actions and values
-            logprobs, state_values, dist_entropy = self.policy.evaluate(old_states, old_actions)
+            logprobs, state_values, dist_entropy = self.policy.evaluate(old_neural_states, old_logic_states,
+                                                                        old_actions)
 
             # match state_values tensor dimensions with rewards tensor
             state_values = torch.squeeze(state_values)
@@ -196,7 +205,6 @@ class LogicPlayer:
         self.prednames = model.get_prednames()
 
     def act(self, state):
-        # TODO how to do if-else only once?
         if self.args.m == 'coinjump':
             action = self.coinjump_actor(state)
         elif self.args.m == 'bigfish':
@@ -206,7 +214,7 @@ class LogicPlayer:
         return action
 
     def coinjump_actor(self, coinjump, show_explaining=False):
-        extracted_state = extract_state_coinjump(coinjump)
+        extracted_state = extract_logic_state_coinjump(coinjump, self.args)
         predictions = self.model(extracted_state)
         prediction = torch.argmax(predictions).cpu().item()
         if show_explaining:
@@ -214,21 +222,25 @@ class LogicPlayer:
         action = preds_to_action_coinjump(prediction, self.prednames)
         return action
 
-    def bigfish_actor(self, state):
-        state = extract_state_bigfish(state, self.args)
+    def bigfish_actor(self, state, show_explaining=False):
+        state = extract_logic_state_bigfish(state, self.args)
         predictions = self.model(state)
         action = torch.argmax(predictions)
+        if show_explaining:
+            print(self.prednames[action])
         action = preds_to_action_bigfish(action, self.prednames)
         return action
 
     def heist_actor(self, state):
+        state = extract_logic_state_heist(state, self.args)
         pass
 
 
 class RolloutBuffer:
     def __init__(self):
         self.actions = []
-        self.states = []
+        self.neural_states = []
+        self.logic_states = []
         self.logprobs = []
         self.rewards = []
         self.is_terminals = []
@@ -236,7 +248,8 @@ class RolloutBuffer:
 
     def clear(self):
         del self.actions[:]
-        del self.states[:]
+        del self.neural_states[:]
+        del self.logic_states[:]
         del self.logprobs[:]
         del self.rewards[:]
         del self.is_terminals[:]

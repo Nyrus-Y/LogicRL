@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import math
 
-
 ################################
 # Valuation functions for heist #
 ################################
@@ -30,7 +29,6 @@ class TypeValuationFunction(nn.Module):
         z_type = z[:, 0:3]  # [1, 0, 0, 0] * [1.0, 0, 0, 0] .sum = 0.0  type(obj1, key):0.0
         prob = (a * z_type).sum(dim=1)
         return prob
-
 
 class ColorValuationFunction(nn.Module):
     """The function v_object-color
@@ -156,7 +154,7 @@ class OnTopValuationFunction(nn.Module):
         c_1 = z_1[:, -2:]
         c_2 = z_2[:, -2:]
 
-        dis_y = c_1[:, -1] - c_2[:, -1]
+        # dis_y = c_1[:, -1] - c_2[:, -1]
         # result = torch.where(dis_y >= 0, 0.99, 0.01)
         result = fuzzy_position(c_2, c_1, keyword='top')
         # result = result[:] / torch.exp(dis_y[:])
@@ -182,10 +180,10 @@ class AtBottomValuationFunction(nn.Module):
         c_1 = z_1[:, -2:]
         c_2 = z_2[:, -2:]
 
-        dis_y = c_1[:, -1] - c_2[:, -1]
-        # result = torch.where(dis_y <= 0, 0.99, 0.01)
+        # dis_y = c_1[:, -1] - c_2[:, -1]
+
         result = fuzzy_position(c_2, c_1, keyword='bottom')
-        # result = result[:] / torch.exp(dis_y[:])
+
         return result
 
 
@@ -208,10 +206,7 @@ class OnLeftValuationFunction(nn.Module):
         c_1 = z_1[:, -2:]
         c_2 = z_2[:, -2:]
 
-        dis_x = c_1[:, -2] - c_2[:, -2]
-        # result = torch.where(dis_x <= 0, 0.99, 0.01)
         result = fuzzy_position(c_2, c_1, keyword='left')
-        # result = result[:] / torch.exp(dis_x[:])
 
         return result
 
@@ -235,10 +230,7 @@ class OnRightValuationFunction(nn.Module):
         c_1 = z_1[:, -2:]
         c_2 = z_2[:, -2:]
 
-        dis_x = c_1[:, -2] - c_2[:, -2]
-        # result = torch.where(dis_x >= 0, 0.99, 0.01)
         result = fuzzy_position(c_2, c_1, keyword='right')
-        # result = result[:] / torch.exp(dis_x[:])
 
         return result
 
@@ -290,19 +282,6 @@ def fuzzy_position(pos1, pos2, keyword):
     y = pos2[:, 1] - pos1[:, 1]
     tan = torch.atan2(y, x)
     degree = tan[:] / torch.pi * 180
-
-    # if keyword == 'top':
-    #     probs = 1 - abs(degree[:] - 90) / 90
-    #     result = torch.where((180 >= degree) & (degree >= 0), probs, 0)
-    # elif keyword == 'left':
-    #     probs = (abs(degree[:]) - 90) / 90
-    #     result = torch.where((degree <= -90) | (degree >= 90), probs, 0)
-    # elif keyword == 'bottom':
-    #     probs = 1 - abs(degree[:] + 90) / 90
-    #     result = torch.where((0 >= degree) & (degree >= -180), probs, 0)
-    # elif keyword == 'right':
-    #     probs = 1 - abs(degree[:]) / 90
-    #     result = torch.where((90 >= degree) & (degree >= -90), probs, 0)
 
     if keyword == 'top':
         probs = 1 - abs(degree[:] - 90) / 90

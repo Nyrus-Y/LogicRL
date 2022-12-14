@@ -32,16 +32,18 @@ def main():
                         choices=['coinjump', 'bigfish', 'heist'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist'])
+                        choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist', 'eheistc1', 'eheistc2'])
     parser.add_argument("-r", "--rules", dest="rules", default=None, required=False,
-                        choices=['coinjump_5a', 'coinjump_bs', 'bigfish_simplified_actions', 'bigfishc', 'eheist_1',
-                                 'eheist_2', 'ppo_simple_policy'])
+                        choices=['coinjump_5a', 'coinjump_bs', 'coinjump_bs_top1', 'coinjump_bs_top3',
+                                 'bigfish_simplified_actions',
+                                 'bigfishc', 'eheist_1', 'eheist_2', 'ppo_simple_policy'])
     parser.add_argument("--recover", help="Recover from the last trained agent",
                         action="store_true", dest="recover", default=False)
     parser.add_argument("--load", help="Pytorch file to load if continue training",
                         action="store_true", dest="load", default=False)
     parser.add_argument('-p', '--plot', help="plot the image of weighs", type=bool, default=False, dest='plot')
-    args = ['-m', 'coinjump', '-alg', 'logic', '-env', 'CoinJumpEnv-v1', '-r', 'coinjump_bs', '-s', '0', '-p', 'True']
+    args = ['-m', 'heist', '-alg', 'logic', '-env', 'eheistc1', '-r', 'eheist_2']
+    # args = ['-m', 'bigfish', '-alg', 'logic', '-env', 'bigfishm','-r','bigfish_simplified_actions']
     args = parser.parse_args(args)
 
     #####################################################

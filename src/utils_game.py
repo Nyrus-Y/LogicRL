@@ -90,7 +90,7 @@ def render_bigfish(agent, args):
     reward, obs, done = env.observe()
 
     while True:
-        action = agent.act(obs['positions'])
+        action = agent.act(obs)
         env.act(action)
         rew, obs, done = env.observe()
 
@@ -104,12 +104,11 @@ def render_heist(agent, args):
     reward, obs, done = env.observe()
     i = 0
     while True:
-        action = agent.act(obs['positions'])
+        action = agent.act(obs)
         env.act(action)
         rew, obs, done = env.observe()
         # print(rew[0])
         # if i % 40 == 0:
         #     print("\n" * 50)
-        # print(obs["positions"])
+        print(obs["positions"])
         i += 1
-

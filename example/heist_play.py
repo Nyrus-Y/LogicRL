@@ -6,7 +6,7 @@ sys.path.insert(0, '../')
 
 from src.environments.procgen.procgen import ProcgenGym3Env
 from nsfr.utils import get_nsfr_model, get_predictions
-from src.agents.utils_heist import extract_state_heist
+from src.agents.utils_heist import extract_logic_state_heist
 
 
 def explaining_to_action(explaining):
@@ -55,7 +55,7 @@ def run():
     # action_space = [1, 3, 4, 5, 7]
 
     rew, obs, done = env.observe()
-    extracted_state = extract_state_heist(obs['positions'], args)
+    extracted_state = extract_logic_state_heist(obs['positions'], args)
 
     last_explaining = ""
     while NB_DONE < TO_SUCCEED:
@@ -69,7 +69,7 @@ def run():
             print(explaining)
             last_explaining = explaining
 
-        extracted_state = extract_state_heist(obs["positions"], args)
+        extracted_state = extract_logic_state_heist(obs["positions"], args)
         if done:
             print("--------------------------new game--------------------------")
         # print(f"reward : {rew}")

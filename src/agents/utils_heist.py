@@ -4,14 +4,14 @@ import torch
 device = torch.device('cuda:0')
 
 
-def extract_state_heist(state, args):
+def extract_logic_state_heist(state, args):
     """
     [X,Y]
     [agent,key_b,door_b,key_g,door_g,key_r,door_r]
     """
-    states = torch.from_numpy(state).squeeze()
+    states = torch.from_numpy(state['positions']).squeeze()
     if args.alg == 'logic':
-        if args.env == "eheist":
+        if args.env == "eheistc1" or args.env == 'eheist':
             # input shape: [X,Y]* [agent,key_b,door_b,key_g,door_g,key_r,door_r]
             # output shape:[agent, key, door, blue, green, red ,got_key, X, Y]
             extracted_state = torch.tensor([
@@ -31,6 +31,33 @@ def extract_state_heist(state, args):
 
     extracted_state = extracted_state.unsqueeze(0)
     return extracted_state.to(device)
+
+
+def extract_neural_state_heist(state, args):
+    state = state['positions']
+    if args.env == 'eheistc1':
+        # output shape:[X, Y, type, color]
+        raw_state = np.array([[0, 0, 0, 0],
+                              [0, 0, 1, 1],
+                              [0, 0, 2, 1],
+                              [0, 0, 1, 2],
+                              [0, 0, 2, 2],
+                              [0, 0, 1, 3],
+                              [0, 0, 2, 3]], dtype=np.float32)
+        raw_state[:, 0:2] = state[0][:]
+    elif args.env == 'eheistc2':
+        raw_state = np.array([[0, 0, 0, 0],
+                              [0, 0, 1, 4],
+                              [0, 0, 2, 4],
+                              [0, 0, 1, 5],
+                              [0, 0, 2, 5],
+                              [0, 0, 1, 6],
+                              [0, 0, 2, 6]], dtype=np.float32)
+        raw_state[:, 0:2] = state[0][:]
+
+    state = raw_state.reshape(-1)
+    state = state.tolist()
+    return torch.tensor(state).to(device)
 
 
 def simplify_action_heist(action):

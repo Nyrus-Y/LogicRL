@@ -1,12 +1,14 @@
 import numpy as np
 import torch
 
+device = torch.device('cuda:0')
 
-def extract_state_bigfish(obs, args):
+
+def extract_logic_state_bigfish(obs, args):
     """
     reshape states for nsfr
     """
-    states = torch.from_numpy(obs).squeeze()
+    states = torch.from_numpy(obs['positions']).squeeze()
     if args.alg == 'logic':
         if args.env == "bigfishm":
             # input shape: [X,Y,radius]
@@ -46,6 +48,13 @@ def extract_state_bigfish(obs, args):
 
             extracted_state = extracted_state.unsqueeze(0)
             return extracted_state.cuda()
+
+
+def extract_neural_state_bigfish(state, args):
+    state = state['positions'].reshape(-1)
+    state = state.tolist()
+
+    return torch.tensor(state).to(device)
 
 
 def simplify_action_bf(action):

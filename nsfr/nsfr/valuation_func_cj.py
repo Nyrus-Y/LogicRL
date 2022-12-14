@@ -57,7 +57,7 @@ class ClosebyValuationFunction(nn.Module):
 
         result = torch.where((dis_x < 3) & (dis_y <= 0.1), 0.99, 0.1)
 
-        return torch.tensor(result)
+        return result
 
 
 class OnLeftValuationFunction(nn.Module):
