@@ -18,13 +18,10 @@ class RandomPlayer:
 
     def coinjump_actor(self):
         # action = coin_jump_actions_from_unified(random.randint(0, 10))
-        action = random.randint(0, 10)
-        return action
+        return random.randint(0, 10)
 
     def bigfish_actor(self):
-        action = np.random.randint([9])
-        return action
+        return np.random.randint([9])
 
     def heist_actor(self):
-        action = np.random.randint([9])
-        return action
+        return np.random.randint([9])
