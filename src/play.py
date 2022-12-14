@@ -3,7 +3,7 @@ import torch
 import os
 
 from utils import make_deterministic
-from utils_game import render_coinjump, render_bigfish, render_heist
+from utils_game import render_coinjump, render_bigfish, render_heist, render_ecoinrun
 from agents.neural_agent import ActorCritic, NeuralPlayer
 from agents.logic_agent import NSFR_ActorCritic, LogicPlayer
 from agents.random_agent import RandomPlayer
@@ -34,13 +34,14 @@ def main():
                         required=False, action="store", dest="seed", type=int)
     parser.add_argument("-alg", "--algorithm", help="algorithm that to use",
                         action="store", dest="alg", required=True,
-                        choices=['ppo', 'logic', 'random'])
+                        choices=['ppo', 'logic', 'random', 'human'])
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=True, action="store", dest="m",
-                        choices=['coinjump', 'bigfish', 'heist'])
+                        choices=['coinjump', 'bigfish', 'heist', 'ecoinrun'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist'])
+                        choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist',
+                                 'ecoinrun'])
     parser.add_argument("-r", "--rules", dest="rules", default=None,
                         required=False, choices=['coinjump_5a', 'bigfish_simplified_actions', 'heist'])
     parser.add_argument("-mo", "--model_file", dest="model_file", default=None)
@@ -51,7 +52,7 @@ def main():
     make_deterministic(args.seed)
 
     # load trained_model
-    if args.alg != 'random':
+    if args.alg not in ['random', 'human']:
         # read filename from models
         current_path = os.path.dirname(__file__)
         model_name = input('Enter file name: ')
@@ -67,6 +68,8 @@ def main():
         agent = LogicPlayer(args, model)
     elif args.alg == 'random':
         agent = RandomPlayer(args)
+    elif args.alg == 'human':
+        agent = 'human'
 
     #### Continue to render
     if args.m == 'coinjump':
@@ -75,6 +78,8 @@ def main():
         render_bigfish(agent, args)
     elif args.m == 'heist':
         render_heist(agent, args)
+    elif args.m == 'ecoinrun':
+        render_ecoinrun(agent, args)
 
 
 if __name__ == "__main__":

@@ -86,29 +86,53 @@ def render_bigfish(agent, args):
     seed = random.seed() if args.seed is None else int(args.seed)
 
     env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
-    env = gym3.ViewerWrapper(env, info_key="rgb")
-
-    reward, obs, done = env.observe()
-
-    while True:
-        action = agent.act(obs['positions'])
-        env.act(action)
-        rew, obs, done = env.observe()
+    if agent == "human":
+        ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
+        ia.run()
+    else:
+        env = gym3.ViewerWrapper(env, info_key="rgb")
+        reward, obs, done = env.observe()
+        while True:
+            print(obs['positions'])
+            action = agent.act(obs['positions'])
+            env.act(action)
+            rew, obs, done = env.observe()
 
 
 def render_heist(agent, args):
     seed = random.seed() if args.seed is None else int(args.seed)
 
     env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
-    env = gym3.ViewerWrapper(env, info_key="rgb")
+    if agent == "human":
+        ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
+        ia.run()
+    else:
+        env = gym3.ViewerWrapper(env, info_key="rgb")
+        reward, obs, done = env.observe()
+        i = 0
+        while True:
+            action = agent.act(obs['positions'])
+            env.act(action)
+            rew, obs, done = env.observe()
+            i += 1
 
-    reward, obs, done = env.observe()
-    i = 0
-    while True:
-        action = agent.act(obs['positions'])
-        env.act(action)
-        rew, obs, done = env.observe()
-        # if i % 40 == 0:
-        #     print("\n" * 50)
-        #     print(obs["positions"])
-        i += 1
+
+def render_ecoinrun(agent, args):
+    seed = random.seed() if args.seed is None else int(args.seed)
+
+    env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
+    if agent == "human":
+        ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
+        ia.run()
+    else:
+        env = gym3.ViewerWrapper(env, info_key="rgb")
+        reward, obs, done = env.observe()
+        i = 0
+        while True:
+            action = agent.act(obs['positions'])
+            env.act(action)
+            rew, obs, done = env.observe()
+            # if i % 40 == 0:
+            #     print("\n" * 50)
+            #     print(obs["positions"])
+            i += 1

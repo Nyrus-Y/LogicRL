@@ -2,9 +2,6 @@ import random
 import numpy as np
 
 
-# from src.environments.coinjump.coinjump.coinjump.actions import coin_jump_actions_from_unified
-
-
 class RandomPlayer:
     def __init__(self, args):
         self.args = args
@@ -21,13 +18,10 @@ class RandomPlayer:
 
     def coinjump_actor(self):
         # action = coin_jump_actions_from_unified(random.randint(0, 10))
-        action = random.randint(0, 10)
-        return action
+        return random.randint(0, 10)
 
     def bigfish_actor(self):
-        action = np.random.randint([9])
-        return action
+        return np.random.randint([9])
 
     def heist_actor(self):
-        action = np.random.randint([9])
-        return action
+        return np.random.randint([9])
