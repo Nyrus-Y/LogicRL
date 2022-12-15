@@ -42,8 +42,8 @@ def main():
     parser.add_argument("--load", help="Pytorch file to load if continue training",
                         action="store_true", dest="load", default=False)
     parser.add_argument('-p', '--plot', help="plot the image of weighs", type=bool, default=False, dest='plot')
-    args = ['-m', 'heist', '-alg', 'logic', '-env', 'eheistc1', '-r', 'eheist_2']
-    # args = ['-m', 'bigfish', '-alg', 'logic', '-env', 'bigfishm','-r','bigfish_simplified_actions']
+    args = ['-m', 'coinjump', '-alg', 'ppo', '-env', 'CoinJumpEnv-v1']
+    # args = ['-m', 'coinjump', '-alg', 'logic', '-env', 'CoinJumpEnv-v1', '-r', 'coinjump_bs', '-p', 'True']
     args = parser.parse_args(args)
 
     #####################################################
@@ -71,8 +71,10 @@ def main():
         "update_freq": max_ep_len * 2,
         "save_freq": max_ep_len * 50,
     }
-
-    runs_name = str(args.rules) + '_' + str(args.seed)
+    if args.rules is not None:
+        runs_name = str(args.rules) + '_seed_' + str(args.seed)
+    else:
+        runs_name = str(args.m) + '_' + args.alg + '_seed_' + str(args.seed)
     wandb.init(project="GETOUT-BS", entity="nyrus", config=config, name=runs_name)
 
     ################### checkpointing ###################

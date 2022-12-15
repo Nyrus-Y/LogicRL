@@ -3,6 +3,8 @@ from .facts_converter import FactsConverter
 from .nsfr_bm import NSFReasoner
 from .logic_utils import build_infer_module, build_clause_infer_module, build_clause_body_infer_module
 from .valuation_cj import CJValuationModule
+from .valuation_bf import BFValuationModule
+from .valuation_h import HValuationModule
 from nsfr.logic_utils import get_lang
 
 
@@ -14,7 +16,7 @@ def update_initial_clauses(clauses, obj_num):
     return [clause]
 
 
-def get_nsfr_model(args, lang, clauses, atoms,bk, bk_clauses, device, train=False):
+def get_nsfr_model(args, lang, clauses, atoms, bk, bk_clauses, device, train=False):
     VM = CJValuationModule(lang=lang, device=device)
     FC = FactsConverter(lang=lang,
                         valuation_module=VM, device=device)
@@ -29,7 +31,12 @@ def get_nsfr_model(args, lang, clauses, atoms,bk, bk_clauses, device, train=Fals
 
 
 def get_nsfr_cgen_model(args, lang, clauses, atoms, bk, device, train=False):
-    VM = CJValuationModule(lang=lang, device=device)
+    if args.m == 'coinjump':
+        VM = CJValuationModule(lang=lang, device=device)
+    elif args.m == 'bigfish':
+        VM = BFValuationModule(lang=lang, device=device)
+    elif args.m == 'heist':
+        VM = HValuationModule(lang=lang, device=device)
     FC = FactsConverter(lang=lang,
                         valuation_module=VM, device=device)
     IM = build_infer_module(clauses, atoms, lang,

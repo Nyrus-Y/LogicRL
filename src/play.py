@@ -40,7 +40,7 @@ def main():
                         choices=['coinjump', 'bigfish', 'heist', 'ecoinrun'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist', 'ehesitc1', 'eheistc2'
+                        choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist', 'eheistc1', 'eheistc2'
                                                                                                  'ecoinrun'])
     parser.add_argument("-r", "--rules", dest="rules", default=None,
                         required=False, choices=['coinjump_5a', 'bigfish_simplified_actions', 'eheist_2'])

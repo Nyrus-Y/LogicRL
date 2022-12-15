@@ -110,7 +110,7 @@ def render_heist(agent, args):
         reward, obs, done = env.observe()
         i = 0
         while True:
-            action = agent.act(obs['positions'])
+            action = agent.act(obs)
             env.act(action)
             rew, obs, done = env.observe()
             i += 1
@@ -128,7 +128,7 @@ def render_ecoinrun(agent, args):
         reward, obs, done = env.observe()
         i = 0
         while True:
-            action = agent.act(obs['positions'])
+            action = agent.act(obs)
             env.act(action)
             rew, obs, done = env.observe()
             # if i % 40 == 0:
