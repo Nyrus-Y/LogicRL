@@ -53,17 +53,6 @@ class NSFReasoner(nn.Module):
 
         return V_T
 
-    # def forward(self, x):
-    #     # obtain the object-centric representation
-    #     # zs = self.pm(x)
-    #     zs = x
-    #     # convert to the valuation tensor
-    #     V_0 = self.fc(zs, self.atoms, self.bk)
-    #     # perform T-step forward-chaining reasoning
-    #     V_T = self.im(V_0)
-    #
-    #     return V_T
-
     def clause_eval(self, x):
         # obtain the object-centric representation
         # zs = self.pm(x)

@@ -3,6 +3,7 @@ import json
 import torch
 import os
 import pathlib
+import gym3
 
 from argparse import ArgumentParser
 from environments.coinjump.coinjump.imageviewer import ImageViewer
@@ -10,8 +11,12 @@ from environments.coinjump.coinjump.coinjump.coinjump import CoinJump
 from environments.coinjump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
 from agents.utils_coinjump import extract_state, sample_to_model_input, collate
 from agents.neural_agent import ActorCritic
+from agents.utils_heist import extract_neural_state_heist, simplify_action_heist, extract_logic_state_heist
+from agents.utils_bigfish import extract_logic_state_bigfish, extract_neural_state_bigfish
 from tqdm import tqdm
 from nsfr.utils import extract_for_cgen_explaining
+
+from environments.procgen.procgen import ProcgenGym3Env
 
 KEY_r = 114
 device = torch.device('cuda:0')
@@ -38,13 +43,14 @@ class RolloutBuffer:
         del self.terminated[:]
         del self.predictions[:]
 
-    def save_data(self):
+    def save_data(self, args):
         dict = {'actions': self.actions, 'logic_states': self.logic_states, 'neural_states': self.neural_states,
-                'action_probs': self.action_probs, 'logprobs': self.logprobs, 'reward': self.rewards,
+                'action_probs': self.action_probs, 'logprobs': self.logprobs, 'reward': self.reward,
                 'terminated': self.terminated, 'predictions': self.predictions}
 
         current_path = os.path.dirname(__file__)
-        path = os.path.join(current_path, 'data', 'coinjump.json')
+        dataset = args.m + '.json'
+        path = os.path.join(current_path, 'data', dataset)
         with open(path, 'w') as f:
             json.dump(dict, f)
         print('data collected')
@@ -78,21 +84,20 @@ def parse_args():
     parser = ArgumentParser("Loads a model and lets it play coinjump")
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=True, action="store", dest="m", default='coinjump',
-                        choices=['coinjump'])
+                        choices=['coinjump', 'bigfish', 'heist'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env", default='CoinJumpEnv-v1',
-                        choices=['CoinJumpEnv-v1'])
+                        choices=['CoinJumpEnv-v1', 'bigfishm', 'eheistc1', 'eheistc2'])
     parser.add_argument("-mo", "--model_file", dest="model_file", default=None)
-    parser.add_argument("-s", "--seed", dest="seed", type=int)
-    arg = ['-m', 'coinjump', '-env', 'CoinJumpEnv-v1']
+    parser.add_argument("-s", "--seed", dest="seed", default=0, type=int)
+    arg = ['-m', 'heist', '-env', 'eheistc1']
     args = parser.parse_args(arg)
 
-    # TODO change path of model
     if args.model_file is None:
         # read filename from stdin
         current_path = os.path.dirname(__file__)
         model_name = input('Enter file name: ')
-        model_file = os.path.join(current_path, 'models', 'coinjump', 'ppo', model_name)
+        model_file = os.path.join(current_path, 'models', args.m, 'ppo', model_name)
         # model_file = f"../src/ppo_coinjump_model/{input('Enter file name: ')}"
 
     else:
@@ -115,55 +120,98 @@ def load_model(model_path, args, set_eval=True):
     return model
 
 
-def run():
-
+def main():
     args, model_file = parse_args()
 
     model = load_model(model_file, args)
 
     seed = random.seed() if args.seed is None else int(args.seed)
 
-    coin_jump = create_coinjump_instance(seed=seed)
-    # viewer = setup_image_viewer(coin_jump)
-
-    # frame rate limiting
-    fps = 10
-
     buffer = RolloutBuffer()
 
     # collect data
-    max_states = 10000
-    max_states = 10000
-    save_frequence = 3
+    max_states = 15000
+    save_frequence = 5
     step = 0
     collected_states = 0
-    for i in tqdm(range(max_states)):
-        # step game
-        step += 1
+    if args.m == 'coinjump':
+        coin_jump = create_coinjump_instance(seed=seed)
+        # viewer = setup_image_viewer(coin_jump)
 
-        if not coin_jump.level.terminated:
-            model_input = sample_to_model_input((extract_state(coin_jump), []))
-            model_input = collate([model_input])
-            state = model_input['state']
-            neural_state = torch.cat([state['base'], state['entities']], dim=1)
-            prediction = model(neural_state)
-            # 1 left 2 right 3 up
-            action = torch.argmax(prediction).cpu().item() + 1
+        # frame rate limiting
+        fps = 10
+        for i in tqdm(range(max_states)):
+            # step game
+            step += 1
 
-            logic_state = extract_for_cgen_explaining(coin_jump)
+            if not coin_jump.level.terminated:
+                model_input = sample_to_model_input((extract_state(coin_jump), []))
+                model_input = collate([model_input])
+                state = model_input['state']
+                neural_state = torch.cat([state['base'], state['entities']], dim=1)
+                prediction = model(neural_state)
+                # 1 left 2 right 3 up
+                action = torch.argmax(prediction).cpu().item() + 1
+
+                logic_state = extract_for_cgen_explaining(coin_jump)
+                if step % save_frequence == 0:
+                    collected_states += 1
+                    buffer.logic_states.append(logic_state.detach().tolist())
+                    buffer.actions.append(torch.argmax(prediction.detach()).tolist())
+                    buffer.action_probs.append(prediction.detach().tolist())
+                    buffer.neural_states.append(neural_state.tolist())
+            else:
+                coin_jump = create_coinjump_instance(seed=seed)
+                action = 0
+
+            reward = coin_jump.step(action)
+
+        buffer.save_data(args)
+    elif args.m == 'heist':
+
+        env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
+        reward, obs, done = env.observe()
+        for i in tqdm(range(max_states)):
+            # step game
+            step += 1
+            neural_state = extract_neural_state_heist(obs, args)
+            logic_state = extract_logic_state_heist(obs, args)
+            logic_state =logic_state.squeeze(0)
+            predictions = model(neural_state)
+            action = torch.argmax(predictions)
+            action = simplify_action_heist(action)
+            env.act(action)
+            rew, obs, done = env.observe()
             if step % save_frequence == 0:
                 collected_states += 1
                 buffer.logic_states.append(logic_state.detach().tolist())
-                buffer.actions.append(torch.argmax(prediction.detach()).tolist())
-                buffer.action_probs.append(prediction.detach().tolist())
+                buffer.actions.append(torch.argmax(predictions.detach()).tolist())
+                buffer.action_probs.append(predictions.detach().tolist())
                 buffer.neural_states.append(neural_state.tolist())
-        else:
-            coin_jump = create_coinjump_instance(seed=seed)
-            action = 0
+        buffer.save_data(args)
 
-        reward = coin_jump.step(action)
 
-    buffer.save_data()
+    elif args.m == 'bigfish':
+        env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
+        reward, obs, done = env.observe()
+        for i in tqdm(range(max_states)):
+            # step game
+            step += 1
+            neural_state = extract_neural_state_bigfish(obs, args)
+            logic_state = extract_logic_state_bigfish(obs, args)
+            predictions = model(neural_state)
+            action = torch.argmax(predictions)
+            action = simplify_action_heist(action)
+            env.act(action)
+            rew, obs, done = env.observe()
+            if step % save_frequence == 0:
+                collected_states += 1
+                buffer.logic_states.append(logic_state.detach().tolist())
+                buffer.actions.append(torch.argmax(predictions.detach()).tolist())
+                buffer.action_probs.append(predictions.detach().tolist())
+                buffer.neural_states.append(neural_state.tolist())
+        buffer.save_data(args)
+
 
 if __name__ == "__main__":
-    run()
+    main()

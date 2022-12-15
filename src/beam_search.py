@@ -63,9 +63,10 @@ def get_args():
     parser.add_argument('--scoring', type=bool, help='beam search rules with scored rule by trained ppo agent',
                         default=False, dest='scoring')
     parser.add_argument('-d', '--dataset', required=False, help='the dataset to load if scoring', dest='d',
-                        choices=['coinjump.json'])
-    # arg = ['-m', 'heist', '-r', 'eheist_root']
-    args = parser.parse_args()
+                        choices=['coinjump.json', 'heist.json'])
+    arg = ['-m', 'heist', '-r', 'eheist_root', '--scoring', 'True', '-d', 'heist.json','-n','12']
+    # arg = ['-m', 'coinjump', '-r', 'coinjump_root', '--scoring', 'True', '-d', 'coinjump.json']
+    args = parser.parse_args(arg)
     return args
 
 

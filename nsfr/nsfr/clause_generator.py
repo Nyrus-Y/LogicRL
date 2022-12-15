@@ -179,53 +179,38 @@ class ClauseGenerator(object):
             scores_cba = NSFR.clause_eval(self.buffer.logic_states)
             # shape: (num_clauses, num_buffers)
             body_scores = torch.stack([NSFR.predict(score_i, predname=predname) for score_i in scores_cba])
+            # action_probs = self.buffer.action_probs
+
+            # scores = self.scoring(action_probs, body_scores)
             if self.args.m == 'coinjump':
                 action_probs, actions = self.get_action_probs_cj(predname)
                 # scores = torch.sum(self.buffer.action_buffer * body_scores, dim=1)
-                scores = self.scoring(action_probs, body_scores, actions)
+                scores = self.scoring(action_probs, body_scores)
+            elif self.args.m == 'bigfish':
+                pass
+            elif self.args.m == 'heist':
+                action_probs, actions = self.get_action_probs_h(predname)
+                scores = self.scoring(action_probs, body_scores)
         else:
             scores = torch.zeros((C,)).to(self.device)
         return scores
-
-        # for i, sample in enumerate(self.buffer.logic_states, start=0):
-        #     # imgs, target_set = map(lambda x: x.to(self.device), sample)]
-        #     # print(NSFR.clauses)
-        #     # N_data += imgs.size(0)
-        #     # B = imgs.size(0)
-        #     # N_data += self.buffer.logic_states.size(0)
-        #     B = self.buffer.logic_states.size(0)
-        #     # C * B * G
-        #     # #V_T_list = NSFR.clause_eval(self.buffer.logic_states).detach()
-        #     # C_score = torch.zeros((C, B)).to(self.device)
-        #     # for i, V_T in enumerate(V_T_list):
-        #     #
-        #     #     # for each clause
-        #     #     # B
-        #     #     # print(V_T.shape)
-        #     #     predname = ['jump', 'left_go_get_key', 'right_go_get_key', 'left_go_to_door', 'right_go_to_door']
-        #     #     predicted = NSFR.predict(v=V_T, predname=predname).detach()
-        #     #     # print("clause: ", clauses[i])
-        #     #     # NSFR.print_valuation_batch(V_T)
-        #     #     # print(predicted)
-        #     #     # predicted = self.bce_loss(predicted, target_set)
-        #     #     # predicted = torch.abs(predicted - target_set)
-        #     #     # print(predicted)
-        #     #     C_score[i] = predicted
-        #     # C
-        #     # sum over positive prob
-        #     C_score = C_score.sum(dim=1)
-        #     score += C_score
-        # return score
-        # score = 1 - score.detach().cpu().numpy() / N_data
-        # return score
 
     def get_predname(self, clauses):
         predname = clauses[0].head.pred.name
         return predname
 
+    def scoring(self, action_probs, body_scores):
+        action_probs_ = action_probs.unsqueeze(0).expand((body_scores.size(0), -1))
+        scores = action_probs_ * body_scores
+        scores = torch.sum(scores, dim=1)
+
+        return scores
+
+    #
     def get_action_probs_cj(self, predname):
         # action_probs = torch.stack(self.buffer.action_probs, dim=1).squeeze(0)
         action_probs = self.buffer.action_probs.squeeze(1)
+        # action_probs = self.buffer.action_probs.squeeze(1)
         action_list = action_probs.tolist()
         actions = [i.index(max(i)) for i in action_list]
         if 'jump' in predname:
@@ -237,35 +222,25 @@ class ClauseGenerator(object):
         elif 'right' in predname:
             action_probs = action_probs[:, 1]
             actions = [1 if i == 1 else 0 for i in actions]
-
+        #
         return action_probs, actions
 
-    def scoring(self, action_probs, body_scores, actions_ppo):
-        # action_probs:（num_buffers, )
-        # body_scores: (num_clauses, num_buffers)
+    def get_action_probs_h(self, predname):
+        action_probs = self.buffer.action_probs.squeeze(1)
+        # action_probs = self.buffer.action_probs.squeeze(1)
+        action_list = action_probs.tolist()
+        actions = [i.index(max(i)) for i in action_list]
+        if 'up' in predname:
+            action_probs = action_probs[:, 2]
+            actions = [1 if i == 3 else 0 for i in actions]
+        elif 'left' in predname:
+            action_probs = action_probs[:, 0]
+            actions = [1 if i == 0 else 0 for i in actions]
+        elif 'right' in predname:
+            action_probs = action_probs[:, 1]
+            actions = [1 if i == 4 else 0 for i in actions]
+        elif 'down' in predname:
+            action_probs = action_probs[:, 1]
+            actions = [1 if i == 1 else 0 for i in actions]
 
-        # actions_logic = []
-        # body_scores_ = body_scores.tolist()
-        # for i, body_score in enumerate(body_scores_):
-        #     action_logic = [1 if score > 0.5 else 0 for score in body_score]
-        #     actions_logic.append(action_logic)
-        # # actions_logic = torch.tensor(actions_logic)
-        # # num_logic_action = [sum(i) for i in actions_logic]
-        # num_correct_actions = []
-        # for actions in actions_logic:
-        #     num_correct_action = 0
-        #     for i in range(len(actions_ppo)):
-        #         if (actions_ppo[i] == 1 and actions[1] == 1) or (actions_ppo[i] == 0 and actions[1] == 0):
-        #             num_correct_action += 1
-        #     num_correct_actions.append(num_correct_action)
-        # ratio = torch.tensor([i / len(actions_ppo) for i in num_correct_actions],
-        #                      device='cuda:0')  # (num_clauses, num_buffers)
-        action_probs_ = action_probs.unsqueeze(0).expand((body_scores.size(0), -1))
-        scores = action_probs_ * body_scores
-        scores = torch.sum(scores, dim=1)
-        # final_score = scores * ratio
-        return scores
-
-        # for i, probs in enumerate(action_probs):
-        #     body_scores[:, i] *= probs
-        # return body_scores
+        return action_probs, actions
