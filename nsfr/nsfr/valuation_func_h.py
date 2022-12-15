@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import math
 
+
 ################################
 # Valuation functions for heist #
 ################################
@@ -29,6 +30,7 @@ class TypeValuationFunction(nn.Module):
         z_type = z[:, 0:3]  # [1, 0, 0, 0] * [1.0, 0, 0, 0] .sum = 0.0  type(obj1, key):0.0
         prob = (a * z_type).sum(dim=1)
         return prob
+
 
 class ColorValuationFunction(nn.Module):
     """The function v_object-color
@@ -103,7 +105,7 @@ class ClosebyVerticalValuationFunction(nn.Module):
         dis_x = abs(c_1[:, 0] - c_2[:, 0])
         dis_y = abs(c_1[:, 1] - c_2[:, 1])
 
-        result = torch.where((dis_y <= 1.1 and dis_x < 0.7), 0.99, 0.1)
+        result = torch.where((dis_y <= 1.1) | (dis_x < 0.7), 0.99, 0.1)
 
         return result
 
@@ -130,7 +132,7 @@ class ClosebyHorizontalValuationFunction(nn.Module):
         dis_x = abs(c_1[:, 0] - c_2[:, 0])
         dis_y = abs(c_1[:, 1] - c_2[:, 1])
 
-        result = torch.where((dis_x <= 1.1 and dis_y < 0.7), 0.99, 0.1)
+        result = torch.where((dis_x <= 1.1) | (dis_y < 0.7), 0.99, 0.1)
 
         return result
 
