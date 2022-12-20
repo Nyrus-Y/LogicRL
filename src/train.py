@@ -35,15 +35,16 @@ def main():
                         choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist', 'eheistc1', 'eheistc2'])
     parser.add_argument("-r", "--rules", dest="rules", default=None, required=False,
                         choices=['coinjump_5a', 'coinjump_bs', 'coinjump_bs_top1', 'coinjump_bs_top3',
-                                 'bigfish_simplified_actions',
-                                 'bigfishc', 'eheist_1', 'eheist_2', 'ppo_simple_policy'])
+                                 'bigfish_simplified_actions', 'bigfishc',
+                                 'eheist_1', 'eheist_2', 'eheist_bs_40',
+                                 'ppo_simple_policy'])
     parser.add_argument("--recover", help="Recover from the last trained agent",
                         action="store_true", dest="recover", default=False)
     parser.add_argument("--load", help="Pytorch file to load if continue training",
                         action="store_true", dest="load", default=False)
     parser.add_argument('-p', '--plot', help="plot the image of weighs", type=bool, default=False, dest='plot')
-    args = ['-m', 'coinjump', '-alg', 'ppo', '-env', 'CoinJumpEnv-v1']
-    # args = ['-m', 'coinjump', '-alg', 'logic', '-env', 'CoinJumpEnv-v1', '-r', 'coinjump_bs', '-p', 'True']
+    args = ['-m', 'heist', '-alg', 'logic', '-env', 'eheistc1', '-r', 'eheist_bs_40', '-p', 'True']
+    # args = ['-m', 'coinjump', '-alg', 'logic', '-env', 'CoinJumpEnv-v1', '-r', 'coinjump_bs_top3', '-p', 'True']
     args = parser.parse_args(args)
 
     #####################################################
@@ -75,7 +76,8 @@ def main():
         runs_name = str(args.rules) + '_seed_' + str(args.seed)
     else:
         runs_name = str(args.m) + '_' + args.alg + '_seed_' + str(args.seed)
-    wandb.init(project="GETOUT-BS", entity="nyrus", config=config, name=runs_name)
+    # wandb.init(project="GETOUT-BS", entity="nyrus", config=config, name=runs_name)
+    wandb.init(project="HEIST", entity="nyrus", config=config, name=runs_name)
 
     ################### checkpointing ###################
 
@@ -182,6 +184,7 @@ def main():
             # select action with policy
             action = agent.select_action(state, epsilon=epsilon)
             reward, state, done = env_step(action, env, args)
+
             # saving reward and is_terminals
             agent.buffer.rewards.append(reward)
             agent.buffer.is_terminals.append(done)

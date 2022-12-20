@@ -130,7 +130,7 @@ def main():
     buffer = RolloutBuffer()
 
     # collect data
-    max_states = 15000
+    max_states = 30000
     save_frequence = 5
     step = 0
     collected_states = 0

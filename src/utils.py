@@ -33,4 +33,5 @@ def env_step(action, env, args):
         env.act(action)
         reward, state, done = env.observe()
         reward = reward[0]
+        reward -= 0.02
     return reward, state, done

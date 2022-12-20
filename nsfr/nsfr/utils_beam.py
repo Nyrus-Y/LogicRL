@@ -1,6 +1,6 @@
 import os
 from .facts_converter import FactsConverter
-from .nsfr_bm import NSFReasoner
+from .nsfr_beam import NSFReasoner
 from .logic_utils import build_infer_module, build_clause_infer_module, build_clause_body_infer_module
 from .valuation_cj import CJValuationModule
 from .valuation_bf import BFValuationModule

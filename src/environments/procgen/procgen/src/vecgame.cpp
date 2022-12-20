@@ -557,7 +557,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
           strcpy(s.name, "positions");
           s.scalar_type = LIBENV_SCALAR_TYPE_REAL;
           s.dtype = LIBENV_DTYPE_FLOAT32;
-          s.shape[0] = 7;
+          s.shape[0] = 5;
           s.shape[1] = 2;
           s.ndim = 2;
           s.low.float32 = 0.25f;

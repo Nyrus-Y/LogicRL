@@ -2,6 +2,7 @@ import gym3
 import argparse
 import numpy as np
 import sys
+
 sys.path.insert(0, '../')
 
 from src.environments.procgen.procgen import ProcgenGym3Env
@@ -32,7 +33,7 @@ def run():
                         action="store", dest="alg", required=False, default='logic',
                         choices=['logic'])
     parser.add_argument("-r", "--rules", dest="rules", default='eheist_2',
-                        required=False, choices=['eheist_1','eheist_2'])
+                        required=False, choices=['eheist_1', 'eheist_2'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=False, action="store", dest="env", default='eheist',
                         choices=['eheist'])
@@ -55,7 +56,7 @@ def run():
     # action_space = [1, 3, 4, 5, 7]
 
     rew, obs, done = env.observe()
-    extracted_state = extract_logic_state_heist(obs['positions'], args)
+    extracted_state = extract_logic_state_heist(obs,args)
 
     last_explaining = ""
     while NB_DONE < TO_SUCCEED:
@@ -69,9 +70,10 @@ def run():
             print(explaining)
             last_explaining = explaining
 
-        extracted_state = extract_logic_state_heist(obs["positions"], args)
+        extracted_state = extract_logic_state_heist(obs, args)
         if done:
             print("--------------------------new game--------------------------")
+
         # print(f"reward : {rew}")
 
 

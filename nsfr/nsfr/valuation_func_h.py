@@ -58,7 +58,7 @@ class ColorValuationFunction(nn.Module):
 
 
 class CloseValuationFunction(nn.Module):
-    """The function v_closeby.
+    """The function v_close.
     """
 
     def __init__(self):
@@ -105,7 +105,7 @@ class ClosebyVerticalValuationFunction(nn.Module):
         dis_x = abs(c_1[:, 0] - c_2[:, 0])
         dis_y = abs(c_1[:, 1] - c_2[:, 1])
 
-        result = torch.where((dis_y <= 1.1) | (dis_x < 0.7), 0.99, 0.1)
+        result = torch.where((dis_y <= 1.1) & (dis_x < 0.7), 0.99, 0.1)
 
         return result
 
@@ -132,7 +132,7 @@ class ClosebyHorizontalValuationFunction(nn.Module):
         dis_x = abs(c_1[:, 0] - c_2[:, 0])
         dis_y = abs(c_1[:, 1] - c_2[:, 1])
 
-        result = torch.where((dis_x <= 1.1) | (dis_y < 0.7), 0.99, 0.1)
+        result = torch.where((dis_x <= 1.1) & (dis_y < 0.7), 0.99, 0.1)
 
         return result
 

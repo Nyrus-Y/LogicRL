@@ -98,14 +98,14 @@ def get_mode_declarations_heist(lang):
         ModeDeclaration('body', 2, lang.get_pred_by_name('type'), [p_object, s_type]),
         ModeDeclaration('body', 2, lang.get_pred_by_name('color'), [p_object, s_color]),
         ModeDeclaration('body', 1, lang.get_pred_by_name('close'), [p_object, p_object], ordered=False),
-        ModeDeclaration('body', 1, lang.get_pred_by_name('closeby_vertical'), [p_object, p_object], ordered=False),
-        ModeDeclaration('body', 1, lang.get_pred_by_name('closeby_horizontal'), [p_object, p_object], ordered=False),
+        #ModeDeclaration('body', 1, lang.get_pred_by_name('closeby_vertical'), [p_object, p_object], ordered=False),
+        #ModeDeclaration('body', 1, lang.get_pred_by_name('closeby_horizontal'), [p_object, p_object], ordered=False),
         ModeDeclaration('body', 1, lang.get_pred_by_name('on_top'), [p_object, p_object]),
         ModeDeclaration('body', 1, lang.get_pred_by_name('at_bottom'), [p_object, p_object]),
         ModeDeclaration('body', 1, lang.get_pred_by_name('on_left'), [p_object, p_object]),
         ModeDeclaration('body', 1, lang.get_pred_by_name('on_right'), [p_object, p_object]),
         ModeDeclaration('body', 1, lang.get_pred_by_name('have_key'), [p_image], ordered=False),
-        ModeDeclaration('body', 1, lang.get_pred_by_name('not_have_key'), [p_image], ordered=False),
+        #ModeDeclaration('body', 1, lang.get_pred_by_name('not_have_key'), [p_image], ordered=False),
     ]
     return modeb_list
 

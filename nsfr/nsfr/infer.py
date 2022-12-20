@@ -87,6 +87,7 @@ class InferModule(nn.Module):
     def get_params(self):
         return self.W
 
+
 class ClauseBodyInferModule(nn.Module):
     """
     A class of differentiable foward-chaining inference.
@@ -106,11 +107,10 @@ class ClauseBodyInferModule(nn.Module):
         self.train_ = train
 
         # clause functions
+        self.cs_bs = [ClauseBodySumFunction(I[i], I, gamma=gamma)
+                      for i in range(self.I.size(0))]
         self.cs = [ClauseFunction(i, I, gamma=gamma)
                    for i in range(self.I.size(0))]
-
-        # assert m == self.C, "Invalid m and C: " + \
-        #     str(m) + ' and ' + str(self.C)
 
     def init_identity_weights(self, device):
         ones = torch.ones((self.C,), dtype=torch.float32) * 100
@@ -122,7 +122,8 @@ class ClauseBodyInferModule(nn.Module):
         a Tensor of output data. We can use Modules defined in the constructor as
         well as arbitrary operators on Tensors.
         """
-        return self.r(x)
+        # return self.r(x)
+        return self.r_cb(x)
 
     def r(self, x):
         B = x.size(0)  # batch size
@@ -132,8 +133,23 @@ class ClauseBodyInferModule(nn.Module):
                          for i in range(self.I.size(0))], 0)
         return C
 
+    def r_cb(self, x):
+        # x: C * B * G
+        B = x.size(1)  # batch size
+        # apply each clause c_i and stack to a tensor C
+        # C * B * G
+        # infer from i-th valuation tensor using i-th clause
+        # C = torch.stack([self.cs_bs[i](x[i])
+        #                  for i in range(self.I.size(0))], 0)
+        print(self.cs_bs[0](x))
+        print(self.cs_bs[0](x[0]))
+        C = torch.stack([self.cs_bs[i](x)
+                         for i in range(self.I.size(0))], 0)
+        return C
+
     def get_params(self):
         return self.W
+
 
 class ClauseInferModule(nn.Module):
     def __init__(self, I, infer_step, gamma=0.01, device=None, train=False, m=1, I_bk=None):
@@ -162,7 +178,7 @@ class ClauseInferModule(nn.Module):
                    for i in range(self.I.size(0))]
 
         self.cs_bs = [ClauseBodySumFunction(I[i], I, gamma=gamma)
-                   for i in range(self.I.size(0))]
+                      for i in range(self.I.size(0))]
 
         if not self.I_bk is None:
             self.cs_bk = [ClauseFunction(I_bk[i], I, gamma=gamma)
@@ -182,17 +198,15 @@ class ClauseInferModule(nn.Module):
         """
         return self.r_cb(x)
 
-
     def r_cb(self, x):
         # x: C * B * G
         B = x.size(1)  # batch size
         # apply each clause c_i and stack to a tensor C
         # C * B * G
         # infer from i-th valuation tensor using i-th clause
-        C = torch.stack([self.cs_cb[i](x[i])
+        C = torch.stack([self.cs_bs[i](x[i])
                          for i in range(self.I.size(0))], 0)
         return C
-
 
 
 class ClauseFunction(nn.Module):
@@ -224,6 +238,7 @@ class ClauseFunction(nn.Module):
         C = softor(torch.prod(torch.gather(V_tild, 1, I_i_tild), 3),
                    dim=2, gamma=self.gamma)
         return C
+
 
 class ClauseBodySumFunction(nn.Module):
     """

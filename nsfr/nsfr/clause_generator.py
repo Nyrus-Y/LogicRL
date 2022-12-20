@@ -6,6 +6,8 @@ from tqdm import tqdm
 import torch
 import numpy as np
 
+device = torch.device("cuda:0")
+
 
 class ClauseGenerator(object):
     """
@@ -185,12 +187,12 @@ class ClauseGenerator(object):
             if self.args.m == 'coinjump':
                 action_probs, actions = self.get_action_probs_cj(predname)
                 # scores = torch.sum(self.buffer.action_buffer * body_scores, dim=1)
-                scores = self.scoring(action_probs, body_scores)
+                scores = self.scoring(action_probs, body_scores, actions)
             elif self.args.m == 'bigfish':
                 pass
             elif self.args.m == 'heist':
                 action_probs, actions = self.get_action_probs_h(predname)
-                scores = self.scoring(action_probs, body_scores)
+                scores = self.scoring(action_probs, body_scores, actions)
         else:
             scores = torch.zeros((C,)).to(self.device)
         return scores
@@ -199,9 +201,11 @@ class ClauseGenerator(object):
         predname = clauses[0].head.pred.name
         return predname
 
-    def scoring(self, action_probs, body_scores):
-        action_probs_ = action_probs.unsqueeze(0).expand((body_scores.size(0), -1))
-        scores = action_probs_ * body_scores
+    def scoring(self, action_probs, body_scores, actions):
+        # action_probs_ = action_probs.unsqueeze(0).expand((body_scores.size(0), -1))
+        actions_ = actions.unsqueeze(0).expand((body_scores.size(0), -1))
+        # scores = action_probs_ * body_scores
+        scores = actions_ * body_scores
         scores = torch.sum(scores, dim=1)
 
         return scores
@@ -223,7 +227,7 @@ class ClauseGenerator(object):
             action_probs = action_probs[:, 1]
             actions = [1 if i == 1 else 0 for i in actions]
         #
-        return action_probs, actions
+        return action_probs, torch.tensor(actions, device=device)
 
     def get_action_probs_h(self, predname):
         action_probs = self.buffer.action_probs.squeeze(1)
@@ -243,4 +247,4 @@ class ClauseGenerator(object):
             action_probs = action_probs[:, 1]
             actions = [1 if i == 1 else 0 for i in actions]
 
-        return action_probs, actions
+        return action_probs, torch.tensor(actions, device=device)

@@ -4,7 +4,6 @@ from .fol.logic import *
 from .fol.data_utils import DataUtils
 from .fol.language import DataType
 
-
 p_ = Predicate('.', 1, [DataType('spec')])
 false = Atom(p_, [Const('__F__', dtype=DataType('spec'))])
 true = Atom(p_, [Const('__T__', dtype=DataType('spec'))])
@@ -53,6 +52,7 @@ def generate_atoms(lang):
                 # print('add atom: ', Atom(pred, args))
     return spec_atoms + sorted(atoms)
 
+
 def build_clause_infer_module(clauses, bk_clauses, atoms, lang, device, m=3, infer_step=3, train=False):
     te = TensorEncoder(lang, atoms, clauses, device=device)
     I = te.encode()
@@ -67,11 +67,12 @@ def build_clause_infer_module(clauses, bk_clauses, atoms, lang, device, m=3, inf
     return im
 
 
-def build_clause_body_infer_module(clauses,  atoms, lang, device, train=False):
+def build_clause_body_infer_module(clauses, atoms, lang, device, train=False):
     te = TensorEncoder(lang, atoms, clauses, device=device)
     I = te.encode()
-
-    im = ClauseBodyInferModule(I,  device=device, train=train)
+    # TODO
+    im = ClauseBodyInferModule(I, device=device, train=train)
+    # im = ClauseInferModule(I, device=device, train=train)
     return im
 
 
@@ -80,6 +81,7 @@ def get_prednames(clauses):
     for clause in clauses:
         prednames.append(clause.head.pred.name)
     return prednames
+
 
 def generate_bk(lang):
     atoms = []
@@ -114,5 +116,5 @@ def get_searched_clauses(lark_path, lang_base_path, dataset_type, dataset):
     du = DataUtils(lark_path=lark_path, lang_base_path=lang_base_path,
                    dataset_type=dataset_type, dataset=dataset)
     lang = du.load_language()
-    clauses = du.load_clauses(du.base_path  +  dataset +  '/beam_searched.txt', lang)
+    clauses = du.load_clauses(du.base_path + dataset + '/beam_searched.txt', lang)
     return clauses
