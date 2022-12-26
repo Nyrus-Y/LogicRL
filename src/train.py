@@ -36,14 +36,14 @@ def main():
     parser.add_argument("-r", "--rules", dest="rules", default=None, required=False,
                         choices=['coinjump_5a', 'coinjump_bs', 'coinjump_bs_top1', 'coinjump_bs_top3',
                                  'bigfish_simplified_actions', 'bigfishc',
-                                 'eheist_1', 'eheist_2', 'eheist_bs_40',
+                                 'eheist_1', 'eheist_2', 'eheist_bs_40', 'eheist_bs_top1',
                                  'ppo_simple_policy'])
     parser.add_argument("--recover", help="Recover from the last trained agent",
                         action="store_true", dest="recover", default=False)
     parser.add_argument("--load", help="Pytorch file to load if continue training",
                         action="store_true", dest="load", default=False)
     parser.add_argument('-p', '--plot', help="plot the image of weighs", type=bool, default=False, dest='plot')
-    args = ['-m', 'heist', '-alg', 'logic', '-env', 'eheistc1', '-r', 'eheist_bs_40', '-p', 'True']
+    args = ['-m', 'heist', '-alg', 'ppo', '-env', 'eheist']
     # args = ['-m', 'coinjump', '-alg', 'logic', '-env', 'CoinJumpEnv-v1', '-r', 'coinjump_bs_top3', '-p', 'True']
     args = parser.parse_args(args)
 

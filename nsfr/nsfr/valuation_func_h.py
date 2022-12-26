@@ -278,7 +278,6 @@ class NotHaveKeyValuationFunction(nn.Module):
         result = torch.where(c == 0, 0.99, 0.01)
         return result
 
-
 def fuzzy_position(pos1, pos2, keyword):
     x = pos2[:, 0] - pos1[:, 0]
     y = pos2[:, 1] - pos1[:, 1]

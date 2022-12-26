@@ -2,7 +2,6 @@ import gym3
 import argparse
 import numpy as np
 import sys
-
 sys.path.insert(0, '../')
 
 from src.environments.procgen.procgen import ProcgenGym3Env
@@ -32,8 +31,8 @@ def run():
     parser.add_argument("-alg", "--algorithm", help="algorithm that to use",
                         action="store", dest="alg", required=False, default='logic',
                         choices=['logic'])
-    parser.add_argument("-r", "--rules", dest="rules", default='eheist_2',
-                        required=False, choices=['eheist_1', 'eheist_2'])
+    parser.add_argument("-r", "--rules", dest="rules", default='eheist_3',
+                        required=False, choices=['eheist_1', 'eheist_2','eheist_3'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=False, action="store", dest="env", default='eheist',
                         choices=['eheist'])

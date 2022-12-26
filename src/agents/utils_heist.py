@@ -31,17 +31,35 @@ def extract_logic_state_heist(state, args):
         # input shape: [X,Y]* [agent,key_b,door_b,key_g,door_g]
         # output shape:[agent, key, door, blue, red ,got_key, X, Y]
         extracted_state = torch.tensor([
-            [1, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 1, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 1, 1, 0, 0, 0, 0, 0],
-            [0, 1, 0, 0, 1, 0, 0, 0, 0],
-            [0, 0, 1, 0, 1, 0, 0, 0, 0]], dtype=torch.float64)
+            [1, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 1, 0, 0, 0, 0],
+            [0, 0, 1, 1, 0, 0, 0, 0],
+            [0, 1, 0, 0, 1, 0, 0, 0],
+            [0, 0, 1, 0, 1, 0, 0, 0]], dtype=torch.float64)
         extracted_state[:, -2:] = states[:]
         for i, state in enumerate(extracted_state):
             # 0 mean object does not exist
             if state[-1] == 0:
                 # then set to all attributes 0
-                extracted_state[i] = torch.zeros((1, 9))
+                extracted_state[i] = torch.zeros((1, 8))
+            # if key = 0 but door !=0, means key of this door has picked
+            elif i in [2, 4] and state[-1] != 0 and extracted_state[i - 1][1] == 0:
+                extracted_state[i][-3] = 1
+    elif args.env == "eheistc2":
+        # input shape: [X,Y]* [agent,key_b,door_b,key_g,door_g]
+        # output shape:[agent, key, door, green, brown ,got_key, X, Y]
+        extracted_state = torch.tensor([
+            [1, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 1, 0, 0, 0, 0],
+            [0, 0, 1, 1, 0, 0, 0, 0],
+            [0, 1, 0, 0, 1, 0, 0, 0],
+            [0, 0, 1, 0, 1, 0, 0, 0]], dtype=torch.float64)
+        extracted_state[:, -2:] = states[:]
+        for i, state in enumerate(extracted_state):
+            # 0 mean object does not exist
+            if state[-1] == 0:
+                # then set to all attributes 0
+                extracted_state[i] = torch.zeros((1, 8))
             # if key = 0 but door !=0, means key of this door has picked
             elif i in [2, 4] and state[-1] != 0 and extracted_state[i - 1][1] == 0:
                 extracted_state[i][-3] = 1
@@ -70,21 +88,31 @@ def extract_neural_state_heist(state, args):
     #                           [0, 0, 1, 6],
     #                           [0, 0, 2, 6]], dtype=np.float32)
     #     raw_state[:, 0:2] = state[0][:]
-
-    if args.env == 'eheistc1':
+    if args.env == 'eheist':
+        raw_state = np.array([[0, 0, 0, 0],
+                              [0, 0, 1, 1],
+                              [0, 0, 2, 1],
+                              [0, 0, 1, 2],
+                              [0, 0, 2, 2],
+                              [0, 0, 0, 0],
+                              [0, 0, 0, 0]], dtype=np.float32)
+        raw_state[:, 0:2] = state[0][:]
+    elif args.env == 'eheistc1':
         # output shape:[X, Y, type, color]
         raw_state = np.array([[0, 0, 0, 0],
                               [0, 0, 1, 1],
                               [0, 0, 2, 1],
                               [0, 0, 1, 2],
-                              [0, 0, 2, 2]], dtype=np.float32)
+                              [0, 0, 2, 2],
+                              [0, 0, 0, 0],
+                              [0, 0, 0, 0]], dtype=np.float32)
         raw_state[:, 0:2] = state[0][:]
     elif args.env == 'eheistc2':
         raw_state = np.array([[0, 0, 0, 0],
-                              [0, 0, 1, 4],
-                              [0, 0, 2, 4],
-                              [0, 0, 1, 5],
-                              [0, 0, 2, 5]], dtype=np.float32)
+                              [0, 0, 1, 10],
+                              [0, 0, 2, 10],
+                              [0, 0, 1, 20],
+                              [0, 0, 2, 20]], dtype=np.float32)
         raw_state[:, 0:2] = state[0][:]
 
     state = raw_state.reshape(-1)
@@ -102,7 +130,7 @@ def simplify_action_heist(action):
     return np.array([action])
 
 
-def preds_to_action_bigfish(action, prednames):
+def preds_to_action_heist(action, prednames):
     """
     map explaining to action
     action_space = [1, 3, 4, 5, 7]
@@ -124,5 +152,5 @@ def action_map_heist(prediction, args, prednames=None):
     if args.alg == 'ppo':
         action = simplify_action_heist(prediction)
     elif args.alg == 'logic':
-        action = preds_to_action_bigfish(prediction, prednames)
+        action = preds_to_action_heist(prediction, prednames)
     return action

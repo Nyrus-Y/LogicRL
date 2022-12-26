@@ -76,8 +76,7 @@ class HValuationModule(nn.Module):
         layers.append(v_closeby_horizontal)
 
         return nn.ModuleList([v_type, v_color, v_on_top, v_at_bottom, v_on_left, v_on_right, v_have_key,
-                              v_not_have_key, v_close,v_closeby_vertical, v_closeby_horizontal,
-                              ]), vfs
+                              v_not_have_key, v_close, v_closeby_vertical, v_closeby_horizontal]), vfs
 
     def forward(self, zs, atom):
         """Convert the object-centric representation to a valuation tensor.

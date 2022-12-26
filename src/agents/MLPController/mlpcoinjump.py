@@ -34,17 +34,3 @@ class MLPCoinjump(torch.nn.Module):
         features = state
         y = self.mlp(features)
         return y
-
-    def convert_states(self, states):
-        # TODO improve the code for better efficiency?
-        states = states.cpu().numpy()
-        # converted_states = torch.empty(0,device=self.device)
-        converted_states = np.empty((states.shape[0], 24))
-        for i, state in enumerate(states):
-            temp = np.array([])
-            # temp = torch.empty(0,device=self.device)
-            for s in state:
-                temp = np.concatenate((temp, s), axis=0)
-            converted_states[i] = temp
-
-        return torch.tensor(converted_states, dtype=torch.float32, device=self.device)

@@ -146,13 +146,13 @@ class EHeistC2 : public BasicAbstractGame {
         options.center_agent = options.distribution_mode == MemoryMode;
 
         if (options.distribution_mode == MemoryMode) {
-            num_keys = rand_gen.randn(3) + 1;
+            num_keys = rand_gen.randn(2) + 1;
         } else {
-            num_keys = 1 + rand_gen.randn(3);
+            num_keys = 1 + rand_gen.randn(2);
         }
 
-        if (num_keys > 3)
-            num_keys = 3;
+        if (num_keys > 2)
+            num_keys = 2;
 
         // num_keys = 1;
 

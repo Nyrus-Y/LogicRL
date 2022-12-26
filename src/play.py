@@ -40,13 +40,19 @@ def main():
                         choices=['coinjump', 'bigfish', 'heist', 'ecoinrun'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist', 'eheistc1', 'eheistc2'
-                                                                                                 'ecoinrun'])
+                        choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist', 'eheistc1', 'eheistc2',
+                                 'ecoinrun'])
     parser.add_argument("-r", "--rules", dest="rules", default=None,
-                        required=False, choices=['coinjump_5a', 'bigfish_simplified_actions', 'eheist_2'])
+                        required=False,
+                        choices=['coinjump_5a', 'coinjump_bs', 'coinjump_bs_top3', 'bigfish_simplified_actions',
+                                 'eheist_2', 'eheist_bs_40',
+                                 'eheist_bs_top1'])
     parser.add_argument("-mo", "--model_file", dest="model_file", default=None)
-    # arg = ['-m', 'heist', '-alg', 'logic', '-env', 'eheist', '-r', '']
-    args = parser.parse_args()
+    parser.add_argument("-l", "--log", help="record the information of games", type=bool, default=False, dest="log")
+    parser.add_argument("--log_file_name", help="the name of log file", required=False, dest='logfile')
+    arg = ['-m', 'coinjump', '-alg', 'logic', '-env', 'CoinJumpEnv-v1', '-r', 'coinjump_bs_top3', '-l', 'True']
+    arg = ['-m', 'bigfish', '-alg', 'logic', '-env', 'bigfishm', '-r', 'bigfish_simplified_actions', '-l', 'True']
+    args = parser.parse_args(arg)
     # fix seed
     make_deterministic(args.seed)
 
@@ -59,6 +65,27 @@ def main():
         model = load_model(model_file, args)
     else:
         model = None
+
+    ###################### logging ######################
+    #### log files for multiple runs are NOT overwritten
+    if args.log:
+        log_dir = "logs"
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+
+        log_dir = log_dir + '/' + args.m + '/'
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+
+        #### get number of log files in log directory
+        current_num_files = next(os.walk(log_dir))[2]
+        run_num = len(current_num_files)
+
+        #### create new log file for each run
+        log_f_name = log_dir + args.alg + '_' + args.env + "_log_" + str(run_num) + ".csv"
+        args.logfile = log_f_name
+        print("current logging run number for " + args.env + " : ", run_num)
+        print("logging at : " + log_f_name)
 
     #### create agent
     if args.alg == 'ppo':

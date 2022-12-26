@@ -12,7 +12,8 @@ from .utils_coinjump import extract_logic_state_coinjump, preds_to_action_coinju
     extract_neural_state_coinjump
 from .utils_bigfish import extract_logic_state_bigfish, preds_to_action_bigfish, action_map_bigfish, \
     extract_neural_state_bigfish
-from .utils_heist import extract_logic_state_heist, action_map_heist, extract_neural_state_heist
+from .utils_heist import extract_logic_state_heist, action_map_heist, extract_neural_state_heist, \
+    preds_to_action_heist
 
 device = torch.device('cuda:0')
 
@@ -213,6 +214,24 @@ class LogicPlayer:
             action = self.heist_actor(state)
         return action
 
+    def get_probs(self):
+        probs = self.model.get_probs()
+        return probs
+
+    def get_state(self, state):
+        if self.args.m == 'coinjump':
+            logic_state = extract_logic_state_coinjump(state, self.args).squeeze(0)
+        elif self.args.m == 'bigfish':
+            logic_state = extract_logic_state_bigfish(state, self.args).squeeze(0)
+        if self.args.m == 'heist':
+            logic_state = extract_logic_state_heist(state, self.args).squeeze(0)
+        logic_state = logic_state.tolist()
+        result = []
+        for list in logic_state:
+            obj_state = [round(num, 2) for num in list]
+            result.append(obj_state)
+        return result
+
     def coinjump_actor(self, coinjump, show_explaining=False):
         extracted_state = extract_logic_state_coinjump(coinjump, self.args)
         predictions = self.model(extracted_state)
@@ -231,9 +250,14 @@ class LogicPlayer:
         action = preds_to_action_bigfish(action, self.prednames)
         return action
 
-    def heist_actor(self, state):
+    def heist_actor(self, state, show_explaining=False):
         state = extract_logic_state_heist(state, self.args)
-        pass
+        predictions = self.model(state)
+        action = torch.argmax(predictions)
+        if show_explaining:
+            print(self.prednames[action])
+        action = preds_to_action_heist(action, self.prednames)
+        return action
 
 
 class RolloutBuffer:

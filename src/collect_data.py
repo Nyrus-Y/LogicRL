@@ -8,7 +8,7 @@ import gym3
 from argparse import ArgumentParser
 from environments.coinjump.coinjump.imageviewer import ImageViewer
 from environments.coinjump.coinjump.coinjump.coinjump import CoinJump
-from environments.coinjump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
+from environments.coinjump.coinjump.coinjump.paramLevelGenerator import ParameterizedLevelGenerator
 from agents.utils_coinjump import extract_state, sample_to_model_input, collate
 from agents.neural_agent import ActorCritic
 from agents.utils_heist import extract_neural_state_heist, simplify_action_heist, extract_logic_state_heist
@@ -72,7 +72,7 @@ def create_coinjump_instance(seed=None):
 
     # level_generator = DummyGenerator()
     coin_jump = CoinJump(start_on_first_action=False)
-    level_generator = ParameterizedLevelGenerator_V1()
+    level_generator = ParameterizedLevelGenerator()
 
     level_generator.generate(coin_jump, seed=seed)
     coin_jump.render()

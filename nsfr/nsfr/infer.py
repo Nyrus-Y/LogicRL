@@ -107,7 +107,9 @@ class ClauseBodyInferModule(nn.Module):
         self.train_ = train
 
         # clause functions
-        self.cs_bs = [ClauseBodySumFunction(I[i], I, gamma=gamma)
+        # self.cs_bs = [ClauseBodySumFunction(I[i], I, gamma=gamma)
+        #               for i in range(self.I.size(0))]
+        self.cs_bs = [ClauseBodySumFunction(i, I, gamma=gamma)
                       for i in range(self.I.size(0))]
         self.cs = [ClauseFunction(i, I, gamma=gamma)
                    for i in range(self.I.size(0))]
@@ -141,8 +143,8 @@ class ClauseBodyInferModule(nn.Module):
         # infer from i-th valuation tensor using i-th clause
         # C = torch.stack([self.cs_bs[i](x[i])
         #                  for i in range(self.I.size(0))], 0)
-        print(self.cs_bs[0](x))
-        print(self.cs_bs[0](x[0]))
+        # print(self.cs_bs[0](x))
+        # print(self.cs_bs[0](x[0]))
         C = torch.stack([self.cs_bs[i](x)
                          for i in range(self.I.size(0))], 0)
         return C

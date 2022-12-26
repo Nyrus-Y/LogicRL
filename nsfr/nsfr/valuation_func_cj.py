@@ -55,7 +55,7 @@ class ClosebyValuationFunction(nn.Module):
         dis_x = abs(c_1[:, 0] - c_2[:, 0])
         dis_y = abs(c_1[:, 1] - c_2[:, 1])
 
-        result = torch.where((dis_x < 3) & (dis_y <= 0.1), 0.99, 0.1)
+        result = torch.where((dis_x < 2.5) & (dis_y <= 0.1), 0.99, 0.1)
 
         return result
 
