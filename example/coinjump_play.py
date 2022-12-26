@@ -1,17 +1,14 @@
-# example of logic player
-import random
+# a logic player example of coinjump
 import time
 import argparse
 import numpy as np
 import sys
-sys.path.insert(0,'../')
+
+sys.path.insert(0, '../')
 from src.environments.coinjump.coinjump.imageviewer import ImageViewer
-from src.environments.coinjump.coinjump.coinjump.paramLevelGenerator_V1 import ParameterizedLevelGenerator_V1
-from src.environments.coinjump.coinjump.coinjump.coinjump import CoinJump
+from src.environments.coinjump.coinjump.coinjump.helpers import create_coinjump_instance
 from nsfr.utils import get_nsfr_model, get_predictions
 from src.agents.utils_coinjump import extract_logic_state_coinjump
-
-
 
 KEY_SPACE = 32
 KEY_w = 119
@@ -19,6 +16,7 @@ KEY_a = 97
 KEY_s = 115
 KEY_d = 100
 KEY_r = 114
+
 
 def setup_image_viewer(coinjump):
     viewer = ImageViewer(
@@ -31,22 +29,6 @@ def setup_image_viewer(coinjump):
     return viewer
 
 
-def create_coinjump_instance():
-    seed = random.random()
-
-    coin_jump = CoinJump(start_on_first_action=False)
-    # level_generator = DummyGenerator()
-
-    # change generator to choose env
-    level_generator = ParameterizedLevelGenerator_V1()
-
-    level_generator.generate(coin_jump, seed=seed)
-    # level_generator.generate(coin_jump, seed=seed)
-    coin_jump.render()
-
-    return coin_jump
-
-
 def explaining_to_action(explaining):
     if 'jump' in explaining:
         return 3
@@ -54,6 +36,8 @@ def explaining_to_action(explaining):
         return 1
     elif 'right' in explaining:
         return 2
+    elif 'stay' in explaining:
+        return 0
 
 
 def run():
@@ -61,11 +45,19 @@ def run():
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=False, action="store", dest="m", default='coinjump',
                         choices=['coinjump'])
+    parser.add_argument("-e", "--env", help="The environment of coinjump", default="coinjump", dest="env",
+                        choices=["coinjump", "coinjump_e", "coinjump_kd"])
+
     parser.add_argument("-r", "--rules", dest="rules", default='coinjump_5a',
-                        required=False, choices=['coinjump_5a'])
+                        required=False, choices=['coinjump_5a', 'coinjump_kd', 'coinjump_e'])
     args = parser.parse_args()
 
-    coin_jump = create_coinjump_instance()
+    if args.env == "coinjump":
+        coin_jump = create_coinjump_instance()
+    elif args.env == "coinjump_kd":
+        coin_jump = create_coinjump_instance(key_door=True)
+    elif args.env == "coinjump_e":
+        coin_jump = create_coinjump_instance(enemy=True)
     viewer = setup_image_viewer(coin_jump)
 
     # frame rate limiting
@@ -89,13 +81,19 @@ def run():
         action = []
 
         if KEY_r in viewer.pressed_keys:
-            coin_jump = create_coinjump_instance()
+            if args.env == "coinjump":
+                coin_jump = create_coinjump_instance()
+            elif args.env == "coinjump_kd":
+                coin_jump = create_coinjump_instance(key_door=True)
+            elif args.env == "coinjump_e":
+                coin_jump = create_coinjump_instance(enemy=True)
+
             print("--------------------------     next game    --------------------------")
 
         if not coin_jump.level.terminated:
 
             # extract state for expextracted_statelaining
-            extracted_state = extract_logic_state_coinjump(coin_jump)
+            extracted_state = extract_logic_state_coinjump(coin_jump, args)
             explaining = get_predictions(extracted_state, nsfr)
             action = explaining_to_action(explaining)
 
