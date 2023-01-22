@@ -92,7 +92,7 @@ class HighLevelValuationFunction(nn.Module):
         """
         Args:
             z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-             [sfish, agent, bigfish, x, y]
+             [agent, bigfish,size, x, y]
 
         Returns:
             A batch of probabilities.
@@ -240,13 +240,13 @@ class BiggerValuationFunction(nn.Module):
         """
         Args:
             z (tensor): 2-d tensor B * d of object-centric representation.
-                [agent,fish, radius, x, y]
+                [agent,fish, radius, x, y] or [agent,fish,green,red,radius, x, y]
 
         Returns:
             A batch of probabilities.
         """
-        r_1 = z_1[:, 2]
-        r_2 = z_2[:, 2]
+        r_1 = z_1[:, -3]
+        r_2 = z_2[:, -3]
         diff = r_2[:] - r_1[:]
         bigger = torch.where(diff < 0, 0.99, 0)
 

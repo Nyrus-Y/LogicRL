@@ -36,6 +36,7 @@ def extract_logic_state_heist(state, args):
             [0, 0, 1, 1, 0, 0, 0, 0],
             [0, 1, 0, 0, 1, 0, 0, 0],
             [0, 0, 1, 0, 1, 0, 0, 0]], dtype=torch.float64)
+        states = states[0:5]
         extracted_state[:, -2:] = states[:]
         for i, state in enumerate(extracted_state):
             # 0 mean object does not exist
@@ -54,6 +55,7 @@ def extract_logic_state_heist(state, args):
             [0, 0, 1, 1, 0, 0, 0, 0],
             [0, 1, 0, 0, 1, 0, 0, 0],
             [0, 0, 1, 0, 1, 0, 0, 0]], dtype=torch.float64)
+        states = states[0:5]
         extracted_state[:, -2:] = states[:]
         for i, state in enumerate(extracted_state):
             # 0 mean object does not exist
@@ -69,36 +71,19 @@ def extract_logic_state_heist(state, args):
 
 def extract_neural_state_heist(state, args):
     state = state['positions']
-    # if args.env == 'eheistc1':
-    # output shape:[X, Y, type, color]
-    #     raw_state = np.array([[0, 0, 0, 0],
-    #                           [0, 0, 1, 1],
-    #                           [0, 0, 2, 1],
-    #                           [0, 0, 1, 2],
-    #                           [0, 0, 2, 2],
-    #                           [0, 0, 1, 3],
-    #                           [0, 0, 2, 3]], dtype=np.float32)
-    #     raw_state[:, 0:2] = state[0][:]
-    # elif args.env == 'eheistc2':
-    #     raw_state = np.array([[0, 0, 0, 0],
-    #                           [0, 0, 1, 4],
-    #                           [0, 0, 2, 4],
-    #                           [0, 0, 1, 5],
-    #                           [0, 0, 2, 5],
-    #                           [0, 0, 1, 6],
-    #                           [0, 0, 2, 6]], dtype=np.float32)
-    #     raw_state[:, 0:2] = state[0][:]
+
     if args.env == 'eheist':
         raw_state = np.array([[0, 0, 0, 0],
                               [0, 0, 1, 1],
                               [0, 0, 2, 1],
                               [0, 0, 1, 2],
                               [0, 0, 2, 2],
-                              [0, 0, 0, 0],
-                              [0, 0, 0, 0]], dtype=np.float32)
+                              [0, 0, 1, 3],
+                              [0, 0, 2, 3]], dtype=np.float32)
         raw_state[:, 0:2] = state[0][:]
+
     elif args.env == 'eheistc1':
-        # output shape:[X, Y, type, color]
+
         raw_state = np.array([[0, 0, 0, 0],
                               [0, 0, 1, 1],
                               [0, 0, 2, 1],
@@ -107,12 +92,15 @@ def extract_neural_state_heist(state, args):
                               [0, 0, 0, 0],
                               [0, 0, 0, 0]], dtype=np.float32)
         raw_state[:, 0:2] = state[0][:]
+
     elif args.env == 'eheistc2':
         raw_state = np.array([[0, 0, 0, 0],
                               [0, 0, 1, 10],
                               [0, 0, 2, 10],
                               [0, 0, 1, 20],
-                              [0, 0, 2, 20]], dtype=np.float32)
+                              [0, 0, 2, 20],
+                              [0, 0, 0, 0],
+                              [0, 0, 0, 0]], dtype=np.float32)
         raw_state[:, 0:2] = state[0][:]
 
     state = raw_state.reshape(-1)

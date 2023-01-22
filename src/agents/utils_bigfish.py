@@ -29,29 +29,31 @@ def extract_logic_state_bigfish(obs, args):
             extracted_state = extracted_state.unsqueeze(0)
             return extracted_state.cuda()
         elif args.env == "bigfishc":
-            # input shape: [X, Y, color]
-            # output shape: [agent, fish, green, red, X, Y]
-            extracted_state = torch.zeros((3, 6))
+            # input shape: [X, Y, color, radius]
+            # output shape: [agent, fish, green, red,radius, X, Y]
+            extracted_state = torch.zeros((3, 7))
             for i, state in enumerate(states):
                 if i == 0:
                     extracted_state[i, 0] = 1  # agent
-                    extracted_state[i, 4] = states[i, 0]  # X
-                    extracted_state[i, 5] = states[i, 1]  # Y
+                    extracted_state[i, -3] = states[i, 3]  # radius
+                    extracted_state[i, -2] = states[i, 0]  # X
+                    extracted_state[i, -1] = states[i, 1]  # Y
                 else:
                     extracted_state[i, 1] = 1  # fish
                     if states[i, 2] == 1:
                         extracted_state[i, 2] = 1  # green
                     else:
                         extracted_state[i, 3] = 1  # red
-                    extracted_state[i, 4] = states[i, 0]  # X
-                    extracted_state[i, 5] = states[i, 1]  # Y
+                    extracted_state[i, -3] = states[i, 3]  # radius
+                    extracted_state[i, -2] = states[i, 0]  # X
+                    extracted_state[i, -1] = states[i, 1]  # Y
 
             extracted_state = extracted_state.unsqueeze(0)
             return extracted_state.cuda()
 
 
 def extract_neural_state_bigfish(state, args):
-    state = state['positions'].reshape(-1)
+    state = state['positions'][:,:,0:3].reshape(-1)
     state = state.tolist()
 
     return torch.tensor(state).to(device)

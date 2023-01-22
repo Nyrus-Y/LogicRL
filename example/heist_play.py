@@ -2,8 +2,10 @@ import gym3
 import argparse
 import numpy as np
 import sys
+
 sys.path.insert(0, '../')
 
+from src.utils import make_deterministic
 from src.environments.procgen.procgen import ProcgenGym3Env
 from nsfr.utils import get_nsfr_model, get_predictions
 from src.agents.utils_heist import extract_logic_state_heist
@@ -25,18 +27,21 @@ def explaining_to_action(explaining):
 
 def run():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--seed", help="Seed for pytorch + env", default=0,
+                        required=False, action="store", dest="seed", type=int)
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=False, action="store", dest="m", default='heist',
                         choices=['heist'])
     parser.add_argument("-alg", "--algorithm", help="algorithm that to use",
                         action="store", dest="alg", required=False, default='logic',
                         choices=['logic'])
-    parser.add_argument("-r", "--rules", dest="rules", default='eheist_3',
-                        required=False, choices=['eheist_1', 'eheist_2','eheist_3'])
+    parser.add_argument("-r", "--rules", dest="rules", default='eheist_human_assisted',
+                        required=False, choices=['eheist_human_assisted'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=False, action="store", dest="env", default='eheist',
-                        choices=['eheist'])
+                        choices=['eheist', 'eheistc1'])
     args = parser.parse_args()
+    make_deterministic(args.seed)
 
     env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
     env = gym3.ViewerWrapper(env, info_key="rgb")
@@ -44,7 +49,7 @@ def run():
     nsfr = get_nsfr_model(args)
 
     NB_DONE = 0
-    TO_SUCCEED = 1
+    TO_SUCCEED = 100
     # [
     #     ("LEFT",),
     #     ("DOWN",),
@@ -55,8 +60,9 @@ def run():
     # action_space = [1, 3, 4, 5, 7]
 
     rew, obs, done = env.observe()
-    extracted_state = extract_logic_state_heist(obs,args)
-
+    extracted_state = extract_logic_state_heist(obs, args)
+    total_reward = 0
+    reward = 0
     last_explaining = ""
     while NB_DONE < TO_SUCCEED:
         explaining = get_predictions(extracted_state, nsfr)
@@ -64,7 +70,8 @@ def run():
         env.act(action)
 
         rew, obs, done = env.observe()
-
+        reward += rew[0]
+        total_reward += rew[0]
         if last_explaining != explaining:
             print(explaining)
             last_explaining = explaining
@@ -72,8 +79,12 @@ def run():
         extracted_state = extract_logic_state_heist(obs, args)
         if done:
             print("--------------------------new game--------------------------")
-
+            # print("reward:", reward)
+            NB_DONE += 1
+            reward = 0
         # print(f"reward : {rew}")
+
+    # print("average reward:", total_reward / NB_DONE)
 
 
 if __name__ == '__main__':

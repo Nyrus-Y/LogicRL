@@ -50,6 +50,8 @@ class NSFR_ActorCritic(nn.Module):
         else:
             dist = Categorical(action_probs)
             action = (action_probs[0] == max(action_probs[0])).nonzero(as_tuple=True)[0].squeeze(0).to(device)
+            if torch.numel(action) > 1:
+                action = action[0]
         # action = dist.sample()
         action_logprob = dist.log_prob(action)
 
@@ -170,7 +172,7 @@ class LogicPPO:
             self.optimizer.zero_grad()
             loss.mean().backward()
             self.optimizer.step()
-            wandb.log({"loss": loss})
+            # wandb.log({"loss": loss})
 
         # Copy new weights into old policy
         self.policy_old.load_state_dict(self.policy.state_dict())

@@ -8,7 +8,7 @@ class MLPHeist(torch.nn.Module):
         super().__init__()
         self.logic = logic
         self.device = torch.device('cuda:0')
-        encoding_max_entities = 5
+        encoding_max_entities = 7
         encoding_entity_features = 4
         self.num_in_features = encoding_entity_features * encoding_max_entities
 

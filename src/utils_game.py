@@ -21,11 +21,14 @@ def render_coinjump(agent, args):
         )
         return viewer
 
-    def create_coinjump_instance(seed=None):
-
+    def create_coinjump_instance(args, seed=None):
+        if args.env == 'CoinJumpEnv-v2':
+            enemies = True
+        else:
+            enemies = False
         # level_generator = DummyGenerator()
         coin_jump = CoinJump()
-        level_generator = ParameterizedLevelGenerator()
+        level_generator = ParameterizedLevelGenerator(enemies=enemies)
         level_generator.generate(coin_jump, seed=seed)
         coin_jump.render()
 
@@ -33,7 +36,7 @@ def render_coinjump(agent, args):
 
     # seed = random.randint(0, 100000000)
     # print(seed)
-    coin_jump = create_coinjump_instance()
+    coin_jump = create_coinjump_instance(args)
     viewer = setup_image_viewer(coin_jump)
 
     # frame rate limiting
@@ -66,7 +69,7 @@ def render_coinjump(agent, args):
         if not coin_jump.level.terminated:
             action = agent.act(coin_jump)
         else:
-            coin_jump = create_coinjump_instance()
+            coin_jump = create_coinjump_instance(args)
             print("epi_reward: ", round(epi_reward, 2))
             print("--------------------------     next game    --------------------------")
             total_reward += epi_reward
@@ -92,6 +95,14 @@ def render_coinjump(agent, args):
         if viewer.is_escape_pressed:
             break
 
+        if coin_jump.level.terminated:
+            step = 0
+            print(num_epi)
+        if num_epi == 100:
+            break
+
+    print('total reward= ', total_reward)
+    print('average reward= ', total_reward / 100)
     # print("average episode reward: ", total_reward / max_epi)
     print("Terminated")
 
@@ -111,7 +122,7 @@ def render_bigfish(agent, args):
         ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
         ia.run()
     else:
-        env = gym3.ViewerWrapper(env, info_key="rgb")
+        # env = gym3.ViewerWrapper(env, info_key="rgb")
         reward, obs, done = env.observe()
         total_r = 0
         epi = 0
@@ -121,21 +132,23 @@ def render_bigfish(agent, args):
             action = agent.act(obs)
             env.act(action)
             rew, obs, done = env.observe()
+            total_r += rew[0]
 
             if args.log:
                 probs = agent.get_probs()
                 logic_state = agent.get_state(obs)
                 data = [(epi, step, rew[0], logic_state, probs)]
                 writer.writerows(data)
-        #
-        #     if done:
-        #         epi += 1
-        #         print(epi)
-        #     if epi == 100:
-        #         break
-        #
-        # print('total reward= ', total_r)
-        # print('average reward= ', total_r / 100)
+
+            if done:
+                epi += 1
+                step = 0
+                print(epi)
+            if epi == 100:
+                break
+
+        print('total reward= ', total_r)
+        print('average reward= ', total_r / 100)
 
 
 def render_heist(agent, args):
@@ -153,7 +166,7 @@ def render_heist(agent, args):
         ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
         ia.run()
     else:
-        env = gym3.ViewerWrapper(env, info_key="rgb")
+        # env = gym3.ViewerWrapper(env, info_key="rgb")
         reward, obs, done = env.observe()
         step = 0
         total_r = 0
@@ -174,12 +187,12 @@ def render_heist(agent, args):
             if done:
                 epi += 1
                 step = 0
-                # print(epi)
-        #     if epi == 100:
-        #         break
-        #
-        # print('total reward= ', total_r)
-        # print('average reward= ', total_r / 100)
+                print(epi)
+            if epi == 100:
+                break
+
+        print('total reward= ', total_r)
+        print('average reward= ', total_r / 100)
 
 
 def render_ecoinrun(agent, args):

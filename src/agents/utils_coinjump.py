@@ -5,39 +5,67 @@ import torch
 
 
 def extract_logic_state_coinjump(coin_jump, args, noise=False):
-    """
-    extract state to metric
-    input: coin_jump instance
-    output: extracted_state to be explained
-    set noise to True to add noise
-
-    x:  agent, key, door, enemy, position_X, position_Y
-    y:  obj1(agent), obj2(key), obj3(door)，obj4(enemy)
-
-    To be changed when using object-detection tech
-    """
-    num_of_feature = 6
-    num_of_object = 4
-    representation = coin_jump.level.get_representation()
-    extracted_states = np.zeros((num_of_object, num_of_feature))
-    for entity in representation["entities"]:
-        if entity[0].name == 'PLAYER':
-            extracted_states[0][0] = 1
-            extracted_states[0][-2:] = entity[1:3]
-            # 27 is the width of map, this is normalization
-            # extracted_states[0][-2:] /= 27
-        elif entity[0].name == 'KEY':
-            extracted_states[1][1] = 1
-            extracted_states[1][-2:] = entity[1:3]
-            # extracted_states[1][-2:] /= 27
-        elif entity[0].name == 'DOOR':
-            extracted_states[2][2] = 1
-            extracted_states[2][-2:] = entity[1:3]
-            # extracted_states[2][-2:] /= 27
-        elif entity[0].name == 'GROUND_ENEMY':
-            extracted_states[3][3] = 1
-            extracted_states[3][-2:] = entity[1:3]
-            # extracted_states[3][-2:] /= 27
+    if args.env == 'CoinJumpEnv-v2':
+        num_of_feature = 6
+        num_of_object = 5
+        representation = coin_jump.level.get_representation()
+        extracted_states = np.zeros((num_of_object, num_of_feature))
+        for entity in representation["entities"]:
+            if entity[0].name == 'PLAYER':
+                extracted_states[0][0] = 1
+                extracted_states[0][-2:] = entity[1:3]
+                # 27 is the width of map, this is normalization
+                # extracted_states[0][-2:] /= 27
+            elif entity[0].name == 'KEY':
+                extracted_states[1][1] = 1
+                extracted_states[1][-2:] = entity[1:3]
+                # extracted_states[1][-2:] /= 27
+            elif entity[0].name == 'DOOR':
+                extracted_states[2][2] = 1
+                extracted_states[2][-2:] = entity[1:3]
+                # extracted_states[2][-2:] /= 27
+            elif entity[0].name == 'GROUND_ENEMY':
+                extracted_states[3][3] = 1
+                extracted_states[3][-2:] = entity[1:3]
+                # extracted_states[3][-2:] /= 27
+            elif entity[0].name == 'GROUND_ENEMY2':
+                extracted_states[4][3] = 1
+                extracted_states[4][-2:] = entity[1:3]
+                # extracted_states[3][-2:] /= 27
+    else:
+        """
+        extract state to metric
+        input: coin_jump instance
+        output: extracted_state to be explained
+        set noise to True to add noise
+    
+        x:  agent, key, door, enemy, position_X, position_Y
+        y:  obj1(agent), obj2(key), obj3(door)，obj4(enemy)
+    
+        To be changed when using object-detection tech
+        """
+        num_of_feature = 6
+        num_of_object = 4
+        representation = coin_jump.level.get_representation()
+        extracted_states = np.zeros((num_of_object, num_of_feature))
+        for entity in representation["entities"]:
+            if entity[0].name == 'PLAYER':
+                extracted_states[0][0] = 1
+                extracted_states[0][-2:] = entity[1:3]
+                # 27 is the width of map, this is normalization
+                # extracted_states[0][-2:] /= 27
+            elif entity[0].name == 'KEY':
+                extracted_states[1][1] = 1
+                extracted_states[1][-2:] = entity[1:3]
+                # extracted_states[1][-2:] /= 27
+            elif entity[0].name == 'DOOR':
+                extracted_states[2][2] = 1
+                extracted_states[2][-2:] = entity[1:3]
+                # extracted_states[2][-2:] /= 27
+            elif entity[0].name == 'GROUND_ENEMY':
+                extracted_states[3][3] = 1
+                extracted_states[3][-2:] = entity[1:3]
+                # extracted_states[3][-2:] /= 27
 
     if sum(extracted_states[:, 1]) == 0:
         key_picked = True
@@ -331,6 +359,8 @@ def preds_to_action_coinjump(action, prednames):
         return 1
     elif 'right' in prednames[action]:
         return 2
+    elif 'stay' in prednames[action] or 'idle' in prednames[action]:
+        return 0
 
 
 def action_map_coinjump(prediction, args, prednames=None):

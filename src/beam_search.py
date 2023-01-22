@@ -64,9 +64,7 @@ def get_args():
                         default=False, dest='scoring')
     parser.add_argument('-d', '--dataset', required=False, help='the dataset to load if scoring', dest='d',
                         choices=['coinjump.json', 'heist.json'])
-    arg = ['-m', 'heist', '-r', 'eheist_root', '--scoring', 'True', '-d', 'heist.json', '-n', '12']
-    # arg = ['-m', 'coinjump', '-r', 'coinjump_root', '--scoring', 'True', '-d', 'coinjump.json']
-    args = parser.parse_args(arg)
+    args = parser.parse_args()
     return args
 
 

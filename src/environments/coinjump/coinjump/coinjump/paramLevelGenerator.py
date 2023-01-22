@@ -6,14 +6,16 @@ from .coinjump import CoinJump
 from .door import Door
 from .key import Key
 from .groundEnemy import GroundEnemy
+from .groundEnemy2 import GroundEnemy2
 
 
 class ParameterizedLevelGenerator:
 
-    def __init__(self, enemy=False, key_door=False, print_seed=False):
+    def __init__(self, enemy=False, enemies=False, key_door=False, print_seed=False):
         self.print_seed = print_seed
         self.enemy = enemy
         self.key_door = key_door
+        self.enemies = enemies
 
     def generate(self, coinjump: CoinJump, seed=None, dynamic_reward=False, spawn_all_entities=False):
 
@@ -68,6 +70,11 @@ class ParameterizedLevelGenerator:
 
         if self.enemy:
             level.entities.append(GroundEnemy(level, positions[3][0], positions[3][1], resource_loader=resource_loader))
+        elif self.enemies:
+            level.entities.append(Key(level, positions[1][0] - 0.5, positions[1][1], resource_loader=resource_loader))
+            level.entities.append(Door(level, positions[2][0], positions[2][1], resource_loader=resource_loader))
+            level.entities.append(GroundEnemy(level, positions[3][0], positions[3][1], resource_loader=resource_loader))
+            level.entities.append(GroundEnemy2(level, positions[4][0], positions[4][1], resource_loader=resource_loader))
         elif self.key_door:
             level.entities.append(Key(level, positions[1][0] - 0.5, positions[1][1], resource_loader=resource_loader))
             level.entities.append(Door(level, positions[2][0], positions[2][1], resource_loader=resource_loader))

@@ -93,10 +93,11 @@ def plot_weights_beam(weights, image_directory, time_step=0):
     #     , 'LD1', 'LD2', 'LD3', 'LD4', 'LD5', 'LD6', 'LD7', 'LD8', 'LD9', 'LD10'
     #     , 'RK1', 'RK2', 'RK3', 'RK4', 'RK5', 'RK6', 'RK7', 'RK8', 'RK9', 'RK10'
     #     , 'RD1', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RD7', 'RD8', 'RD9', 'RD10']
-    y_label = ['UK1', 'UK2', 'UK3', 'UK4', 'UK5', 'LK1', 'LK2', 'LK3', 'LK4', 'LK5'
-        , 'RK1', 'RK2', 'RK3', 'RK4', 'RK5', 'DK1', 'DK2', 'DK3', 'DK4', 'DK5'
-        , 'UD1', 'UD2', 'UD3', 'UD4', 'UD5', 'LD1', 'LD2', 'LD3', 'LD4', 'LD5'
-        , 'RD1', 'RD2', 'RD3', 'RD4', 'RD5', 'DD1', 'DD2', 'DD3', 'DD4', 'DD5']
+    # y_label = ['UK1', 'UK2', 'UK3', 'UK4', 'UK5', 'LK1', 'LK2', 'LK3', 'LK4', 'LK5'
+    #     , 'RK1', 'RK2', 'RK3', 'RK4', 'RK5', 'DK1', 'DK2', 'DK3', 'DK4', 'DK5'
+    #     , 'UD1', 'UD2', 'UD3', 'UD4', 'UD5', 'LD1', 'LD2', 'LD3', 'LD4', 'LD5'
+    #     , 'RD1', 'RD2', 'RD3', 'RD4', 'RD5', 'DD1', 'DD2', 'DD3', 'DD4', 'DD5']
+    y_label = list(np.arange(1, 19))
     # y_label = ['UK1', 'UK2', 'UK3', 'UK4', 'LK1', 'LK2', 'LK3', 'LK4'
     #     , 'RK1', 'RK2', 'RK3', 'RK4', 'DK1', 'DK2', 'DK3', 'DK4'
     #     , 'UD1', 'UD2', 'UD3', 'UD4', 'LD1', 'LD2', 'LD3', 'LD4'

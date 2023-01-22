@@ -40,19 +40,22 @@ def main():
                         choices=['coinjump', 'bigfish', 'heist', 'ecoinrun'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist', 'eheistc1', 'eheistc2',
+                        choices=['CoinJumpEnv-v1', 'CoinJumpEnv-v2',
+                                 'bigfishm', 'bigfishc',
+                                 'eheist', 'eheistc1', 'eheistc2',
                                  'ecoinrun'])
     parser.add_argument("-r", "--rules", dest="rules", default=None,
                         required=False,
-                        choices=['coinjump_5a', 'coinjump_bs', 'coinjump_bs_top3', 'bigfish_simplified_actions',
-                                 'eheist_2', 'eheist_bs_40',
-                                 'eheist_bs_top1'])
-    parser.add_argument("-mo", "--model_file", dest="model_file", default=None)
+                        choices=['coinjump_human_assisted', 'coinjump_10a', 'coinjump_bs_top10', 'coinjump_bs_top1',
+                                 'coinjump_bs_top3',
+                                 'bigfish_human_assisted', 'bigfishc', 'bigfishm_bs_top5', 'bigfishm_bs_top3',
+                                 'bigfishm_bs_top1', 'more_redundant_actions',
+                                 'eheist_human_assisted', 'eheist_bs_top5', 'eheist_bs_top1',
+                                 ])
     parser.add_argument("-l", "--log", help="record the information of games", type=bool, default=False, dest="log")
     parser.add_argument("--log_file_name", help="the name of log file", required=False, dest='logfile')
-    arg = ['-m', 'coinjump', '-alg', 'logic', '-env', 'CoinJumpEnv-v1', '-r', 'coinjump_bs_top3', '-l', 'True']
-    arg = ['-m', 'bigfish', '-alg', 'logic', '-env', 'bigfishm', '-r', 'bigfish_simplified_actions', '-l', 'True']
-    args = parser.parse_args(arg)
+    args = parser.parse_args()
+
     # fix seed
     make_deterministic(args.seed)
 

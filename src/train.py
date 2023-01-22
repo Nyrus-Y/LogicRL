@@ -3,7 +3,7 @@ import os
 import time
 import gym
 import sys
-import wandb
+# import wandb
 import environments.coinjump.env
 
 sys.path.insert(0, '../')
@@ -32,52 +32,51 @@ def main():
                         choices=['coinjump', 'bigfish', 'heist'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['CoinJumpEnv-v1', 'bigfishm', 'bigfishc', 'eheist', 'eheistc1', 'eheistc2'])
+                        choices=['CoinJumpEnv-v1', 'CoinJumpEnv-v2', 'bigfishm', 'bigfishc', 'eheist', 'eheistc1',
+                                 'eheistc2'])
     parser.add_argument("-r", "--rules", dest="rules", default=None, required=False,
-                        choices=['coinjump_5a', 'coinjump_bs', 'coinjump_bs_top1', 'coinjump_bs_top3',
-                                 'bigfish_simplified_actions', 'bigfishc',
-                                 'eheist_1', 'eheist_2', 'eheist_bs_40', 'eheist_bs_top1',
-                                 'ppo_simple_policy'])
-    parser.add_argument("--recover", help="Recover from the last trained agent",
-                        action="store_true", dest="recover", default=False)
-    parser.add_argument("--load", help="Pytorch file to load if continue training",
-                        action="store_true", dest="load", default=False)
-    parser.add_argument('-p', '--plot', help="plot the image of weighs", type=bool, default=False, dest='plot')
-    args = ['-m', 'heist', '-alg', 'ppo', '-env', 'eheist']
-    # args = ['-m', 'coinjump', '-alg', 'logic', '-env', 'CoinJumpEnv-v1', '-r', 'coinjump_bs_top3', '-p', 'True']
-    args = parser.parse_args(args)
+                        choices=['coinjump_human_assisted', 'coinjump_10a', 'coinjump_bs_top10', 'coinjump_bs_top1',
+                                 'coinjump_bs_top3', 'ppo_simple_policy',
+                                 'bigfish_human_assisted', 'bigfishc', 'bigfishm_bs_top5', 'bigfishm_bs_top3',
+                                 'bigfishm_bs_top1', 'more_redundant_actions',
+                                 'eheist_human_assisted', 'eheist_bs_top5', 'eheist_bs_top1',
+                                 ])
+    parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
+    args = parser.parse_args()
 
     #####################################################
     # load environment
+    print("training environment name : " + args.env)
+    make_deterministic(args.seed)
 
     if args.m == "coinjump":
         env = gym.make(args.env, generator_args={"spawn_all_entities": False})
     elif args.m == "bigfish" or args.m == 'heist':
         env = ProcgenGym3Env(num=1, env_name=args.env, render_mode=None)
 
-    print("training environment name : " + args.env)
-    make_deterministic(args.seed)
     #####################################################
-    config = {
-        "seed": args.seed,
-        "learning_rate_actor": lr_actor,
-        "learning_rate_critic": lr_critic,
-        "epochs": K_epochs,
-        "gamma": gamma,
-        "eps_clip": eps_clip,
-        "max_steps": max_training_timesteps,
-        "eps start": 1.0,
-        "eps end": 0.02,
-        "max_ep_len": max_ep_len,
-        "update_freq": max_ep_len * 2,
-        "save_freq": max_ep_len * 50,
-    }
-    if args.rules is not None:
-        runs_name = str(args.rules) + '_seed_' + str(args.seed)
-    else:
-        runs_name = str(args.m) + '_' + args.alg + '_seed_' + str(args.seed)
+    # config = {
+    #     "seed": args.seed,
+    #     "learning_rate_actor": lr_actor,
+    #     "learning_rate_critic": lr_critic,
+    #     "epochs": K_epochs,
+    #     "gamma": gamma,
+    #     "eps_clip": eps_clip,
+    #     "max_steps": max_training_timesteps,
+    #     "eps start": 1.0,
+    #     "eps end": 0.02,
+    #     "max_ep_len": max_ep_len,
+    #     "update_freq": max_ep_len * 2,
+    #     "save_freq": max_ep_len * 50,
+    # }
+    # if args.rules is not None:
+    #     runs_name = str(args.rules) + '_seed_' + str(args.seed)
+    # else:
+    #     runs_name = str(args.m) + '_' + args.alg + '_seed_' + str(args.seed)
+
     # wandb.init(project="GETOUT-BS", entity="nyrus", config=config, name=runs_name)
-    wandb.init(project="HEIST", entity="nyrus", config=config, name=runs_name)
+    # wandb.init(project="HEIST", entity="nyrus", config=config, name=runs_name)
+    # wandb.init(project="BIGFISH", entity="nyrus", config=config, name=runs_name)
 
     ################### checkpointing ###################
 
@@ -85,11 +84,11 @@ def main():
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    directory = directory + '/' + args.m + '/' + args.alg + '/' + args.env + '/'
+    directory = directory + '/' + args.m + '/' + args.alg + '/' + args.env + '/' + str(args.seed) + '/'
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    checkpoint_path = directory + "{}_{}_{}.pth".format(args.env, args.seed, 0)
+    checkpoint_path = directory + "{}_{}.pth".format(args.env, 0)
     print("save checkpoint path : " + checkpoint_path)
 
     #####################################################
@@ -206,15 +205,14 @@ def main():
 
                 print("Episode : {} \t\t Timestep : {} \t\t Average Reward : {}".format(i_episode, time_step,
                                                                                         print_avg_reward))
-                wandb.log({'reward': print_avg_reward}, step=time_step)
+                # wandb.log({'reward': print_avg_reward}, step=time_step)
                 print_running_reward = 0
                 print_running_episodes = 0
 
             # save model weights
             if time_step % save_model_freq == 0:
                 print("--------------------------------------------------------------------------------------------")
-                checkpoint_path = directory + "{}_{}_seed_{}_epi_{}.pth".format(args.alg, args.env, args.seed,
-                                                                                i_episode)
+                checkpoint_path = directory + "{}_{}_epi_{}.pth".format(args.alg, args.env, i_episode)
                 print("saving model at : " + checkpoint_path)
                 agent.save(checkpoint_path)
                 print("model saved")

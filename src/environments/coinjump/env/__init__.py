@@ -6,6 +6,11 @@ gym.envs.register(
     max_episode_steps=300,
 )
 
+gym.envs.register(
+    id='CoinJumpEnv-v2',
+    entry_point='environments.coinjump.env.CoinJumpEnvV2:CoinJumpEnvV2',
+    max_episode_steps=300,
+)
 
 gym.envs.register(
      id='CoinJumpEnvE-v0',
