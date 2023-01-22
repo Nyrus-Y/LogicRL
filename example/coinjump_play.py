@@ -5,6 +5,7 @@ import numpy as np
 import sys
 
 sys.path.insert(0, '../')
+from src.utils import make_deterministic
 from src.environments.coinjump.coinjump.imageviewer import ImageViewer
 from src.environments.coinjump.coinjump.coinjump.helpers import create_coinjump_instance
 from nsfr.utils import get_nsfr_model, get_predictions
@@ -42,15 +43,18 @@ def explaining_to_action(explaining):
 
 def run():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--seed", help="Seed for pytorch + env", default=0,
+                        required=False, action="store", dest="seed", type=int)
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=False, action="store", dest="m", default='coinjump',
                         choices=['coinjump'])
     parser.add_argument("-e", "--env", help="The environment of coinjump", default="coinjump", dest="env",
                         choices=["coinjump", "coinjump_e", "coinjump_kd"])
 
-    parser.add_argument("-r", "--rules", dest="rules", default='coinjump_5a',
-                        required=False, choices=['coinjump_5a', 'coinjump_kd', 'coinjump_e'])
+    parser.add_argument("-r", "--rules", dest="rules", default='coinjump_human_assisted',
+                        required=False, choices=['coinjump_human_assisted', 'coinjump_kd', 'coinjump_e'])
     args = parser.parse_args()
+    make_deterministic(args.seed)
 
     if args.env == "coinjump":
         coin_jump = create_coinjump_instance()
@@ -80,15 +84,13 @@ def run():
         # step game
         action = []
 
-        if KEY_r in viewer.pressed_keys:
-            if args.env == "coinjump":
-                coin_jump = create_coinjump_instance()
-            elif args.env == "coinjump_kd":
-                coin_jump = create_coinjump_instance(key_door=True)
-            elif args.env == "coinjump_e":
-                coin_jump = create_coinjump_instance(enemy=True)
-
-            print("--------------------------     next game    --------------------------")
+        # if KEY_r in viewer.pressed_keys:
+        #     if args.env == "coinjump":
+        #         coin_jump = create_coinjump_instance()
+        #     elif args.env == "coinjump_kd":
+        #         coin_jump = create_coinjump_instance(key_door=True)
+        #     elif args.env == "coinjump_e":
+        #         coin_jump = create_coinjump_instance(enemy=True)
 
         if not coin_jump.level.terminated:
 
@@ -103,6 +105,15 @@ def run():
             elif explaining != last_explaining:
                 print(explaining)
                 last_explaining = explaining
+        else:
+            if args.env == "coinjump":
+                coin_jump = create_coinjump_instance()
+            elif args.env == "coinjump_kd":
+                coin_jump = create_coinjump_instance(key_door=True)
+            elif args.env == "coinjump_e":
+                coin_jump = create_coinjump_instance(enemy=True)
+            action = 0
+            print("--------------------------     next game    --------------------------")
 
         reward = coin_jump.step(action)
         score = coin_jump.get_score()
