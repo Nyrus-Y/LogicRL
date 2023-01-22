@@ -1,4 +1,6 @@
 ### NSFR
+gym
+gym3
 torch==1.12.1
 lark-parser
 sklearn
@@ -21,4 +23,6 @@ seaborn
 pandas
 cmake
 rtpt
+wandb
+pyglet
 ###qt
