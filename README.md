@@ -63,6 +63,10 @@ dataset can be found in folder: _src/nsfr/data_
 
 e.g. 'ppo_simple_policy' can be helpful when train ppo agent of coinjump
 
+* **--log -l**: 
+
+if True, the state information of this run will be saved to folder: src/logs
+
 Models will be saved to folder: src/checkpoints  
 Models that use to run should be moved to folder: src/models
 
