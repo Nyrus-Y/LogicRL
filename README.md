@@ -17,13 +17,13 @@ pip install -e . # installs in dev mode
 
 **Example to play with a trained ppo agent**
 ```
-python3 play.py -s 0 -alg ppo -m coinjump -env CoinJumpEnvNeural-v0  
+python3 play.py -s 0 -alg ppo -m coinjump -env CoinJumpEnv-v1   
 ```  
 The trained model can be found in folder: _models/coinjump_ or _models/bigfish_
 
-**Example to train an logic agent for coinjump env using 'coinjump_5a' rules.**
+**Example to train an logic agent for coinjump env using 'coinjump_human_assisted' rules.**
 ```
-python3 train.py -s 0 -alg logic -m coinjump -env CoinJumpEnvLogic-v0  -r 'coinjump_5a'
+python3 train.py -s 0 -alg logic -m coinjump -env CoinJumpEnv-v1  -r 'coinjump_human_assisted'
 ```
 
 Description of Args
@@ -40,18 +40,20 @@ Game mode to play or train with, choice: _coinjump_, _bigfish_, _heist_.
 
 the specific environment for playing or training,
 
-e.g. _CoinJumpEnvNeural-v0_ is use to train neural agent of ppo contains key,door and enemy.
-
+_CoinJumpEnv-v1_ contains key, door and one enemy.  
+_CoinJumpEnv-v2_ has one more enemy.  
 _bigfishm_  contains one bigger fish and one smaller fish.  
-_bigfishc_  contains one red fish and one green fish. agent need to avoid red fish and eat green fish.
-
+_bigfishc_  contains one red fish and one green fish. agent need to avoid red fish and eat green fish.  
+_eheistc1_  contains 2 pairs of key and door.  
+_eheistc2_  contains 2 pairs of key and door with different color.  
+_eheist_    contains 3 pairs of key and door.  
 * **--rules -r**:
 
 _rules_ is required when train logic agent.
 
 Logic agent require a set of data which provide the first order logic rules.  
 
-e.g. '_coinjump_5a_' indicate the rules with 5 clauses.
+e.g. '_coinjump_human_assisted_' indicate the rules is human-generated.
 
 So for new rules, just need to be added to the choice of argument '--rules' and dataset.  
 
@@ -59,11 +61,14 @@ dataset can be found in folder: _src/nsfr/data_
 
 '--rules' is also for some situation like using reward shaping:  
 
-e.g. 'ppo_simple_policy' can be helpful when train ppo agent of coinjump  
-model will be saved to folder: checkpoints
+e.g. 'ppo_simple_policy' can be helpful when train ppo agent of coinjump
+
+Models will be saved to folder: src/checkpoints  
+Models that use to run should be moved to folder: src/models
 
 **Using Beam Search to find a set of rules**
 
+![](image/beam_search.png)
 With scoring:
 ```
 python3 beam_search.py -m coinjump -r coinjump_root -t 3 -n 8 --scoring True -d coinjump.json  
@@ -77,11 +82,4 @@ python3 beam_search.py -m bigfish -r bigfishm_root -t 3 -n 8
 * **--n**:  The size of the beam.
 * **--scoring**: To score the searched rules, a dataset of states information is required.
 * **-d**: The name of dataset to be used for scoring.
-## TO BE DONE
-README
 
-## Contributing
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
