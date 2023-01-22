@@ -70,6 +70,10 @@ if True, the state information of this run will be saved to folder: src/logs
 Models will be saved to folder: src/checkpoints  
 Models that use to run should be moved to folder: src/models
 
+* **--render**:
+
+If True, render the game.
+
 **Using Beam Search to find a set of rules**
 
 ![](image/beam_search.png)
