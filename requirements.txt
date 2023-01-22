@@ -11,7 +11,7 @@ pyglet
 torchsummary
 setuptools>=58.5.3
 tensorboard
-numpy
+numpy==1.20
 torchvision
 tqdm>=4.41.0
 matplotlib>=3.2.2
