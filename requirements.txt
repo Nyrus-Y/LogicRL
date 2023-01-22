@@ -20,4 +20,5 @@ scipy>=1.4.1
 seaborn
 pandas
 cmake
+rtpt
 ###qt
