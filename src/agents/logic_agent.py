@@ -209,16 +209,20 @@ class LogicPlayer:
 
     def act(self, state):
         if self.args.m == 'coinjump':
-            action = self.coinjump_actor(state)
+            action, explaining = self.coinjump_actor(state)
         elif self.args.m == 'bigfish':
-            action = self.bigfish_actor(state)
+            action, explaining = self.bigfish_actor(state)
         elif self.args.m == 'heist':
-            action = self.heist_actor(state)
-        return action
+            action, explaining = self.heist_actor(state)
+        return action, explaining
 
     def get_probs(self):
         probs = self.model.get_probs()
         return probs
+
+    def get_explaining(self):
+        explaining = 0
+        return explaining
 
     def get_state(self, state):
         if self.args.m == 'coinjump':
@@ -234,32 +238,29 @@ class LogicPlayer:
             result.append(obj_state)
         return result
 
-    def coinjump_actor(self, coinjump, show_explaining=False):
+    def coinjump_actor(self, coinjump):
         extracted_state = extract_logic_state_coinjump(coinjump, self.args)
         predictions = self.model(extracted_state)
         prediction = torch.argmax(predictions).cpu().item()
-        if show_explaining:
-            print(self.prednames[prediction])
+        explaining = self.prednames[prediction]
         action = preds_to_action_coinjump(prediction, self.prednames)
-        return action
+        return action, explaining
 
-    def bigfish_actor(self, state, show_explaining=False):
+    def bigfish_actor(self, state):
         state = extract_logic_state_bigfish(state, self.args)
         predictions = self.model(state)
         action = torch.argmax(predictions)
-        if show_explaining:
-            print(self.prednames[action])
+        explaining = self.prednames[action.item()]
         action = preds_to_action_bigfish(action, self.prednames)
-        return action
+        return action, explaining
 
-    def heist_actor(self, state, show_explaining=False):
+    def heist_actor(self, state):
         state = extract_logic_state_heist(state, self.args)
         predictions = self.model(state)
         action = torch.argmax(predictions)
-        if show_explaining:
-            print(self.prednames[action])
+        explaining = self.prednames[action.item()]
         action = preds_to_action_heist(action, self.prednames)
-        return action
+        return action, explaining
 
 
 class RolloutBuffer:

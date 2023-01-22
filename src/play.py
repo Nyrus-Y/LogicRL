@@ -54,6 +54,7 @@ def main():
                                  ])
     parser.add_argument("-l", "--log", help="record the information of games", type=bool, default=False, dest="log")
     parser.add_argument("--log_file_name", help="the name of log file", required=False, dest='logfile')
+    parser.add_argument("--render", help="render the game",type=bool, default=True, dest="render")
     args = parser.parse_args()
 
     # fix seed

@@ -49,6 +49,7 @@ def render_coinjump(agent, args):
     total_reward = 0
     epi_reward = 0
     step = 0
+    last_explaining = None
     if args.log:
         log_f = open(args.logfile, "w+")
         writer = csv.writer(log_f)
@@ -67,7 +68,10 @@ def render_coinjump(agent, args):
         # step game
         step += 1
         if not coin_jump.level.terminated:
-            action = agent.act(coin_jump)
+            if args.alg == 'logic':
+                action, explaining = agent.act(coin_jump)
+            else:
+                action = agent.act(coin_jump)
         else:
             coin_jump = create_coinjump_instance(args)
             print("epi_reward: ", round(epi_reward, 2))
@@ -79,6 +83,15 @@ def render_coinjump(agent, args):
             step = 0
 
         reward = coin_jump.step(action)
+
+        if args.alg == 'logic':
+            if last_explaining is None:
+                print(explaining)
+                last_explaining = explaining
+            elif explaining != last_explaining:
+                print(explaining)
+                last_explaining = explaining
+
         if args.log:
             probs = agent.get_probs()
             logic_state = agent.get_state(coin_jump)
@@ -86,8 +99,9 @@ def render_coinjump(agent, args):
             writer.writerows(data)
         # print(reward)
         epi_reward += reward
-        np_img = np.asarray(coin_jump.camera.screen)
-        viewer.show(np_img[:, :, :3])
+        if args.render:
+            np_img = np.asarray(coin_jump.camera.screen)
+            viewer.show(np_img[:, :, :3])
 
         # terminated = coin_jump.level.terminated
         # if terminated:
@@ -122,17 +136,32 @@ def render_bigfish(agent, args):
         ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
         ia.run()
     else:
-        # env = gym3.ViewerWrapper(env, info_key="rgb")
+        if args.render:
+            env = gym3.ViewerWrapper(env, info_key="rgb")
         reward, obs, done = env.observe()
         total_r = 0
         epi = 0
+        epi_r = 0
         step = 0
+        last_explaining = None
         while True:
             # print(obs['positions'])
-            action = agent.act(obs)
+            if args.alg == 'logic':
+                action, explaining = agent.act(obs)
+            else:
+                action = agent.act(obs)
             env.act(action)
             rew, obs, done = env.observe()
             total_r += rew[0]
+            epi_r += rew[0]
+
+            if args.alg == 'logic':
+                if last_explaining is None:
+                    print(explaining)
+                    last_explaining = explaining
+                elif explaining != last_explaining:
+                    print(explaining)
+                    last_explaining = explaining
 
             if args.log:
                 probs = agent.get_probs()
@@ -143,7 +172,10 @@ def render_bigfish(agent, args):
             if done:
                 epi += 1
                 step = 0
-                print(epi)
+                print("episode: ", epi)
+                print("reward: ", epi_r)
+                epi_r = 0
+
             if epi == 100:
                 break
 
@@ -166,17 +198,32 @@ def render_heist(agent, args):
         ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
         ia.run()
     else:
-        # env = gym3.ViewerWrapper(env, info_key="rgb")
+        if args.render:
+            env = gym3.ViewerWrapper(env, info_key="rgb")
         reward, obs, done = env.observe()
         step = 0
         total_r = 0
+        epi_r = 0
         epi = 1
+        last_explaining = None
         while True:
             step += 1
-            action = agent.act(obs)
+            if args.alg == 'logic':
+                action,explaining = agent.act(obs)
+            else:
+                action = agent.act(obs)
+
             env.act(action)
             rew, obs, done = env.observe()
             total_r += rew[0]
+            epi_r += rew[0]
+            if args.alg == 'logic':
+                if last_explaining is None:
+                    print(explaining)
+                    last_explaining = explaining
+                elif explaining != last_explaining:
+                    print(explaining)
+                    last_explaining = explaining
 
             if args.log:
                 probs = agent.get_probs()
@@ -187,7 +234,9 @@ def render_heist(agent, args):
             if done:
                 epi += 1
                 step = 0
-                print(epi)
+                print("episode: ", epi)
+                print("reward: ", epi_r)
+                epi_r = 0
             if epi == 100:
                 break
 
