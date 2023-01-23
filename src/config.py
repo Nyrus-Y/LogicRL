@@ -4,11 +4,11 @@ import math
 max_ep_len = 500  # max timesteps in one episode
 max_training_timesteps = 800000  # break training loop if timeteps > max_training_timesteps
 
-# print_freq = max_ep_len * 4  # print avg reward in the interval (in num timesteps)
-print_freq = max_ep_len  # print avg reward in the interval (in num timesteps)
+print_freq = max_ep_len * 4  # print avg reward in the interval (in num timesteps)
+# print_freq = max_ep_len  # print avg reward in the interval (in num timesteps)
 log_freq = max_ep_len * 4  # log avg reward in the interval (in num timesteps)
-# save_model_freq = max_ep_len * 50  # save model frequency (in num timesteps)
-save_model_freq = max_ep_len  # save model frequency (in num timesteps)
+save_model_freq = max_ep_len * 50  # save model frequency (in num timesteps)
+# save_model_freq = max_ep_len  # save model frequency (in num timesteps)
 #####################################################
 
 ################ hyperparameters ################

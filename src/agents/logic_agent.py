@@ -187,10 +187,10 @@ class LogicPPO:
             pickle.dump(reward_list, f)
             pickle.dump(weight_list, f)
 
-    def load(self, checkpoint_path, directory):
+    def load(self, directory):
         # only for recover form crash
         model_name = input('Enter file name: ')
-        model_file = os.path.join(checkpoint_path, model_name)
+        model_file = os.path.join(directory, model_name)
         self.policy_old.load_state_dict(torch.load(model_file, map_location=lambda storage, loc: storage))
         self.policy.load_state_dict(torch.load(model_file, map_location=lambda storage, loc: storage))
         with open(directory + '/' + "data.pkl", "rb") as f:

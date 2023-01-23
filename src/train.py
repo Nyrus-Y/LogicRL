@@ -46,9 +46,9 @@ def main():
                                  'heist_human_assisted', 'heist_bs_top5', 'heist_bs_top3', 'heist_bs_top1',
                                  'heist_redundant_actions'])
     parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
-    parser.add_argument('--recover', help='recover from crash', default=False, type=bool, dest='recover')
-    #arg = ['-alg', 'logic', '-m', 'bigfish', '-env', 'bigfish', '-r', 'bigfish_bs_top1']
-    args = parser.parse_args()
+    parser.add_argument('-re', '--recovery', help='recover from crash', default=False, type=bool, dest='recover')
+    arg = ['-alg', 'logic', '-m', 'bigfish', '-env', 'bigfish', '-r', 'bigfish_bs_top1', '-re', 'True']
+    args = parser.parse_args(arg)
 
     #####################################################
     # load environment
@@ -163,8 +163,12 @@ def main():
     elif args.alg == "logic":
         agent = LogicPPO(lr_actor, lr_critic, optimizer, gamma, K_epochs, eps_clip, args)
 
+    time_step = 0
+    i_episode = 0
+
     if args.recover:
-        step_list, reward_list, weights_list = agent.load(checkpoint_path, directory)
+        step_list, reward_list, weights_list = agent.load(directory)
+        time_step = max(step_list)[0]
     else:
         step_list = []
         reward_list = []
@@ -193,9 +197,6 @@ def main():
     # printing and logging variables
     print_running_reward = 0
     print_running_episodes = 0
-
-    time_step = 0
-    i_episode = 0
 
     rtpt = RTPT(name_initials='QD', experiment_name='LogicRL',
                 max_iterations=max_training_timesteps)
