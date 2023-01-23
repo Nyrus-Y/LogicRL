@@ -47,8 +47,8 @@ def main():
                                  'heist_redundant_actions'])
     parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
     parser.add_argument('-re', '--recovery', help='recover from crash', default=False, type=bool, dest='recover')
-    arg = ['-alg', 'logic', '-m', 'bigfish', '-env', 'bigfish', '-r', 'bigfish_bs_top1', '-re', 'True']
-    args = parser.parse_args(arg)
+    # arg = ['-alg', 'logic', '-m', 'bigfish', '-env', 'bigfish', '-r', 'bigfish_bs_top1', '-re', 'True']
+    args = parser.parse_args()
 
     #####################################################
     # load environment
