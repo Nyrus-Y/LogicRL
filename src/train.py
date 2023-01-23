@@ -5,7 +5,7 @@ import gym
 import sys
 import pickle
 import csv
-
+import copy
 import numpy as np
 
 # import wandb
@@ -47,8 +47,8 @@ def main():
                                  'heist_redundant_actions'])
     parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
     parser.add_argument('--recover', help='recover from crash', default=False, type=bool, dest='recover')
-    arg = ['-alg', 'logic', '-m', 'bigfish', '-env', 'bigfish', '-r', 'bigfish_bs_top1']
-    args = parser.parse_args(arg)
+    #arg = ['-alg', 'logic', '-m', 'bigfish', '-env', 'bigfish', '-r', 'bigfish_bs_top1']
+    args = parser.parse_args()
 
     #####################################################
     # load environment
@@ -244,7 +244,7 @@ def main():
 
                 step_list.append([time_step])
                 reward_list.append([print_avg_reward])
-                weights_list.append([agent.get_weights().tolist()])
+                weights_list.append([(agent.get_weights().tolist())])
 
             # save model weights
             if time_step % save_model_freq == 0:
