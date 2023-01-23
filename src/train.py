@@ -3,6 +3,11 @@ import os
 import time
 import gym
 import sys
+import pickle
+import csv
+
+import numpy as np
+
 # import wandb
 import environments.coinjump.env
 
@@ -39,15 +44,29 @@ def main():
                                  'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_top3',
                                  'bigfish_bs_top1', 'bigfish_redundant_actions',
                                  'heist_human_assisted', 'heist_bs_top5', 'heist_bs_top3', 'heist_bs_top1',
-                                 'heist_redundant_actions'
-                                 ])
+                                 'heist_redundant_actions'])
     parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
-    args = parser.parse_args()
+    parser.add_argument('--recover', help='recover from crash', default=False, type=bool, dest='recover')
+    arg = ['-alg', 'logic', '-m', 'bigfish', '-env', 'bigfish', '-r', 'bigfish_bs_top1']
+    args = parser.parse_args(arg)
 
     #####################################################
     # load environment
     print("training environment name : " + args.env)
     make_deterministic(args.seed)
+
+    #####################################################
+    # config setting
+    if args.alg == 'ppo':
+        update_timestep = max_ep_len * 4
+    else:
+        update_timestep = max_ep_len * 2
+
+    if args.m == 'heist' and args.alg == 'ppo':
+        max_training_timesteps = 5000000
+    else:
+        max_training_timesteps = 2000
+    #####################################################
 
     if args.m == "getout":
         env = gym.make(args.env, generator_args={"spawn_all_entities": False})
@@ -84,11 +103,18 @@ def main():
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    directory = directory + '/' + args.m + '/' + args.alg + '/' + args.env + '/' + str(args.seed) + '/'
+    if args.rules is not None:
+        directory = directory + '/' + args.m + '/' + args.alg + '/' + args.env + '/' + args.rules + '/' + str(
+            args.seed) + '/'
+    else:
+        directory = directory + '/' + args.m + '/' + args.alg + '/' + args.env + '/' + str(args.seed) + '/'
     if not os.path.exists(directory):
         os.makedirs(directory)
 
+    # if not args.recover:
+
     checkpoint_path = directory + "{}_{}.pth".format(args.env, 0)
+
     print("save checkpoint path : " + checkpoint_path)
 
     #####################################################
@@ -136,6 +162,13 @@ def main():
         agent = NeuralPPO(lr_actor, lr_critic, optimizer, gamma, K_epochs, eps_clip, args)
     elif args.alg == "logic":
         agent = LogicPPO(lr_actor, lr_critic, optimizer, gamma, K_epochs, eps_clip, args)
+
+    if args.recover:
+        step_list, reward_list, weights_list = agent.load(checkpoint_path, directory)
+    else:
+        step_list = []
+        reward_list = []
+        weights_list = []
 
     # track total training time
     start_time = time.time()
@@ -209,12 +242,17 @@ def main():
                 print_running_reward = 0
                 print_running_episodes = 0
 
+                step_list.append([time_step])
+                reward_list.append([print_avg_reward])
+                weights_list.append([agent.get_weights().tolist()])
+
             # save model weights
             if time_step % save_model_freq == 0:
                 print("--------------------------------------------------------------------------------------------")
-                checkpoint_path = directory + "{}_{}_epi_{}.pth".format(args.alg, args.env, i_episode)
+                checkpoint_path = directory + "{}_{}_step_{}.pth".format(args.alg, args.env,
+                                                                         time_step)
                 print("saving model at : " + checkpoint_path)
-                agent.save(checkpoint_path)
+                agent.save(checkpoint_path, directory, step_list, reward_list, weights_list)
                 print("model saved")
                 print("Elapsed Time  : ", time.time() - start_time)
                 print("--------------------------------------------------------------------------------------------")
@@ -238,11 +276,24 @@ def main():
 
     # print total training time
     print("============================================================================================")
+    with open(directory + '/' + 'data.csv', 'w', newline='') as f:
+        dataset = csv.writer(f)
+        header = ('steps', 'reward')
+        dataset.writerow(header)
+        data = np.hstack((step_list, reward_list))
+        for row in data:
+            dataset.writerow(row)
+
+    with open(directory + '/' + 'weights.csv', 'w', newline='') as f:
+        dataset = csv.writer(f)
+        for row in weights_list:
+            dataset.writerow(row)
+
     end_time = time.time()
     print("Started training at (GMT) : ", start_time)
     print("Finished training at (GMT) : ", end_time)
     print("Total training time  : ", end_time - start_time)
-    print("=========action.item()===================================================================================")
+    print("============================================================================================")
 
 
 if __name__ == "__main__":

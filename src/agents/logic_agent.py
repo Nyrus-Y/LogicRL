@@ -1,8 +1,8 @@
-import os
 import random
 import torch
 import torch.nn as nn
-import wandb
+import pickle
+import os
 from torch.distributions import Categorical
 from nsfr.utils import get_nsfr_model
 from .MLPController.mlpbigfish import MLPBigfish
@@ -180,15 +180,24 @@ class LogicPPO:
         # clear buffer
         self.buffer.clear()
 
-    def save(self, checkpoint_path):
+    def save(self, checkpoint_path, directory, step_list, reward_list, weight_list):
         torch.save(self.policy_old.state_dict(), checkpoint_path)
-        # torch.save(self.policy_old, checkpoint_path)
+        with open(directory + '/' + "data.pkl", "wb") as f:
+            pickle.dump(step_list, f)
+            pickle.dump(reward_list, f)
+            pickle.dump(weight_list, f)
 
-    def load(self, checkpoint_path):
-        self.policy_old.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
-        self.policy.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
-        # self.policy_old = torch.load(checkpoint_path)
-        # self.policy = torch.load(checkpoint_path)
+    def load(self, checkpoint_path, directory):
+        # only for recover form crash
+        model_name = input('Enter file name: ')
+        model_file = os.path.join(checkpoint_path, model_name)
+        self.policy_old.load_state_dict(torch.load(model_file, map_location=lambda storage, loc: storage))
+        self.policy.load_state_dict(torch.load(model_file, map_location=lambda storage, loc: storage))
+        with open(directory + '/' + "data.pkl", "rb") as f:
+            step_list = pickle.load(f)
+            reward_list = pickle.load(f)
+            weight_list = pickle.load(f)
+        return step_list, reward_list, weight_list
 
     def get_predictions(self, state):
         self.prediction = state
