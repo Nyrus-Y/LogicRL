@@ -50,7 +50,7 @@ class RolloutBuffer:
 
         current_path = os.path.dirname(__file__)
         dataset = args.m + '.json'
-        path = os.path.join(current_path, 'data', dataset)
+        path = os.path.join(current_path, 'bs_data', dataset)
         with open(path, 'w') as f:
             json.dump(dict, f)
         print('data collected')
@@ -84,10 +84,10 @@ def parse_args():
     parser = ArgumentParser("Loads a model and lets it play coinjump")
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=True, action="store", dest="m", default='coinjump',
-                        choices=['coinjump', 'bigfish', 'heist'])
+                        choices=['getout', 'bigfish', 'heist'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env", default='CoinJumpEnv-v1',
-                        choices=['CoinJumpEnv-v1', 'bigfishm', 'eheistc1', 'eheistc2'])
+                        choices=['getout', 'bigfish', 'heist', 'heistcolor'])
     parser.add_argument("-mo", "--model_file", dest="model_file", default=None)
     parser.add_argument("-s", "--seed", dest="seed", default=0, type=int)
     arg = ['-m', 'heist', '-env', 'eheistc1']
@@ -134,7 +134,7 @@ def main():
     save_frequence = 5
     step = 0
     collected_states = 0
-    if args.m == 'coinjump':
+    if args.m == 'getout':
         coin_jump = create_coinjump_instance(seed=seed)
         # viewer = setup_image_viewer(coin_jump)
 
