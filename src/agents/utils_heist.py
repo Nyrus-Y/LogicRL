@@ -10,7 +10,7 @@ def extract_logic_state_heist(state, args):
     [agent,key_b,door_b,key_g,door_g,key_r,door_r]
     """
     states = torch.from_numpy(state['positions']).squeeze()
-    if args.env == 'eheist':
+    if args.env == 'heistplus':
         # input shape: [X,Y]* [agent,key_b,door_b,key_g,door_g,key_r,door_r]
         # output shape:[agent, key, door, blue, green, red ,got_key, X, Y]
         extracted_state = torch.tensor([
@@ -27,7 +27,7 @@ def extract_logic_state_heist(state, args):
                 extracted_state[i] = torch.zeros((1, 9))
             elif i in [2, 4, 6] and state[-1] != 0 and extracted_state[i - 1][1] == 0:
                 extracted_state[i][-3] = 1
-    elif args.env == "eheistc1":
+    elif args.env == "heist":
         # input shape: [X,Y]* [agent,key_b,door_b,key_g,door_g]
         # output shape:[agent, key, door, blue, red ,got_key, X, Y]
         extracted_state = torch.tensor([
@@ -46,7 +46,7 @@ def extract_logic_state_heist(state, args):
             # if key = 0 but door !=0, means key of this door has picked
             elif i in [2, 4] and state[-1] != 0 and extracted_state[i - 1][1] == 0:
                 extracted_state[i][-3] = 1
-    elif args.env == "eheistc2":
+    elif args.env == "heistcolor":
         # input shape: [X,Y]* [agent,key_b,door_b,key_g,door_g]
         # output shape:[agent, key, door, green, brown ,got_key, X, Y]
         extracted_state = torch.tensor([
@@ -72,7 +72,7 @@ def extract_logic_state_heist(state, args):
 def extract_neural_state_heist(state, args):
     state = state['positions']
 
-    if args.env == 'eheist':
+    if args.env == 'heistplus':
         raw_state = np.array([[0, 0, 0, 0],
                               [0, 0, 1, 1],
                               [0, 0, 2, 1],
@@ -82,7 +82,7 @@ def extract_neural_state_heist(state, args):
                               [0, 0, 2, 3]], dtype=np.float32)
         raw_state[:, 0:2] = state[0][:]
 
-    elif args.env == 'eheistc1':
+    elif args.env == 'heist':
 
         raw_state = np.array([[0, 0, 0, 0],
                               [0, 0, 1, 1],
@@ -93,7 +93,7 @@ def extract_neural_state_heist(state, args):
                               [0, 0, 0, 0]], dtype=np.float32)
         raw_state[:, 0:2] = state[0][:]
 
-    elif args.env == 'eheistc2':
+    elif args.env == 'heistcolor':
         raw_state = np.array([[0, 0, 0, 0],
                               [0, 0, 1, 10],
                               [0, 0, 2, 10],

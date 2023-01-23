@@ -5,7 +5,7 @@ import torch
 
 
 def extract_logic_state_coinjump(coin_jump, args, noise=False):
-    if args.env == 'CoinJumpEnv-v2':
+    if args.env == 'getoutplus':
         num_of_feature = 6
         num_of_object = 5
         representation = coin_jump.level.get_representation()

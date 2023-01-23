@@ -27,7 +27,7 @@ class NSFR_ActorCritic(nn.Module):
         self.prednames = self.get_prednames()
         if self.args.m == 'bigfish':
             self.critic = MLPBigfish(out_size=1, logic=True)
-        elif self.args.m == 'coinjump':
+        elif self.args.m == 'getout':
             self.critic = MLPCoinjump(out_size=1, logic=True)
         elif self.args.m == 'heist':
             self.critic = MLPHeist(out_size=1, logic=True)
@@ -92,7 +92,7 @@ class LogicPPO:
     def select_action(self, state, epsilon=0.0):
 
         # extract state for different games
-        if self.args.m == 'coinjump':
+        if self.args.m == 'getout':
             logic_state = extract_logic_state_coinjump(state, self.args)
             neural_state = extract_neural_state_coinjump(state, self.args)
         elif self.args.m == 'bigfish':
@@ -117,7 +117,7 @@ class LogicPPO:
         # different games use different action system, need to map it to the correct action.
         # action of logic game means a String, need to map string to the correct action,
         action = action.item()
-        if self.args.m == 'coinjump':
+        if self.args.m == 'getout':
             action = action_map_coinjump(action, self.args, self.prednames)
         elif self.args.m == 'bigfish':
             action = action_map_bigfish(action, self.args, self.prednames)
@@ -208,7 +208,7 @@ class LogicPlayer:
         self.prednames = model.get_prednames()
 
     def act(self, state):
-        if self.args.m == 'coinjump':
+        if self.args.m == 'getout':
             action, explaining = self.coinjump_actor(state)
         elif self.args.m == 'bigfish':
             action, explaining = self.bigfish_actor(state)
@@ -225,7 +225,7 @@ class LogicPlayer:
         return explaining
 
     def get_state(self, state):
-        if self.args.m == 'coinjump':
+        if self.args.m == 'getout':
             logic_state = extract_logic_state_coinjump(state, self.args).squeeze(0)
         elif self.args.m == 'bigfish':
             logic_state = extract_logic_state_bigfish(state, self.args).squeeze(0)

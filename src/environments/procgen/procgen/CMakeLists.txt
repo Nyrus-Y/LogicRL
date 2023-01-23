@@ -48,19 +48,19 @@ add_library(env
   src/game.cpp
   src/game-registry.cpp
   src/games/edodgeball.cpp
+  src/games/oribigfish.cpp
+  src/games/bigfishcolor.cpp
   src/games/bigfish.cpp
-  src/games/bigfishc.cpp
-  src/games/bigfishm.cpp
   src/games/ebigfishs.cpp
   src/games/ebigfish.cpp
   src/games/ebigfishl.cpp
   src/games/coinrun_old.cpp
   src/games/coinrun.cpp
   src/games/ecoinrun.cpp
+  src/games/oriheist.cpp
   src/games/heist.cpp
-  src/games/eheist.cpp
-  src/games/eheistc1.cpp
-  src/games/eheistc2.cpp
+  src/games/heistcolor.cpp
+  src/games/heistplus.cpp
   src/mazegen.cpp
   src/randgen.cpp
   src/roomgen.cpp

@@ -21,7 +21,7 @@ def get_nsfr_model(args, train=False):
     # device = torch.device('cuda:0')
     lang, clauses, bk, atoms = get_lang(
         lark_path, lang_base_path, args.m, args.rules)
-    if args.m == 'coinjump':
+    if args.m == 'getout':
         VM = CJValuationModule(lang=lang, device=device)
     elif args.m == 'bigfish':
         VM = BFValuationModule(lang=lang, device=device)
@@ -48,7 +48,7 @@ def get_nsfr(mode, rule):
     device = torch.device('cuda:0')
     lang, clauses, bk, atoms = get_lang(
         lark_path, lang_base_path, mode, rule)
-    if mode == 'coinjump':
+    if mode == 'getout':
         VM = CJValuationModule(lang=lang, device=device)
     elif mode == 'bigfish':
         VM = BFValuationModule(lang=lang, device=device)

@@ -6,7 +6,7 @@
 #include "../cpp-utils.h"
 #include <iostream>
 
-const std::string NAME = "eheistc1";
+const std::string NAME = "heistplus";
 
 const float COMPLETION_BONUS = 10.0f;
 const float STEP_PENALTY = 0.0f;
@@ -17,7 +17,7 @@ const int EXIT = 9;
 const int KEY_ON_RING = 11;
 const int AGENT = 0;
 
-class EHeistC1 : public BasicAbstractGame {
+class HeistLKGame : public BasicAbstractGame {
   public:
     std::shared_ptr<MazeGen> maze_gen;
     int world_dim = 0;
@@ -25,7 +25,7 @@ class EHeistC1 : public BasicAbstractGame {
     std::vector<bool> has_keys;
     std::vector<bool> num_locks_unlocked;
 
-    EHeistC1()
+    HeistLKGame()
         : BasicAbstractGame(NAME) {
         timeout = 100;
         maze_gen = nullptr;
@@ -145,23 +145,14 @@ class EHeistC1 : public BasicAbstractGame {
 
         options.center_agent = options.distribution_mode == MemoryMode;
 
-//        if (options.distribution_mode == MemoryMode) {
-//            num_keys = rand_gen.randn(3) + 1;
-//        } else {
-//            num_keys = 1 + rand_gen.randn(3);
-//        }
-//
-//        if (num_keys > 3)
-//            num_keys = 3;
-
         if (options.distribution_mode == MemoryMode) {
-        num_keys = rand_gen.randn(2) + 1;
+            num_keys = rand_gen.randn(3) + 1;
         } else {
-            num_keys = 1 + rand_gen.randn(2);
+            num_keys = 1 + rand_gen.randn(3);
         }
 
-        if (num_keys > 2)
-            num_keys = 2;
+        if (num_keys > 3)
+            num_keys = 3;
 
         // num_keys = 1;
 
@@ -319,4 +310,4 @@ class EHeistC1 : public BasicAbstractGame {
     }
 };
 
-REGISTER_GAME(NAME, EHeistC1);
+REGISTER_GAME(NAME, HeistLKGame);

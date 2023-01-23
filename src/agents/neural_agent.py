@@ -20,7 +20,7 @@ class ActorCritic(nn.Module):
 
         self.rng = random.Random() if rng is None else rng
         self.args = args
-        if self.args.m == 'coinjump':
+        if self.args.m == 'getout':
             self.num_action = 3
             self.actor = MLPCoinjump(has_softmax=True)
             self.critic = MLPCoinjump(has_softmax=False, out_size=1)
@@ -86,7 +86,7 @@ class NeuralPPO:
     def select_action(self, state, epsilon=0.0):
 
         # extract state info for different games
-        if self.args.m == 'coinjump':
+        if self.args.m == 'getout':
             state = extract_neural_state_coinjump(state, self.args)
             # model_input = sample_to_model_input((extract_state(state), []))
             # model_input = collate([model_input])
@@ -111,7 +111,7 @@ class NeuralPPO:
         action_logprob = torch.squeeze(action_logprob)
         self.buffer.logprobs.append(action_logprob)
 
-        if self.args.m == 'coinjump':
+        if self.args.m == 'getout':
             action = action_map_coinjump(action.item(), self.args)
         elif self.args.m == 'bigfish':
             action = action_map_bigfish(action.item(), self.args)
@@ -189,7 +189,7 @@ class NeuralPlayer:
         self.device = torch.device('cuda:0')
 
     def act(self, state):
-        if self.args.m == 'coinjump':
+        if self.args.m == 'getout':
             action = self.coinjump_actor(state)
         elif self.args.m == 'bigfish':
             action = self.bigfish_actor(state)

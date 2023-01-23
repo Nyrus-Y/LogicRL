@@ -14,7 +14,7 @@ def initialize_game(env, args):
     """initialize game"""
     if args.m == 'bigfish' or args.m == 'heist':
         reward, state, done = env.observe()
-    elif args.m == 'coinjump':
+    elif args.m == 'getout':
         # return the whole coinjump information
         state = env.reset()
     return state
@@ -22,7 +22,7 @@ def initialize_game(env, args):
 
 def env_step(action, env, args):
     """take step of each game"""
-    if args.m == 'coinjump':
+    if args.m == 'getout':
         state, reward, done, _, info = env.step(action)
         # perhaps need some reward shaping
         if args.rules == 'ppo_simple_policy':

@@ -29,17 +29,16 @@ def main():
                         choices=['ppo', 'logic'])
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=True, action="store", dest="m",
-                        choices=['coinjump', 'bigfish', 'heist'])
+                        choices=['getout', 'bigfish', 'heist'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['CoinJumpEnv-v1', 'CoinJumpEnv-v2', 'bigfishm', 'bigfishc', 'eheist', 'eheistc1',
-                                 'eheistc2'])
+                        choices=['getout', 'bigfish', 'heist'])
     parser.add_argument("-r", "--rules", dest="rules", default=None, required=False,
-                        choices=['coinjump_human_assisted', 'coinjump_10a', 'coinjump_bs_top10', 'coinjump_bs_top1',
-                                 'coinjump_bs_top3', 'ppo_simple_policy',
-                                 'bigfish_human_assisted', 'bigfishc', 'bigfishm_bs_top5', 'bigfishm_bs_top3',
-                                 'bigfishm_bs_top1', 'more_redundant_actions',
-                                 'eheist_human_assisted', 'eheist_bs_top5', 'eheist_bs_top1',
+                        choices=['getout_human_assisted', 'getout_10a', 'getout_bs_top10', 'getout_bs_top1',
+                                 'getout_bs_top3', 'ppo_simple_policy',
+                                 'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_top3',
+                                 'bigfish_bs_top1', 'more_redundant_actions',
+                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_top1',
                                  ])
     parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
     args = parser.parse_args()
@@ -49,7 +48,7 @@ def main():
     print("training environment name : " + args.env)
     make_deterministic(args.seed)
 
-    if args.m == "coinjump":
+    if args.m == "getout":
         env = gym.make(args.env, generator_args={"spawn_all_entities": False})
     elif args.m == "bigfish" or args.m == 'heist':
         env = ProcgenGym3Env(num=1, env_name=args.env, render_mode=None)

@@ -34,10 +34,10 @@ def run():
                         action="store", dest="alg", required=False, default='logic',
                         choices=['logic'])
     parser.add_argument("-r", "--rules", dest="rules", default='bigfish_human_assisted',
-                        required=False, choices=['bigfish_human_assisted'])
+                        required=False, choices=['bigfish_human_assisted','bigfishcolor'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
-                        required=False, action="store", dest="env", default='bigfishm',
-                        choices=['bigfishm', 'bigfishc'])
+                        required=False, action="store", dest="env", default='bigfish',
+                        choices=['bigfish', 'bigfishcolor'])
     args = parser.parse_args()
     make_deterministic(args.seed)
 

@@ -22,7 +22,7 @@ def render_coinjump(agent, args):
         return viewer
 
     def create_coinjump_instance(args, seed=None):
-        if args.env == 'CoinJumpEnv-v2':
+        if args.env == 'getoutplus':
             enemies = True
         else:
             enemies = False

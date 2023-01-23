@@ -6,7 +6,7 @@
 #include "../cpp-utils.h"
 #include <iostream>
 
-const std::string NAME = "eheistc2";
+const std::string NAME = "heistcolor";
 
 const float COMPLETION_BONUS = 10.0f;
 const float STEP_PENALTY = 0.0f;
@@ -17,7 +17,7 @@ const int EXIT = 9;
 const int KEY_ON_RING = 11;
 const int AGENT = 0;
 
-class EHeistC2 : public BasicAbstractGame {
+class HeistColor : public BasicAbstractGame {
   public:
     std::shared_ptr<MazeGen> maze_gen;
     int world_dim = 0;
@@ -25,7 +25,7 @@ class EHeistC2 : public BasicAbstractGame {
     std::vector<bool> has_keys;
     std::vector<bool> num_locks_unlocked;
 
-    EHeistC2()
+    HeistColor()
         : BasicAbstractGame(NAME) {
         timeout = 100;
         maze_gen = nullptr;
@@ -310,4 +310,4 @@ class EHeistC2 : public BasicAbstractGame {
     }
 };
 
-REGISTER_GAME(NAME, EHeistC2);
+REGISTER_GAME(NAME, HeistColor);

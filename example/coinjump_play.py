@@ -46,22 +46,25 @@ def run():
     parser.add_argument("-s", "--seed", help="Seed for pytorch + env", default=0,
                         required=False, action="store", dest="seed", type=int)
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
-                        required=False, action="store", dest="m", default='coinjump',
-                        choices=['coinjump'])
-    parser.add_argument("-e", "--env", help="The environment of coinjump", default="coinjump", dest="env",
-                        choices=["coinjump", "coinjump_e", "coinjump_kd"])
+                        required=False, action="store", dest="m", default='getout',
+                        choices=['getout'])
+    parser.add_argument("-e", "--env", help="The environment of getout", default="Getout", dest="env",
+                        choices=["Getout", "GetoutPlus", "GetoutE", "GetoutKD"])
 
-    parser.add_argument("-r", "--rules", dest="rules", default='coinjump_human_assisted',
-                        required=False, choices=['coinjump_human_assisted', 'coinjump_kd', 'coinjump_e'])
+    parser.add_argument("-r", "--rules", dest="rules", default='getout_human_assisted',
+                        required=False,
+                        choices=['getout_human_assisted', 'getout_kd', 'getout_e', 'getoutplus'])
     args = parser.parse_args()
     make_deterministic(args.seed)
 
-    if args.env == "coinjump":
+    if args.env == "Getout":
         coin_jump = create_coinjump_instance()
-    elif args.env == "coinjump_kd":
+    elif args.env == "GetoutKD":
         coin_jump = create_coinjump_instance(key_door=True)
-    elif args.env == "coinjump_e":
+    elif args.env == "GetoutE":
         coin_jump = create_coinjump_instance(enemy=True)
+    else:
+        coin_jump = create_coinjump_instance(enemies=True)
     viewer = setup_image_viewer(coin_jump)
 
     # frame rate limiting
@@ -106,12 +109,14 @@ def run():
                 print(explaining)
                 last_explaining = explaining
         else:
-            if args.env == "coinjump":
+            if args.env == "Getout":
                 coin_jump = create_coinjump_instance()
-            elif args.env == "coinjump_kd":
+            elif args.env == "GetoutKD":
                 coin_jump = create_coinjump_instance(key_door=True)
-            elif args.env == "coinjump_e":
+            elif args.env == "GetoutE":
                 coin_jump = create_coinjump_instance(enemy=True)
+            else:
+                coin_jump = create_coinjump_instance(enemies=True)
             action = 0
             print("--------------------------     next game    --------------------------")
 

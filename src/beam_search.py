@@ -53,7 +53,7 @@ def get_args():
     parser.add_argument("--batch-size", type=int, default=24, help="Batch size to infer with")
     parser.add_argument("--batch-size-bs", type=int, default=1, help="Batch size in beam search")
     parser.add_argument('-r', "--rules", required=True, help="choose to root rules", dest='r',
-                        choices=["coinjump_root", 'bigfishm_root', 'eheist_root'])
+                        choices=["getout_root", 'bigfish_root', 'heist_root'])
     parser.add_argument('-m', "--model", required=True, help="the game mode for beam-search", dest='m',
                         choices=['coinjump', 'bigfish', 'heist'])
     parser.add_argument('-t', "--t-beam", type=int, default=3, help="Number of rule expantion of clause generation.")
@@ -63,7 +63,7 @@ def get_args():
     parser.add_argument('--scoring', type=bool, help='beam search rules with scored rule by trained ppo agent',
                         default=False, dest='scoring')
     parser.add_argument('-d', '--dataset', required=False, help='the dataset to load if scoring', dest='d',
-                        choices=['coinjump.json', 'heist.json'])
+                        choices=['getout.json', 'heist.json'])
     args = parser.parse_args()
     return args
 

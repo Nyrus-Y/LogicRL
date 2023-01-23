@@ -4,35 +4,32 @@
 #include <queue>
 #include "../mazegen.h"
 #include "../cpp-utils.h"
-#include <iostream>
 
-const std::string NAME = "eheist";
+const std::string NAME = "oriheist";
 
 const float COMPLETION_BONUS = 10.0f;
-const float STEP_PENALTY = 0.0f;
 
 const int LOCKED_DOOR = 1;
 const int KEY = 2;
 const int EXIT = 9;
 const int KEY_ON_RING = 11;
-const int AGENT = 0;
 
-class EHeistLKGame : public BasicAbstractGame {
+
+
+class OriHeistGame : public BasicAbstractGame {
   public:
     std::shared_ptr<MazeGen> maze_gen;
     int world_dim = 0;
     int num_keys = 0;
     std::vector<bool> has_keys;
-    std::vector<bool> num_locks_unlocked;
 
-    EHeistLKGame()
+    OriHeistGame()
         : BasicAbstractGame(NAME) {
-        timeout = 100;
         maze_gen = nullptr;
         has_useful_vel_info = false;
 
-        main_width = 10;
-        main_height = 10;
+        main_width = 20;
+        main_height = 20;
 
         out_of_bounds_object = WALL_OBJ;
         visibility = 8.0;
@@ -87,27 +84,15 @@ class EHeistLKGame : public BasicAbstractGame {
 
         if (obj->type == EXIT) {
             step_data.done = true;
-            step_data.reward += COMPLETION_BONUS;
+            step_data.reward = COMPLETION_BONUS;
             step_data.level_complete = true;
         } else if (obj->type == KEY) {
-            obj->x = 0.;
-            obj->y = 0.;
             obj->will_erase = true;
             has_keys[obj->image_theme] = true;
-            step_data.reward += COMPLETION_BONUS/4.0;
         } else if (obj->type == LOCKED_DOOR) {
             int door_num = obj->image_theme;
-            num_locks_unlocked[door_num] = true;
             if (has_keys[door_num]) {
-                obj->x = 0.;
-                obj->y = 0.;
                 obj->will_erase = true;
-            }
-            if (std::count(num_locks_unlocked.begin(), num_locks_unlocked.end(), true) == num_keys) {
-
-                step_data.done = true;
-                step_data.reward += COMPLETION_BONUS/4.0;
-                step_data.level_complete = true;
             }
         }
     }
@@ -132,42 +117,30 @@ class EHeistLKGame : public BasicAbstractGame {
     void game_reset() override {
         BasicAbstractGame::game_reset();
 
-        float_t *data = (float *)(obs_bufs[obs_name_to_offset.at("positions")]);
-        for (int i = 0; i < 3*7; i++){
-          data[i] = 0.;
-        }
-
-
         int min_maze_dim = 5;
         int max_diff = (world_dim - min_maze_dim) / 2;
         int difficulty = rand_gen.randn(max_diff + 1);
-        difficulty = 1;
 
         options.center_agent = options.distribution_mode == MemoryMode;
 
         if (options.distribution_mode == MemoryMode) {
-            num_keys = rand_gen.randn(3) + 1;
+            num_keys = rand_gen.randn(4);
         } else {
-            num_keys = 1 + rand_gen.randn(3);
+            num_keys = difficulty + rand_gen.randn(2);
         }
 
         if (num_keys > 3)
             num_keys = 3;
 
-        // num_keys = 1;
-
         has_keys.clear();
-        num_locks_unlocked.clear();
 
         for (int i = 0; i < num_keys; i++) {
             has_keys.push_back(false);
-            num_locks_unlocked.push_back(false);
         }
 
         int maze_dim = difficulty * 2 + min_maze_dim;
         float maze_scale = main_height / (world_dim * 1.0);
 
-        // agent size
         agent->rx = .375 * maze_scale;
         agent->ry = .375 * maze_scale;
 
@@ -182,12 +155,10 @@ class EHeistLKGame : public BasicAbstractGame {
 
         int off_x = rand_gen.randn(world_dim - maze_dim + 1);
         int off_y = rand_gen.randn(world_dim - maze_dim + 1);
-        off_x = 0;
-        off_y = 0;
 
-        // for (int i = 0; i < grid_size; i++) {
-        //     set_obj(i, WALL_OBJ);
-        // }
+        for (int i = 0; i < grid_size; i++) {
+            set_obj(i, WALL_OBJ);
+        }
 
         for (int i = 0; i < maze_dim; i++) {
             for (int j = 0; j < maze_dim; j++) {
@@ -207,16 +178,13 @@ class EHeistLKGame : public BasicAbstractGame {
                     auto ent = spawn_entity(.375 * maze_scale, KEY, maze_scale * x, maze_scale * y, maze_scale, maze_scale);
                     ent->image_theme = obj - KEY_OBJ - 1;
                     match_aspect_ratio(ent);
-                }
-                 else if (obj >= DOOR_OBJ) {
+                } else if (obj >= DOOR_OBJ) {
                     auto ent = add_entity(obj_x, obj_y, 0, 0, r_ent, LOCKED_DOOR);
                     ent->image_theme = obj - DOOR_OBJ - 1;
-                }
-                //  else if (obj == EXIT_OBJ) {
-                //     auto ent = spawn_entity(.375 * maze_scale, EXIT, maze_scale * x, maze_scale * y, maze_scale, maze_scale);
-                //     match_aspect_ratio(ent);
-                // }
-                else if (obj == AGENT_OBJ) {
+                } else if (obj == EXIT_OBJ) {
+                    auto ent = spawn_entity(.375 * maze_scale, EXIT, maze_scale * x, maze_scale * y, maze_scale, maze_scale);
+                    match_aspect_ratio(ent);
+                } else if (obj == AGENT_OBJ) {
                     agent->x = obj_x;
                     agent->y = obj_y;
                 }
@@ -234,65 +202,12 @@ class EHeistLKGame : public BasicAbstractGame {
             ent->use_abs_coords = true;
             match_aspect_ratio(ent);
         }
-
-        // std::cout << maze_gen <<std::endl;
     }
-
 
     void game_step() override {
         BasicAbstractGame::game_step();
 
         agent->face_direction(action_vx, action_vy);
-        step_data.reward += STEP_PENALTY;
-        float_t *data = (float *)(obs_bufs[obs_name_to_offset.at("positions")]);
-        data[0] = agent->x;
-        data[1] = agent->y;
-
-        // int32_t key_count = (int)entities.size() - 1;
-
-        // for (int i=0; i < 3; i++){ // remove doors
-        //   data[4*i+4] = -1.;
-        //   data[4*i+5] = -1.;
-        // }
-        for (int i=2; i < 27; i++){ // remove doors
-          data[i] = 0.;
-        }
-
-        int offset;
-        int colorEnt = 1;
-        for (int i = 0; i < entities.size(); i++){
-            auto ent = entities[i];
-            offset = ent->image_theme;
-            if (ent->type == KEY) {
-                data[4*offset+2] = ent->x;
-                data[4*offset+3] = ent->y;
-            } else if (ent->type == LOCKED_DOOR) {
-                data[4*offset+4] = ent->x;
-                data[4*offset+5] = ent->y;
-            }
-        }
-    }
-
-    void observe() override {
-        Game::observe();
-        int32_t key_count = 0;
-        for (const auto& has_key : has_keys) {
-            if (has_key) {
-                key_count++;
-            }
-        }
-        *(int32_t *)(info_bufs[info_name_to_offset.at("key_count")]) = key_count;
-        // *(int32_t *)(info_bufs[info_name_to_offset.at("agent_pos")]) = agent->x;
-        int32_t *data = (int32_t *)(info_bufs[info_name_to_offset.at("agent_pos")]);
-        data[0] = agent->x;
-        data[1] = agent->y;
-    }
-
-    float get_reward(float agent_x, float agent_y, float key_x, float key_y){
-        float distance = std::sqrt(std::abs(std::pow(agent_x - key_x, 2)) + std::abs(std::pow(agent_y - key_y, 2)));
-        // float scale = -1/250.0;
-        float scale = -1/100.0;
-        return distance * scale;
     }
 
     void serialize(WriteBuffer *b) override {
@@ -310,4 +225,4 @@ class EHeistLKGame : public BasicAbstractGame {
     }
 };
 
-REGISTER_GAME(NAME, EHeistLKGame);
+REGISTER_GAME(NAME, OriHeistGame);

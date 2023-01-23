@@ -382,7 +382,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
       //     s.high.int32 = INT32_MAX;
       //     info_types.push_back(s);
       // }
-    } else if (env_name == "heist") {
+    } else if (env_name == "oriheist") {
       {
           struct libenv_tensortype s;
           strcpy(s.name, "key_count");
@@ -517,7 +517,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
         s.high.float32 = 2.0f;
         observation_types.push_back(s);
     }
-    } else if (env_name == "eheist"){
+    } else if (env_name == "heistplus"){
       {
           struct libenv_tensortype s;
           strcpy(s.name, "positions");
@@ -551,42 +551,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
           s.high.int32 = INT32_MAX;
           info_types.push_back(s);
       }
-    } else if (env_name == "eheistc1"){
-      {
-          struct libenv_tensortype s;
-          strcpy(s.name, "positions");
-          s.scalar_type = LIBENV_SCALAR_TYPE_REAL;
-          s.dtype = LIBENV_DTYPE_FLOAT32;
-          s.shape[0] = 7;
-          s.shape[1] = 2;
-          s.ndim = 2;
-          s.low.float32 = 0.25f;
-          s.high.float32 = 2.0f;
-          observation_types.push_back(s);
-      }
-      {
-          struct libenv_tensortype s;
-          strcpy(s.name, "agent_pos");
-          s.scalar_type = LIBENV_SCALAR_TYPE_DISCRETE;
-          s.dtype = LIBENV_DTYPE_INT32;
-          s.shape[0] = 2;
-          s.ndim = 1;
-          s.low.int32 = 0;
-          s.high.int32 = INT32_MAX;
-          info_types.push_back(s);
-      }
-      {
-          struct libenv_tensortype s;
-          strcpy(s.name, "key_count");
-          s.scalar_type = LIBENV_SCALAR_TYPE_DISCRETE;
-          s.dtype = LIBENV_DTYPE_INT32;
-          s.ndim = 0,
-          s.low.int32 = 0;
-          s.high.int32 = INT32_MAX;
-          info_types.push_back(s);
-      }
-    }
-    else if (env_name == "eheistc2"){
+    } else if (env_name == "heist"){
       {
           struct libenv_tensortype s;
           strcpy(s.name, "positions");
@@ -621,7 +586,42 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
           info_types.push_back(s);
       }
     }
-    else if (env_name == "bigfishm"){
+    else if (env_name == "heistcolor"){
+      {
+          struct libenv_tensortype s;
+          strcpy(s.name, "positions");
+          s.scalar_type = LIBENV_SCALAR_TYPE_REAL;
+          s.dtype = LIBENV_DTYPE_FLOAT32;
+          s.shape[0] = 7;
+          s.shape[1] = 2;
+          s.ndim = 2;
+          s.low.float32 = 0.25f;
+          s.high.float32 = 2.0f;
+          observation_types.push_back(s);
+      }
+      {
+          struct libenv_tensortype s;
+          strcpy(s.name, "agent_pos");
+          s.scalar_type = LIBENV_SCALAR_TYPE_DISCRETE;
+          s.dtype = LIBENV_DTYPE_INT32;
+          s.shape[0] = 2;
+          s.ndim = 1;
+          s.low.int32 = 0;
+          s.high.int32 = INT32_MAX;
+          info_types.push_back(s);
+      }
+      {
+          struct libenv_tensortype s;
+          strcpy(s.name, "key_count");
+          s.scalar_type = LIBENV_SCALAR_TYPE_DISCRETE;
+          s.dtype = LIBENV_DTYPE_INT32;
+          s.ndim = 0,
+          s.low.int32 = 0;
+          s.high.int32 = INT32_MAX;
+          info_types.push_back(s);
+      }
+    }
+    else if (env_name == "bigfish"){
     {
         struct libenv_tensortype s; // table of all fish
         strcpy(s.name, "fish_pos");
@@ -679,7 +679,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
         observation_types.push_back(s);
     }
     }
-    else if (env_name == "bigfishc"){
+    else if (env_name == "bigfishcolor"){
     {
         struct libenv_tensortype s; // table of all fish
         strcpy(s.name, "fish_pos");

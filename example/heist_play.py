@@ -35,11 +35,11 @@ def run():
     parser.add_argument("-alg", "--algorithm", help="algorithm that to use",
                         action="store", dest="alg", required=False, default='logic',
                         choices=['logic'])
-    parser.add_argument("-r", "--rules", dest="rules", default='eheist_human_assisted',
-                        required=False, choices=['eheist_human_assisted'])
+    parser.add_argument("-r", "--rules", dest="rules", default='heist_human_assisted',
+                        required=False, choices=['heist_human_assisted', 'heist_bs_top1'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
-                        required=False, action="store", dest="env", default='eheist',
-                        choices=['eheist', 'eheistc1'])
+                        required=False, action="store", dest="env", default='heistplus',
+                        choices=['heist', 'heistcolor', 'heistplus'])
     args = parser.parse_args()
     make_deterministic(args.seed)
 

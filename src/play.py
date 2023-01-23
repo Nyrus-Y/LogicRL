@@ -37,24 +37,25 @@ def main():
                         choices=['ppo', 'logic', 'random', 'human'])
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=True, action="store", dest="m",
-                        choices=['coinjump', 'bigfish', 'heist', 'ecoinrun'])
+                        choices=['getout', 'bigfish', 'heist', 'ecoinrun'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['CoinJumpEnv-v1', 'CoinJumpEnv-v2',
-                                 'bigfishm', 'bigfishc',
-                                 'eheist', 'eheistc1', 'eheistc2',
+                        choices=['getout', 'getoutplus',
+                                 'bigfish', 'bigfishcolor',
+                                 'heist', 'heistcolor', 'heistplus',
                                  'ecoinrun'])
     parser.add_argument("-r", "--rules", dest="rules", default=None,
                         required=False,
-                        choices=['coinjump_human_assisted', 'coinjump_10a', 'coinjump_bs_top10', 'coinjump_bs_top1',
-                                 'coinjump_bs_top3',
-                                 'bigfish_human_assisted', 'bigfishc', 'bigfishm_bs_top5', 'bigfishm_bs_top3',
-                                 'bigfishm_bs_top1', 'more_redundant_actions',
-                                 'eheist_human_assisted', 'eheist_bs_top5', 'eheist_bs_top1',
+                        choices=['getout_human_assisted', 'getout_10a', 'getout_bs_top10', 'getout_bs_top1',
+                                 'getout_bs_top3','getoutplus',
+                                 'bigfish_human_assisted', 'bigfishc', 'bigfish_bs_top5', 'bigfish_bs_top3',
+                                 'bigfish_bs_top1', 'more_redundant_actions',
+                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_top1',
                                  ])
     parser.add_argument("-l", "--log", help="record the information of games", type=bool, default=False, dest="log")
     parser.add_argument("--log_file_name", help="the name of log file", required=False, dest='logfile')
-    parser.add_argument("--render", help="render the game",type=bool, default=True, dest="render")
+    parser.add_argument("--render", help="render the game", type=bool, default=True, dest="render")
+
     args = parser.parse_args()
 
     # fix seed
@@ -102,7 +103,7 @@ def main():
         agent = 'human'
 
     #### Continue to render
-    if args.m == 'coinjump':
+    if args.m == 'getout':
         render_coinjump(agent, args)
     elif args.m == 'bigfish':
         render_bigfish(agent, args)

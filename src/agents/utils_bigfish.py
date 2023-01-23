@@ -10,7 +10,7 @@ def extract_logic_state_bigfish(obs, args):
     """
     states = torch.from_numpy(obs['positions']).squeeze()
     if args.alg == 'logic':
-        if args.env == "bigfishm":
+        if args.env == "bigfish":
             # input shape: [X,Y,radius]
             # output shape:[agent, fish, radius, X, Y]
             extracted_state = torch.zeros((3, 5))
@@ -28,7 +28,7 @@ def extract_logic_state_bigfish(obs, args):
 
             extracted_state = extracted_state.unsqueeze(0)
             return extracted_state.cuda()
-        elif args.env == "bigfishc":
+        elif args.env == "bigfishcolor":
             # input shape: [X, Y, color, radius]
             # output shape: [agent, fish, green, red,radius, X, Y]
             extracted_state = torch.zeros((3, 7))
