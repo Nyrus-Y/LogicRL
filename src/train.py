@@ -167,8 +167,12 @@ def main():
     i_episode = 0
 
     if args.recover:
-        step_list, reward_list, weights_list = agent.load(directory)
-        time_step = max(step_list)[0]
+        if args.alg == 'logic':
+            step_list, reward_list, weights_list = agent.load(directory)
+            time_step = max(step_list)[0]
+        else:
+            step_list, reward_list = agent.load(directory)
+            time_step = max(step_list)[0]
     else:
         step_list = []
         reward_list = []
@@ -245,7 +249,8 @@ def main():
 
                 step_list.append([time_step])
                 reward_list.append([print_avg_reward])
-                weights_list.append([(agent.get_weights().tolist())])
+                if args.alg == 'logic':
+                    weights_list.append([(agent.get_weights().tolist())])
 
             # save model weights
             if time_step % save_model_freq == 0:
@@ -253,7 +258,10 @@ def main():
                 checkpoint_path = directory + "{}_{}_step_{}.pth".format(args.alg, args.env,
                                                                          time_step)
                 print("saving model at : " + checkpoint_path)
-                agent.save(checkpoint_path, directory, step_list, reward_list, weights_list)
+                if args.alg=='logic':
+                    agent.save(checkpoint_path, directory, step_list, reward_list, weights_list)
+                else:
+                    agent.save(checkpoint_path, directory, step_list, reward_list)
                 print("model saved")
                 print("Elapsed Time  : ", time.time() - start_time)
                 print("--------------------------------------------------------------------------------------------")
@@ -284,11 +292,11 @@ def main():
         data = np.hstack((step_list, reward_list))
         for row in data:
             dataset.writerow(row)
-
-    with open(directory + '/' + 'weights.csv', 'w', newline='') as f:
-        dataset = csv.writer(f)
-        for row in weights_list:
-            dataset.writerow(row)
+    if args.alg == 'logic':
+        with open(directory + '/' + 'weights.csv', 'w', newline='') as f:
+            dataset = csv.writer(f)
+            for row in weights_list:
+                dataset.writerow(row)
 
     end_time = time.time()
     print("Started training at (GMT) : ", start_time)
