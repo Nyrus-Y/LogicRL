@@ -12,6 +12,11 @@ from the nsfr folder:
 pip install -e . # installs in dev mode
 ```
 
+You also need to install QT-5 for Bigfish and Heist:
+```bash
+apt-get install qt5-default
+```
+
 ## How to use
 
 
