@@ -65,7 +65,7 @@ def main():
     if args.m == 'heist' and args.alg == 'ppo':
         max_training_timesteps = 5000000
     else:
-        max_training_timesteps = 2000
+        max_training_timesteps = 800000
     #####################################################
 
     if args.m == "getout":
