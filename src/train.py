@@ -38,7 +38,8 @@ def main():
                                  'getout_bs_top1', 'getout_bs_top3', 'ppo_simple_policy',
                                  'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_top3',
                                  'bigfish_bs_top1', 'bigfish_redundant_actions',
-                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_top1', 'heist_redundant_actions'
+                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_top3', 'heist_bs_top1',
+                                 'heist_redundant_actions'
                                  ])
     parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
     args = parser.parse_args()

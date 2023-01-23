@@ -50,7 +50,8 @@ def main():
                                  'getout_bs_top3', 'getoutplus', 'getout_redundant_actions',
                                  'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_top3',
                                  'bigfish_bs_top1', 'bigfish_redundant_actions',
-                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_top1', 'heist_redundant_actions'
+                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_top3', 'heist_bs_top1',
+                                 'heist_redundant_actions'
                                  ])
     parser.add_argument("-l", "--log", help="record the information of games", type=bool, default=False, dest="log")
     parser.add_argument("--log_file_name", help="the name of log file", required=False, dest='logfile')
