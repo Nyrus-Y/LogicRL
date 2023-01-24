@@ -20,7 +20,7 @@ from utils import make_deterministic, initialize_game, env_step
 from config import *
 from tqdm import tqdm
 from rtpt import RTPT
-from make_graph import plot_weights_beam, plot_weights
+from make_graph import plot_weights
 
 
 def main():
@@ -40,14 +40,14 @@ def main():
                         choices=['getout', 'bigfish', 'heist'])
     parser.add_argument("-r", "--rules", dest="rules", default=None, required=False,
                         choices=['getout_human_assisted', 'getout_redundant_actions', 'getout_bs_top10',
-                                 'getout_bs_top1', 'getout_bs_top3', 'ppo_simple_policy',
-                                 'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_top3',
-                                 'bigfish_bs_top1', 'bigfish_redundant_actions',
-                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_top3', 'heist_bs_top1',
+                                 'getout_bs_rf1', 'getout_bs_rf3', 'ppo_simple_policy',
+                                 'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_rf3',
+                                 'bigfish_bs_rf1', 'bigfish_redundant_actions',
+                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_rf3', 'heist_bs_rf1',
                                  'heist_redundant_actions'])
     parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
     parser.add_argument('-re', '--recovery', help='recover from crash', default=False, type=bool, dest='recover')
-    # arg = ['-alg', 'logic', '-m', 'bigfish', '-env', 'bigfish', '-r', 'bigfish_bs_top1', '-re', 'True']
+    # arg = ['-alg', 'logic', '-m', 'bigfish', '-env', 'bigfish', '-p', 'True', '-r', 'bigfish_human_assisted']
     args = parser.parse_args()
 
     #####################################################
@@ -188,14 +188,13 @@ def main():
     if not os.path.exists(image_directory):
         os.makedirs(image_directory)
 
-    image_directory = image_directory + '/' + args.env + '/'
+    image_directory = image_directory + '/' + args.m + '/' + args.env + '/' + args.rules + '/' + str(
+        args.seed) + '/'
     if not os.path.exists(image_directory):
         os.makedirs(image_directory)
 
     if args.plot:
         if args.alg == 'logic':
-            plot_weights_beam(agent.get_weights(), image_directory)
-        elif args.alg == 'ppo':
             plot_weights(agent.get_weights(), image_directory)
 
     # printing and logging variables
@@ -258,7 +257,7 @@ def main():
                 checkpoint_path = directory + "{}_{}_step_{}.pth".format(args.alg, args.env,
                                                                          time_step)
                 print("saving model at : " + checkpoint_path)
-                if args.alg=='logic':
+                if args.alg == 'logic':
                     agent.save(checkpoint_path, directory, step_list, reward_list, weights_list)
                 else:
                     agent.save(checkpoint_path, directory, step_list, reward_list)
@@ -269,9 +268,8 @@ def main():
                 # save image of weights
                 if args.plot:
                     if args.alg == 'logic':
-                        plot_weights_beam(agent.get_weights(), image_directory, time_step)
-                    elif args.alg == 'ppo':
                         plot_weights(agent.get_weights(), image_directory, time_step)
+
             # break; if the episode is over
             if done:
                 break
