@@ -3,7 +3,7 @@ import torch
 import os
 
 from utils import make_deterministic
-from utils_game import render_coinjump, render_bigfish, render_heist, render_ecoinrun
+from utils_game import render_getout, render_bigfish, render_heist, render_ecoinrun
 from agents.neural_agent import ActorCritic, NeuralPlayer
 from agents.logic_agent import NSFR_ActorCritic, LogicPlayer
 from agents.random_agent import RandomPlayer
@@ -46,17 +46,16 @@ def main():
                                  'ecoinrun'])
     parser.add_argument("-r", "--rules", dest="rules", default=None,
                         required=False,
-                        choices=['getout_human_assisted', 'getout_bs_top10', 'getout_bs_top1',
-                                 'getout_bs_top3', 'getoutplus', 'getout_redundant_actions',
-                                 'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_top3',
-                                 'bigfish_bs_top1', 'bigfish_redundant_actions',
-                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_top3', 'heist_bs_top1',
+                        choices=['getout_human_assisted', 'getout_bs_top10', 'getout_bs_rf1',
+                                 'getout_bs_rf3', 'getoutplus', 'getout_redundant_actions',
+                                 'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_rf3',
+                                 'bigfish_bs_rf1', 'bigfish_redundant_actions',
+                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_rf3', 'heist_bs_rf1',
                                  'heist_redundant_actions'
                                  ])
     parser.add_argument("-l", "--log", help="record the information of games", type=bool, default=False, dest="log")
     parser.add_argument("--log_file_name", help="the name of log file", required=False, dest='logfile')
     parser.add_argument("--render", help="render the game", type=bool, default=True, dest="render")
-
     args = parser.parse_args()
 
     # fix seed
@@ -105,7 +104,7 @@ def main():
 
     #### Continue to render
     if args.m == 'getout':
-        render_coinjump(agent, args)
+        render_getout(agent, args)
     elif args.m == 'bigfish':
         render_bigfish(agent, args)
     elif args.m == 'heist':
