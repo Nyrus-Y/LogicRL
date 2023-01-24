@@ -8,6 +8,7 @@ from .trackingCamera import TrackingCamera
 from .resource_loader import ResourceLoader
 from .player_v1 import Player
 
+
 class CoinJump:
 
     def __init__(self, render=True, resource_path=None, start_on_first_action=False):
@@ -20,7 +21,7 @@ class CoinJump:
 
         """ change here to choose  mode """
 
-        self.score = 100.0
+        self.score = 0.0
         self.level = Level(27, 16)
         self.player = Player(self.level, 2, 2, self.resource_loader)
         self.level.entities.append(self.player)
@@ -62,10 +63,10 @@ class CoinJump:
         self.render()
 
         reward = self.level.get_reward()
-        if self.score + reward <= 0 and not self.level.terminated:
-            # terminate if the score drops below zero
-            self.level.terminate(True)
-            reward = self.level.get_reward()  # losing changes the reward
+        # if self.score + reward <= 0 and not self.level.terminated:
+        #     # terminate if the score drops below zero
+        #     self.level.terminate(True)
+        #     reward = self.level.get_reward()  # losing changes the reward
         self.score += reward
 
         return reward
