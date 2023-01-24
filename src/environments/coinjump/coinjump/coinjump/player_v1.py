@@ -4,6 +4,7 @@ from .entityEncoding import EntityID
 from .resource_loader import flip_horizontal
 from .actions import coin_jump_actions_from_unified
 
+
 class Player(Entity):
 
     def __init__(self, level, x, y, resource_loader=None):
@@ -64,8 +65,10 @@ class Player(Entity):
         self.sprites = sprites
 
     def set_action(self, action):
-        self.action = coin_jump_actions_from_unified(action)
-        #self.action = action
+        if type(action) is int:
+            self.action = coin_jump_actions_from_unified(action)
+        else:
+            self.action = action
 
     def step(self):
         self.ax = 0
@@ -128,7 +131,6 @@ class Player(Entity):
             if self.level.get_key() > 0:
                 self.level.take_reward(self.level.reward_values['door'])
                 self.level.terminate(lost=False)
-
 
     def _get_parameterization(self):
         return [self.is_powered_up, 0, 0, 0]
