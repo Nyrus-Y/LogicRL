@@ -184,8 +184,8 @@ class ClauseGenerator(object):
             # action_probs = self.buffer.action_probs
 
             # scores = self.scoring(action_probs, body_scores)
-            if self.args.m == 'coinjump':
-                action_probs, actions = self.get_action_probs_cj(predname)
+            if self.args.m == 'getout':
+                action_probs, actions = self.get_action_probs_go(predname)
                 # scores = torch.sum(self.buffer.action_buffer * body_scores, dim=1)
                 scores = self.scoring(action_probs, body_scores, actions)
             elif self.args.m == 'bigfish':
@@ -211,7 +211,7 @@ class ClauseGenerator(object):
         return scores
 
     #
-    def get_action_probs_cj(self, predname):
+    def get_action_probs_go(self, predname):
         # action_probs = torch.stack(self.buffer.action_probs, dim=1).squeeze(0)
         action_probs = self.buffer.action_probs.squeeze(1)
         # action_probs = self.buffer.action_probs.squeeze(1)

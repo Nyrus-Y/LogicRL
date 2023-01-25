@@ -55,7 +55,7 @@ def get_args():
     parser.add_argument('-r', "--rules", required=True, help="choose to root rules", dest='r',
                         choices=["getout_root", 'bigfish_root', 'heist_root'])
     parser.add_argument('-m', "--model", required=True, help="the game mode for beam-search", dest='m',
-                        choices=['coinjump', 'bigfish', 'heist'])
+                        choices=['getout', 'bigfish', 'heist'])
     parser.add_argument('-t', "--t-beam", type=int, default=3, help="Number of rule expantion of clause generation.")
     parser.add_argument('-n', "--n-beam", type=int, default=8, help="The size of the beam.")
     parser.add_argument("--n-max", type=int, default=50, help="The maximum number of clauses.")
