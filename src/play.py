@@ -56,6 +56,7 @@ def main():
     parser.add_argument("-l", "--log", help="record the information of games", type=bool, default=False, dest="log")
     parser.add_argument("--log_file_name", help="the name of log file", required=False, dest='logfile')
     parser.add_argument("--render", help="render the game", type=bool, default=True, dest="render")
+    # arg = ['-alg', 'human', '-m', 'getout', '-env', 'getout','-l','True']
     args = parser.parse_args()
 
     # fix seed
@@ -87,7 +88,11 @@ def main():
         run_num = len(current_num_files)
 
         #### create new log file for each run
-        log_f_name = log_dir + args.alg + '_' + args.env + "_log_" + str(run_num) + ".csv"
+        if args.alg == 'human':
+            player_name = input("Please give your name :")
+            log_f_name = log_dir + args.alg + '_' + args.env + '_' + player_name + "_log_" + str(run_num) + ".csv"
+        else:
+            log_f_name = log_dir + args.alg + '_' + args.env + "_log_" + str(run_num) + ".csv"
         args.logfile = log_f_name
         print("current logging run number for " + args.env + " : ", run_num)
         print("logging at : " + log_f_name)

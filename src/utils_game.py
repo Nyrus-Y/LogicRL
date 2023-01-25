@@ -3,13 +3,59 @@ import random
 import time
 import gym3
 import numpy as np
+import ast
+import pandas as pd
 from tqdm import tqdm
-import os
+import sys
+import io
 from environments.procgen.procgen import ProcgenGym3Env
 from environments.coinjump.coinjump.imageviewer import ImageViewer
 from environments.coinjump.coinjump.coinjump.paramLevelGenerator import ParameterizedLevelGenerator
 from environments.coinjump.coinjump.coinjump.coinjump import CoinJump
 from environments.coinjump.coinjump.coinjump.actions import CoinJumpActions
+
+
+def run(env, nb_games=20):
+    """
+    Display a window to the user and loop until the window is closed
+    by the user.
+    """
+    prev_time = env._renderer.get_time()
+    env._renderer.start()
+    env._draw()
+    env._renderer.finish()
+
+    old_stdout = sys.stdout  # Memorize the default stdout stream
+    sys.stdout = buffer = io.StringIO()
+
+    # whatWasPrinted = buffer.getvalue()  # Return a str containing the entire contents of the buffer.
+    while buffer.getvalue().count("final info") < nb_games:
+        now = env._renderer.get_time()
+        dt = now - prev_time
+        prev_time = now
+        if dt < env._sec_per_timestep:
+            sleep_time = env._sec_per_timestep - dt
+            time.sleep(sleep_time)
+
+        keys_clicked, keys_pressed = env._renderer.start()
+        if "O" in keys_clicked:
+            env._overlay_enabled = not env._overlay_enabled
+        env._update(dt, keys_clicked, keys_pressed)
+        env._draw()
+        env._renderer.finish()
+        if not env._renderer.is_open:
+            break
+    sys.stdout = old_stdout  # Put the old stream back in place
+    all_summaries = [line for line in buffer.getvalue().split("\n") if line.startswith("final")]
+    return all_summaries
+
+
+def get_values(summaries, key_str, stype=float):
+    all_values = []
+    for line in summaries:
+        dico = ast.literal_eval(line[11:])
+        all_values.append(stype(dico[key_str]))
+    return all_values
 
 
 def render_getout(agent, args):
@@ -54,23 +100,24 @@ def render_getout(agent, args):
     last_frame_time = 0
 
     num_epi = 1
-    max_epi = 100
+    max_epi = 20
     total_reward = 0
     epi_reward = 0
     current_reward = 0
     step = 0
     last_explaining = None
+
     if args.log:
+        log_f = open(args.logfile, "w+")
+        writer = csv.writer(log_f)
+
         if args.alg == 'logic':
-            log_f = open(args.logfile, "w+")
-            writer = csv.writer(log_f)
             head = ['episode', 'step', 'reward', 'average_reward', 'logic_state', 'probs']
-            writer.writerow(head)
-        else:
-            log_f = open(args.logfile, "w+")
-            writer = csv.writer(log_f)
+        elif args.alg == 'ppo' or args.alg == 'random':
             head = ['episode', 'step', 'reward', 'average_reward']
-            writer.writerow(head)
+        elif args.alg == 'human':
+            head = ['episode', 'reward']
+        writer.writerow(head)
 
     while num_epi <= max_epi:
         # control framerate
@@ -99,28 +146,18 @@ def render_getout(agent, args):
                 if KEY_s in viewer.pressed_keys:
                     action.append(CoinJumpActions.MOVE_DOWN)
         else:
+            coin_jump = create_coinjump_instance(args)
+            # print("epi_reward: ", round(epi_reward, 2))
+            print("--------------------------     next game    --------------------------")
             if args.alg == 'human':
-                if KEY_r in viewer.pressed_keys:
-                    coin_jump = create_coinjump_instance(args)
-                    # print("epi_reward: ", round(epi_reward, 2))
-                    print("--------------------------     next game    --------------------------")
-                    total_reward += epi_reward
-                    epi_reward = 0
-                    action = 0
-                    # average_reward = round(total_reward / num_epi, 2)
-                    num_epi += 1
-                    step = 0
-
-            else:
-                coin_jump = create_coinjump_instance(args)
-                # print("epi_reward: ", round(epi_reward, 2))
-                print("--------------------------     next game    --------------------------")
-                total_reward += epi_reward
-                epi_reward = 0
-                action = 0
-                # average_reward = round(total_reward / num_epi, 2)
-                num_epi += 1
-                step = 0
+                data = [(num_epi, round(epi_reward, 2))]
+                writer.writerows(data)
+            total_reward += epi_reward
+            epi_reward = 0
+            action = 0
+            # average_reward = round(total_reward / num_epi, 2)
+            num_epi += 1
+            step = 0
 
         reward = coin_jump.step(action)
         score = coin_jump.get_score()
@@ -140,7 +177,7 @@ def render_getout(agent, args):
                 logic_state = agent.get_state(coin_jump)
                 data = [(num_epi, step, reward, average_reward, logic_state, probs)]
                 writer.writerows(data)
-            else:
+            elif args.alg == 'ppo' or args.alg == 'random':
                 data = [(num_epi, step, reward, average_reward)]
                 writer.writerows(data)
         # print(reward)
@@ -175,20 +212,28 @@ def render_bigfish(agent, args):
     env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
 
     if args.log:
+        log_f = open(args.logfile, "w+")
+        writer = csv.writer(log_f)
+
         if args.alg == 'logic':
-            log_f = open(args.logfile, "w+")
-            writer = csv.writer(log_f)
             head = ['episode', 'step', 'reward', 'average_reward', 'logic_state', 'probs']
             writer.writerow(head)
-        else:
-            log_f = open(args.logfile, "w+")
-            writer = csv.writer(log_f)
+        elif args.alg == 'ppo' or args.alg == 'random':
             head = ['episode', 'step', 'reward', 'average_reward']
             writer.writerow(head)
 
     if agent == "human":
+
         ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
-        ia.run()
+        all_summaries = run(ia)
+
+        df_scores = get_values(all_summaries, "episode_return")
+        data = {'reward': df_scores}
+        # convert list to df_scores
+        # pd.to_csv(df_scores, f"{player_name}_scores.csv")
+        df = pd.DataFrame(data)
+        df.to_csv(args.logfile, index=False)
+
     else:
         if args.render:
             env = gym3.ViewerWrapper(env, info_key="rgb")
@@ -250,20 +295,27 @@ def render_heist(agent, args):
     env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
 
     if args.log:
+        log_f = open(args.logfile, "w+")
+        writer = csv.writer(log_f)
+
         if args.alg == 'logic':
-            log_f = open(args.logfile, "w+")
-            writer = csv.writer(log_f)
             head = ['episode', 'step', 'reward', 'average_reward', 'logic_state', 'probs']
             writer.writerow(head)
-        else:
-            log_f = open(args.logfile, "w+")
-            writer = csv.writer(log_f)
+        elif args.alg == 'ppo' or args.alg == 'random':
             head = ['episode', 'step', 'reward', 'average_reward']
             writer.writerow(head)
 
     if agent == "human":
+
         ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
-        ia.run()
+        all_summaries = run(ia)
+
+        df_scores = get_values(all_summaries, "episode_return")
+        data = {'reward': df_scores}
+        # convert list to df_scores
+        # pd.to_csv(df_scores, f"{player_name}_scores.csv")
+        df = pd.DataFrame(data)
+        df.to_csv(args.logfile, index=False)
     else:
         if args.render:
             env = gym3.ViewerWrapper(env, info_key="rgb")
