@@ -66,8 +66,11 @@ def main():
     if args.alg not in ['random', 'human']:
         # read filename from models
         current_path = os.path.dirname(__file__)
+        models_folder = os.path.join(current_path, 'models', args.m, args.alg)
+        print(f"Please use one of the following agent: {os.listdir(models_folder)}")
         model_name = input('Enter file name: ')
-        model_file = os.path.join(current_path, 'models', args.m, args.alg, model_name)
+        model_file = os.path.join(models_folder, model_name)
+        import ipdb; ipdb.set_trace()
         model = load_model(model_file, args)
     else:
         model = None
