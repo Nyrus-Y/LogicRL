@@ -225,7 +225,7 @@ class ClosebyValuationFunction(nn.Module):
         dis_y = torch.pow(c_2[:, 1] - c_1[:, 1], 2)
         dis = torch.sqrt(dis_x[:] + dis_y[:])
         dis = abs(dis[:] - r_1[:] - r_2[:])
-        probs = torch.where(dis <= 2, 0.99, 0)
+        probs = torch.where(dis <= 2, 0.99, 0.)
         return probs
 
 
@@ -248,7 +248,7 @@ class BiggerValuationFunction(nn.Module):
         r_1 = z_1[:, -3]
         r_2 = z_2[:, -3]
         diff = r_2[:] - r_1[:]
-        bigger = torch.where(diff < 0, 0.99, 0)
+        bigger = torch.where(diff < 0, 0.99, 0.)
 
         return bigger
 
@@ -272,7 +272,7 @@ class SmallerValuationFunction(nn.Module):
         r_1 = z_1[:, 2]
         r_2 = z_2[:, 2]
         diff = r_2[:] - r_1[:]
-        smaller = torch.where(diff >= 0, 0.99, 0)
+        smaller = torch.where(diff >= 0, 0.99, 0.)
 
         return smaller
 
@@ -285,15 +285,15 @@ def fuzzy_position(pos1, pos2, keyword):
 
     if keyword == 'top':
         probs = 1 - abs(degree[:] - 90) / 90
-        result = torch.where((180 >= degree) & (degree >= 0), probs, 0)
+        result = torch.where((180 >= degree) & (degree >= 0), probs.double(), 0.)
     elif keyword == 'left':
         probs = (abs(degree[:]) - 90) / 90
-        result = torch.where((degree <= -90) | (degree >= 90), probs, 0)
+        result = torch.where((degree <= -90) | (degree >= 90), probs.double(), 0.)
     elif keyword == 'bottom':
         probs = 1 - abs(degree[:] + 90) / 90
-        result = torch.where((0 >= degree) & (degree >= -180), probs, 0)
+        result = torch.where((0 >= degree) & (degree >= -180), probs.double(), 0.)
     elif keyword == 'right':
         probs = 1 - abs(degree[:]) / 90
-        result = torch.where((90 >= degree) & (degree >= -90), probs, 0)
+        result = torch.where((90 >= degree) & (degree >= -90), probs.double(), 0.)
 
     return result

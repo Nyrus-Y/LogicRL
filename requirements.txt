@@ -1,7 +1,7 @@
 ### NSFR
 gym
 gym3
-torch==1.12.1
+#torch==1.12.1
 lark-parser
 sklearn
 gym

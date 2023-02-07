@@ -188,8 +188,11 @@ def main():
     if not os.path.exists(image_directory):
         os.makedirs(image_directory)
 
-    image_directory = image_directory + '/' + args.m + '/' + args.env + '/' + args.rules + '/' + str(
-        args.seed) + '/'
+    if args.rules:
+        image_directory = image_directory + '/' + args.m + '/' + args.env + '/' + args.rules + '/' + str(
+            args.seed) + '/'
+    else:
+        image_directory = image_directory + '/' + args.m + '/' + args.env + '/' + str(args.seed) + '/'
     if not os.path.exists(image_directory):
         os.makedirs(image_directory)
 
