@@ -1,6 +1,7 @@
 import numpy as np
-import torch.nn as nn
 import torch
+import torch.nn as nn
+
 from .logic_utils import get_index_by_predname
 
 
@@ -36,16 +37,24 @@ class NSFReasoner(nn.Module):
         return prednames
 
     def forward(self, x):
-
         zs = x
         # convert to the valuation tensor
         V_0 = self.fc(zs, self.atoms, self.bk)
         # perform T-step forward-chaining reasoning
+        #print("V_0: ", V_0)
         V_T = self.im(V_0)
         self.V_T = V_T
+        #print("V_T: ", V_T)
         # self.print_probs(V_T)
         # only return probs of actions
         actions = self.get_predictions(V_T, prednames=self.prednames)
+        #print(actions)
+        #if actions.requires_grad:
+        #    actions[:,2][0].unsqueeze(-1).backward()
+        #    print('ATOM GRAD: ', self.fc.dummy_zeros.grad)
+        #    self.print_atom_grad_batch(self.fc.dummy_zeros.grad)
+        #print('in nsfr')
+        #print(actions)
         return actions
 
     def predict(self, v, predname):
@@ -86,6 +95,21 @@ class NSFReasoner(nn.Module):
             print('C_' + str(i) + ': ',
                   C[max_i], 'W_' + str(i) + ':', round(W_[max_i].detach().cpu().item(), 3))
 
+    def print_atom_grad_batch(self, valuation, n=40):
+        # self.print_program()
+        print('==== Action Gradients w.r.t. facts V_0 ===')
+        for b in range(valuation.size(0)):
+            print('- batch: ', b, '-')
+            v = valuation[b].detach().cpu().numpy()
+            idxs = np.argsort(-v)
+            for i in idxs:
+                if v[i] >= 0.5:
+                    print(self.atoms[i], ': ', round(v[i], 3))
+    
+    def get_atom_grad_batch(self, valuation):
+        v = valuation[0].detach().cpu().numpy()
+        return [str(x) for x in self.atoms], v
+
     def print_valuation_batch(self, valuation, n=40):
         self.print_program()
         for b in range(valuation.size(0)):
@@ -93,7 +117,7 @@ class NSFReasoner(nn.Module):
             v = valuation[b].detach().cpu().numpy()
             idxs = np.argsort(-v)
             for i in idxs:
-                if v[i] >= 0:
+                if v[i] >= 0.5:
                     print(self.atoms[i], ': ', round(v[i], 3))
 
     def print_explaining(self, predicts):

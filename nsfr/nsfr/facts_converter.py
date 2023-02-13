@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
-from .fol.logic import NeuralPredicate
 from tqdm import tqdm
+
+from .fol.logic import NeuralPredicate
 
 
 class FactsConverter(nn.Module):
@@ -55,15 +56,23 @@ class FactsConverter(nn.Module):
         # V = self.init_valuation(len(G), Z.size(0))
         V = torch.zeros((batch_size, len(G))).to(
             torch.float32).to(self.device)
+        #dummy_zeros = nn.Parameter(torch.zeros((batch_size, len(G))).to(
+        #    torch.float32).to(self.device))
+        self.dummy_zeros = torch.zeros((batch_size, len(G)), requires_grad=True).to(
+            torch.float32).to(self.device)
+        self.dummy_zeros.requires_grad_()
+        self.dummy_zeros.retain_grad()
         for i, atom in enumerate(G):
             if type(atom.pred) == NeuralPredicate and i > 1:
-                V[:, i] = self.vm(Z, atom)
+                V[:, i] = V[:, i] + self.vm(Z, atom)
             elif atom in B:
                 # V[:, i] += 1.0
-                V[:, i] += torch.ones((batch_size,)).to(
+                V[:, i] = V[:, i] + torch.ones((batch_size,)).to(
                     torch.float32).to(self.device)
-        V[:, 1] = torch.ones((batch_size,)).to(
+        V[:, 1] = torch.ones((batch_size,), requires_grad=True).to(
             torch.float32).to(self.device)
+        V = V + self.dummy_zeros
+        # V.retain_grad()
         return V
 
     def convert_i(self, zs, G):

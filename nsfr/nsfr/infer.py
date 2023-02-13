@@ -37,8 +37,9 @@ class InferModule(nn.Module):
             self.W = self.init_identity_weights(device)
         else:
             # to learng the clause weights, initialize W as follows:
-            self.W = nn.Parameter(torch.Tensor(
-                np.random.normal(size=(m, I.size(0)))).to(device))
+            self.W = nn.Parameter(self.init_identity_weights(device))
+            #self.W = nn.Parameter(torch.Tensor(
+            #    np.random.normal(size=(m, I.size(0)))).to(device))
         # clause functions
         self.cs = [ClauseFunction(i, I, gamma=gamma)
                    for i in range(self.I.size(0))]

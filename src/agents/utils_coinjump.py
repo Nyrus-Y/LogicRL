@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import List, Final
+from typing import Final, List
+
 import numpy as np
 import torch
 
@@ -94,7 +95,7 @@ def extract_logic_state_coinjump(coin_jump, args, noise=False):
 
     if noise:
         extracted_states = simulate_prob(extracted_states, num_of_object, key_picked)
-    states = torch.tensor(np.array(extracted_states), dtype=torch.float32, device="cuda:0").unsqueeze(0)
+    states = torch.tensor(np.array(extracted_states), dtype=torch.float32, device="cuda:0", requires_grad=True).unsqueeze(0)
     return states
 
 

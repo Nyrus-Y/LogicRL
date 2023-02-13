@@ -4,8 +4,10 @@ import gym
 import numpy as np
 from gym import spaces
 
-from src.environments.coinjump.coinjump.coinjump.actions import CJA_NUM_EXPLICIT_ACTIONS
-from src.environments.coinjump.coinjump.coinjump.helpers import create_coinjump_instance
+from src.environments.coinjump.coinjump.coinjump.actions import \
+    CJA_NUM_EXPLICIT_ACTIONS
+from src.environments.coinjump.coinjump.coinjump.helpers import \
+    create_coinjump_instance
 
 
 class CoinJumpEnvV1(gym.Env):

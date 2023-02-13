@@ -34,9 +34,9 @@ def get_nsfr_model(args, train=False):
             prednames.append(clause.head.pred.name)
     m = len(prednames)
     # m = 5
-    IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=train, device=device)
+    IM = build_infer_module(clauses, atoms, lang, m=m, infer_step=2, train=args.train, device=device)
     # Neuro-Symbolic Forward Reasoner
-    NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses, train=train)
+    NSFR = NSFReasoner(facts_converter=FC, infer_module=IM, atoms=atoms, bk=bk, clauses=clauses, train=args.train)
     return NSFR
 
 

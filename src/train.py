@@ -1,26 +1,31 @@
 import argparse
-import os
-import time
-import gym
-import sys
-import pickle
-import csv
 import copy
+import os
+import pickle
+import sys
+import time
+
+import gym
 import numpy as np
+import pandas as pd
 
 # import wandb
 import environments.coinjump.env
 
 sys.path.insert(0, '../')
 
+import csv
+
+from PIL import Image
+from rtpt import RTPT
+from tqdm import tqdm
+
 from agents.logic_agent import LogicPPO
 from agents.neural_agent import NeuralPPO
-from environments.procgen.procgen import ProcgenGym3Env
-from utils import make_deterministic, initialize_game, env_step
 from config import *
-from tqdm import tqdm
-from rtpt import RTPT
+from environments.procgen.procgen import ProcgenGym3Env
 from make_graph import plot_weights
+from utils import env_step, initialize_game, make_deterministic
 
 
 def main():
@@ -47,6 +52,7 @@ def main():
                                  'heist_redundant_actions'])
     parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
     parser.add_argument('-re', '--recovery', help='recover from crash', default=False, type=bool, dest='recover')
+    parser.add_argument('-tr', '--train', help='initialize weights randomly', default=True, type=bool, dest='train')
     # arg = ['-alg', 'logic', '-m', 'bigfish', '-env', 'bigfish', '-p', 'True', '-r', 'bigfish_human_assisted']
     args = parser.parse_args()
 
@@ -120,6 +126,7 @@ def main():
     #####################################################
 
     ############# print all hyperparameters #############
+    
 
     print("--------------------------------------------------------------------------------------------")
 
@@ -204,13 +211,16 @@ def main():
     print_running_reward = 0
     print_running_episodes = 0
 
-    rtpt = RTPT(name_initials='QD', experiment_name='LogicRL',
+    rtpt = RTPT(name_initials='Hiki', experiment_name='LogicRL',
                 max_iterations=max_training_timesteps)
 
     # Start the RTPT tracking
     rtpt.start()
     # training loop
     pbar = tqdm(total=max_training_timesteps)
+
+    old_action = None
+    saved_actions = []
     while time_step <= max_training_timesteps:
         #  initialize game
         state = initialize_game(env, args)
@@ -218,10 +228,36 @@ def main():
 
         epsilon = epsilon_func(i_episode)
 
+        agent.policy.actor.print_program()
         for t in range(1, max_ep_len + 1):
 
             # select action with policy
             action = agent.select_action(state, epsilon=epsilon)
+            #print(agent.get_action_grad())
+            #print(action, old_action)
+            # if t > 1 and action != old_action and not agent.get_action_grad() == None:
+            if action != old_action:
+                # print('new action chosen')
+                agent.print_action_grad()
+                """
+                atoms, action_grad = agent.get_action_grad()
+                print('action: ', action)
+                env_image = env.render(mode="rgb_array")
+                os.mkdir('grad_plot/')
+                Image.fromarray(env_image).save(f"grad_plot/{args.mode}_{time_step}.png")
+                # save atom and probs
+                dict = {}
+                for k in range(len(atoms)):
+                    dict[atoms[i]] = action_grad[i]
+                df = pd.DataFrame(dict)
+
+                df.to_csv(f"grad_plot/{args.mode}_{time_step}.png")
+                """
+
+                #print(args.train)
+                #print(agent.policy.actor.im.W)
+                #print(agent.policy.actor.print_program())
+            old_action = action
             reward, state, done = env_step(action, env, args)
 
             # saving reward and is_terminals
@@ -234,8 +270,10 @@ def main():
             current_ep_reward += reward
 
             # update PPO agent
-            if time_step % update_timestep == 0:
+            # if time_step % update_timestep == 0:
+            if time_step % 2 == 0:
                 agent.update()
+            #agent.update()
 
             # printing average reward
             if time_step % print_freq == 0:

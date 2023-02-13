@@ -1,19 +1,24 @@
+import os
+import pickle
 import random
+
 import torch
 import torch.nn as nn
-import pickle
-import os
 from torch.distributions import Categorical
+
 from nsfr.utils import get_nsfr_model
+
 from .MLPController.mlpbigfish import MLPBigfish
 from .MLPController.mlpcoinjump import MLPCoinjump
 from .MLPController.mlpheist import MLPHeist
-from .utils_coinjump import extract_logic_state_coinjump, preds_to_action_coinjump, action_map_coinjump, \
-    extract_neural_state_coinjump
-from .utils_bigfish import extract_logic_state_bigfish, preds_to_action_bigfish, action_map_bigfish, \
-    extract_neural_state_bigfish
-from .utils_heist import extract_logic_state_heist, action_map_heist, extract_neural_state_heist, \
-    preds_to_action_heist
+from .utils_bigfish import (action_map_bigfish, extract_logic_state_bigfish,
+                            extract_neural_state_bigfish,
+                            preds_to_action_bigfish)
+from .utils_coinjump import (action_map_coinjump, extract_logic_state_coinjump,
+                             extract_neural_state_coinjump,
+                             preds_to_action_coinjump)
+from .utils_heist import (action_map_heist, extract_logic_state_heist,
+                          extract_neural_state_heist, preds_to_action_heist)
 
 device = torch.device('cuda:0')
 
@@ -23,7 +28,7 @@ class NSFR_ActorCritic(nn.Module):
         super(NSFR_ActorCritic, self).__init__()
         self.rng = random.Random() if rng is None else rng
         self.args = args
-        self.actor = get_nsfr_model(self.args, train=True)
+        self.actor = get_nsfr_model(self.args, train=args.train)
         self.prednames = self.get_prednames()
         if self.args.m == 'bigfish':
             self.critic = MLPBigfish(out_size=1, logic=True)
@@ -34,16 +39,36 @@ class NSFR_ActorCritic(nn.Module):
         self.num_actions = len(self.prednames)
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
+        self.action_grad = None
 
     def forward(self):
         raise NotImplementedError
+    
+    def print_action_grad(self):
+        if self.action_grad != None:
+            self.actor.print_atom_grad_batch(self.action_grad)
+
+    def get_action_grad(self):
+        if self.action_grad != None:
+            return self.actor.get_atom_grad_batch(self.action_grad)
 
     def act(self, logic_state, epsilon=0.0):
-
+        # print('logic_state: ', logic_state)
         action_probs = self.actor(logic_state)
+    
+        action_ = action_probs.max(dim=1)[0]
+        # compute action grad w.r.t. input atoms V_0
+        if action_.requires_grad:
+            if not self.actor.fc.dummy_zeros.grad == None:
+                self.actor.fc.dummy_zeros.grad.detach_()
+                self.actor.fc.dummy_zeros.grad.zero_()
+            action_ = action_probs.max(dim=1)[0]
+            action_.backward()
+            # print("computed grad: ", self.actor.fc.dummy_zeros.grad)
+            self.action_grad = self.actor.fc.dummy_zeros.grad
 
         # e-greedy
-        if self.rng.random() < epsilon:
+        if 0: #self.rng.random() < epsilon:
             # random action with epsilon probability
             dist = self.uniform
             action = dist.sample()
@@ -55,7 +80,8 @@ class NSFR_ActorCritic(nn.Module):
         # action = dist.sample()
         action_logprob = dist.log_prob(action)
 
-        return action.detach(), action_logprob.detach()
+        return action, action_logprob
+        #return action.detach(), action_logprob.detach()
 
     def evaluate(self, neural_state, logic_state, action):
         action_probs = self.actor(logic_state)
@@ -88,6 +114,13 @@ class LogicPPO:
         self.policy_old.load_state_dict(self.policy.state_dict())
         self.MseLoss = nn.MSELoss()
         self.prednames = self.get_prednames()
+    
+    def print_action_grad(self):
+        self.policy_old.print_action_grad()
+
+    def get_action_grad(self):
+        return self.policy_old.get_action_grad()
+
 
     def select_action(self, state, epsilon=0.0):
 
@@ -103,9 +136,10 @@ class LogicPPO:
             neural_state = extract_neural_state_heist(state, self.args)
 
         # select random action with epsilon probability and policy probiability with 1-epsilon
-        with torch.no_grad():
-            # state = torch.FloatTensor(state).to(device)
-            action, action_logprob = self.policy_old.act(logic_state, epsilon=epsilon)
+        #with torch.no_grad():
+        #    action, action_logprob = self.policy_old.act(logic_state, epsilon=epsilon)
+
+        action, action_logprob = self.policy_old.act(logic_state, epsilon=epsilon)
 
         self.buffer.neural_states.append(neural_state)
         self.buffer.logic_states.append(logic_state)
@@ -127,6 +161,7 @@ class LogicPPO:
         return action
 
     def update(self):
+        # print('Updating weights')
         # Monte Carlo estimate of returns
         rewards = []
         discounted_reward = 0
@@ -167,7 +202,6 @@ class LogicPPO:
             # final loss of clipped objective PPO
             # training does not converge if the entropy term is added ...
             loss = -torch.min(surr1, surr2) + 0.5 * self.MseLoss(state_values, rewards)  # - 0.01*dist_entropy
-
             # take gradient step
             self.optimizer.zero_grad()
             loss.mean().backward()
