@@ -8,7 +8,7 @@ class RandomPlayer:
 
     def act(self, state):
         # TODO how to do if-else only once?
-        if self.args.m == 'coinjump':
+        if self.args.m == 'getout':
             action = self.coinjump_actor()
         elif self.args.m == 'bigfish':
             action = self.bigfish_actor()

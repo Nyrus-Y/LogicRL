@@ -59,6 +59,7 @@ def get_values(summaries, key_str, stype=float):
 
 
 def render_getout(agent, args):
+    envname = "getout"
     KEY_SPACE = 32
     # KEY_SPACE = 32
     KEY_w = 119
@@ -106,7 +107,7 @@ def render_getout(agent, args):
     current_reward = 0
     step = 0
     last_explaining = None
-
+    scores = []
     if args.log:
         log_f = open(args.logfile, "w+")
         writer = csv.writer(log_f)
@@ -145,6 +146,8 @@ def render_getout(agent, args):
                     action.append(CoinJumpActions.MOVE_UP)
                 if KEY_s in viewer.pressed_keys:
                     action.append(CoinJumpActions.MOVE_DOWN)
+            elif args.alg == 'random':
+                action = agent.act(coin_jump)
         else:
             coin_jump = create_coinjump_instance(args)
             # print("epi_reward: ", round(epi_reward, 2))
@@ -197,16 +200,17 @@ def render_getout(agent, args):
             step = 0
             print(num_epi)
             print('reward: ' + str(round(score, 2)))
+            scores.append(epi_reward)
         if num_epi > 100:
             break
 
-    print('total reward= ', total_reward)
-    print('average reward= ', total_reward / 100)
-    # print("average episode reward: ", total_reward / max_epi)
-    print("Terminated")
+    df = pd.DataFrame({'reward': scores})
+    df.to_csv(f"logs/{envname}/random_{envname}_log_{args.seed}.csv", index=False)
+
 
 
 def render_bigfish(agent, args):
+    envname = "bigfish"
     seed = random.seed() if args.seed is None else int(args.seed)
 
     env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
@@ -238,58 +242,53 @@ def render_bigfish(agent, args):
         if args.render:
             env = gym3.ViewerWrapper(env, info_key="rgb")
         reward, obs, done = env.observe()
-        total_r = 0
-        epi = 1
-        epi_r = 0
-        step = 0
-        current_r = 0
+        scores = []
         last_explaining = None
-        while True:
-            # print(obs['positions'])
-            if args.alg == 'logic':
-                action, explaining = agent.act(obs)
-            else:
-                action = agent.act(obs)
-            env.act(action)
-            rew, obs, done = env.observe()
-            total_r += rew[0]
-            epi_r += rew[0]
-            current_r += rew[0]
-            step += 1
-            average_r = round(current_r / epi, 2)
-            if args.alg == 'logic':
-                if last_explaining is None:
-                    print(explaining)
-                    last_explaining = explaining
-                elif explaining != last_explaining:
-                    print(explaining)
-                    last_explaining = explaining
-
-            if args.log:
+        for epi in range(20):
+            total_r = 0
+            step = 0
+            while True:
+                step += 1
                 if args.alg == 'logic':
-                    probs = agent.get_probs()
-                    logic_state = agent.get_state(obs)
-                    data = [(epi, step, rew[0], average_r, logic_state, probs)]
-                    writer.writerows(data)
+                    action, explaining = agent.act(obs)
                 else:
-                    data = [(epi, step, rew[0], average_r)]
-                    writer.writerows(data)
+                    action = agent.act(obs)
+                env.act(action)
+                rew, obs, done = env.observe()
+                total_r += rew[0]
+                if args.alg == 'logic':
+                    if last_explaining is None:
+                        print(explaining)
+                        last_explaining = explaining
+                    elif explaining != last_explaining:
+                        print(explaining)
+                        last_explaining = explaining
 
-            if done:
-                epi += 1
-                step = 0
-                print("episode: ", epi)
-                print("reward: ", epi_r)
-                epi_r = 0
+                # if args.log:
+                #     if args.alg == 'logic':
+                #         probs = agent.get_probs()
+                #         logic_state = agent.get_state(obs)
+                #         data = [(epi, step, rew[0], average_r, logic_state, probs)]
+                #         writer.writerows(data)
+                #     else:
+                #         data = [(epi, step, rew[0], average_r)]
+                #         writer.writerows(data)
 
-            if epi > 100:
-                break
+                if done:
+                    step = 0
+                    print("episode: ", epi)
+                    print("return: ", total_r)
+                    scores.append(total_r)
+                    break
+                if epi > 100:
+                    break
 
-        print('total reward= ', total_r)
-        print('average reward= ', total_r / 100)
+            df = pd.DataFrame({'reward': scores})
+            df.to_csv(f"logs/{envname}/random_{envname}_log_{args.seed}.csv", index=False)
 
 
 def render_heist(agent, args):
+    envname = "heist"
     seed = random.seed() if args.seed is None else int(args.seed)
 
     env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
@@ -308,66 +307,59 @@ def render_heist(agent, args):
     if agent == "human":
 
         ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
-        all_summaries = run(ia)
+        all_summaries = run(ia, 2)
 
-        df_scores = get_values(all_summaries, "episode_return")
-        data = {'reward': df_scores}
-        # convert list to df_scores
-        # pd.to_csv(df_scores, f"{player_name}_scores.csv")
-        df = pd.DataFrame(data)
+        scores = get_values(all_summaries, "episode_return")
+        df = pd.DataFrame({'reward': scores})
         df.to_csv(args.logfile, index=False)
     else:
         if args.render:
             env = gym3.ViewerWrapper(env, info_key="rgb")
         reward, obs, done = env.observe()
-        step = 0
-        total_r = 0
-        epi_r = 0
-        epi = 1
-        current_r = 0
+        scores = []
         last_explaining = None
-        while True:
-            step += 1
-            if args.alg == 'logic':
-                action, explaining = agent.act(obs)
-            else:
-                action = agent.act(obs)
-
-            env.act(action)
-            rew, obs, done = env.observe()
-            total_r += rew[0]
-            epi_r += rew[0]
-            current_r += rew[0]
-            average_r = round(current_r / epi, 2)
-            if args.alg == 'logic':
-                if last_explaining is None:
-                    print(explaining)
-                    last_explaining = explaining
-                elif explaining != last_explaining:
-                    print(explaining)
-                    last_explaining = explaining
-
-            if args.log:
+        for epi in range(20):
+            total_r = 0
+            step = 0
+            while True:
+                step += 1
                 if args.alg == 'logic':
-                    probs = agent.get_probs()
-                    logic_state = agent.get_state(obs)
-                    data = [(epi, step, rew[0], average_r, logic_state, probs)]
-                    writer.writerows(data)
+                    action, explaining = agent.act(obs)
                 else:
-                    data = [(epi, step, rew[0], average_r)]
-                    writer.writerows(data)
+                    action = agent.act(obs)
+                env.act(action)
+                rew, obs, done = env.observe()
+                total_r += rew[0]
+                if args.alg == 'logic':
+                    if last_explaining is None:
+                        print(explaining)
+                        last_explaining = explaining
+                    elif explaining != last_explaining:
+                        print(explaining)
+                        last_explaining = explaining
 
-            if done:
-                epi += 1
-                step = 0
-                print("episode: ", epi)
-                print("reward: ", epi_r)
-                epi_r = 0
-            if epi > 100:
-                break
+                # if args.log:
+                #     if args.alg == 'logic':
+                #         probs = agent.get_probs()
+                #         logic_state = agent.get_state(obs)
+                #         data = [(epi, step, rew[0], average_r, logic_state, probs)]
+                #         writer.writerows(data)
+                #     else:
+                #         data = [(epi, step, rew[0], average_r)]
+                #         writer.writerows(data)
 
-        print('total reward= ', total_r)
-        print('average reward= ', total_r / 100)
+                if done:
+                    step = 0
+                    print("episode: ", epi)
+                    print("return: ", total_r)
+                    scores.append(total_r)
+                    break
+                if epi > 100:
+                    break
+
+            df = pd.DataFrame({'reward': scores})
+            df.to_csv(f"logs/{envname}/random_{envname}_log_{args.seed}.csv", index=False)
+
 
 
 def render_ecoinrun(agent, args):
