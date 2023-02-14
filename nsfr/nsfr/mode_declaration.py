@@ -150,7 +150,7 @@ def get_mode_declarations_coinjump(lang):
 
 
 def get_mode_declarations(args, lang):
-    if args.m == 'coinjump':
+    if args.m == 'getout':
         return get_mode_declarations_coinjump(lang)
     if args.m == 'bigfish':
         return get_mode_declarations_bigfish(lang)

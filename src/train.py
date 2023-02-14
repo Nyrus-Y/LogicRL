@@ -39,11 +39,11 @@ def main():
                         required=True, action="store", dest="env",
                         choices=['getout', 'bigfish', 'heist'])
     parser.add_argument("-r", "--rules", dest="rules", default=None, required=False,
-                        choices=['getout_human_assisted', 'getout_redundant_actions', 'getout_bs_top10',
+                        choices=['getout_human_assisted', 'getout_redundant_actions', 'getout_bs_top10', 'getout_no_search',
                                  'getout_bs_rf1', 'getout_bs_rf3', 'ppo_simple_policy',
-                                 'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_rf3',
+                                 'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_rf3', 'bigfish_no_search',
                                  'bigfish_bs_rf1', 'bigfish_redundant_actions',
-                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_rf3', 'heist_bs_rf1',
+                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_rf3', 'heist_bs_rf1', 'heist_no_search',
                                  'heist_redundant_actions'])
     parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
     parser.add_argument('-re', '--recovery', help='recover from crash', default=False, type=bool, dest='recover')
@@ -188,8 +188,11 @@ def main():
     if not os.path.exists(image_directory):
         os.makedirs(image_directory)
 
-    image_directory = image_directory + '/' + args.m + '/' + args.env + '/' + args.rules + '/' + str(
-        args.seed) + '/'
+    if args.rules:
+        image_directory = image_directory + '/' + args.m + '/' + args.env + '/' + args.rules + '/' + str(
+            args.seed) + '/'
+    else:
+        image_directory = image_directory + '/' + args.m + '/' + args.env + '/' + str(args.seed) + '/'
     if not os.path.exists(image_directory):
         os.makedirs(image_directory)
 

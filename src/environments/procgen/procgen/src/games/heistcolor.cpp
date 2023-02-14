@@ -9,7 +9,7 @@
 const std::string NAME = "heistcolor";
 
 const float COMPLETION_BONUS = 10.0f;
-const float STEP_PENALTY = 0.0f;
+const float STEP_PENALTY = -0.01f;
 
 const int LOCKED_DOOR = 1;
 const int KEY = 2;

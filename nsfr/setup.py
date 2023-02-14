@@ -36,5 +36,6 @@ setup(
         "setuptools",
 #        "torch",
         "tqdm",
+	"lark",
     ],
 )
