@@ -57,6 +57,8 @@ class ClauseGenerator(object):
         """
         if gen_mode == 'beam':
             return self.beam_search(C_0, T_beam=T_beam, N_beam=N_beam, N_max=N_max)
+        elif gen_mode == 'naive':
+            return self.naive(C_0, N_max=N_max)
 
     def beam_search_clause(self, clause, T_beam=7, N_beam=20, N_max=100, th=0.98):
         """
@@ -162,6 +164,44 @@ class ClauseGenerator(object):
                 clause, T_beam, N_beam, N_max))
         C = sorted(list(C))
         print('======= BEAM SEARCHED CLAUSES ======')
+        for c in C:
+            print(c)
+        return C
+
+
+    def naive(self, C_0, T_beam=7, N_max=100):
+        """
+        Generate clauses without beam-searching from clauses.
+        Inputs
+        ------
+        C_0 : Set[.logic.Clause]
+            set of initial clauses
+        T_beam : int
+            number of steps in beam-searching
+        N_beam : int
+            size of the beam
+        N_max : int
+            maximum number of clauses to be generated
+        Returns
+        -------
+        C : Set[.logic.Clause]
+            a set of generated clauses                
+        """
+        step = 0
+        C = set()
+        C_next = set(C_0)
+        while step < T_beam:
+            for c in C_next:
+                refs = self.rgen.refinement_clause(c)
+                C = C.union(set([c]))
+                C_next = C_next.difference(set([c]))
+                C_next = C_next.union(set(refs))
+                if len(C) >= N_max:
+                    break
+            if len(C) >= N_max:
+                break
+        C = sorted(list(C))
+        print('======= GENERATED CLAUSES ======')
         for c in C:
             print(c)
         return C
