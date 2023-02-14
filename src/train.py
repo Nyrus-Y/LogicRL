@@ -1,11 +1,12 @@
 import argparse
-import os
-import time
-import gym
-import sys
-import pickle
-import csv
 import copy
+import csv
+import os
+import pickle
+import sys
+import time
+
+import gym
 import numpy as np
 
 # import wandb
@@ -13,14 +14,15 @@ import environments.coinjump.env
 
 sys.path.insert(0, '../')
 
+from rtpt import RTPT
+from tqdm import tqdm
+
 from agents.logic_agent import LogicPPO
 from agents.neural_agent import NeuralPPO
-from environments.procgen.procgen import ProcgenGym3Env
-from utils import make_deterministic, initialize_game, env_step
 from config import *
-from tqdm import tqdm
-from rtpt import RTPT
+from environments.procgen.procgen import ProcgenGym3Env
 from make_graph import plot_weights
+from utils import env_step, initialize_game, make_deterministic
 
 
 def main():
@@ -210,7 +212,7 @@ def main():
     # Start the RTPT tracking
     rtpt.start()
     # training loop
-    pbar = tqdm(total=max_training_timesteps)
+    pbar = tqdm(total=max_training_timesteps-time_step)
     while time_step <= max_training_timesteps:
         #  initialize game
         state = initialize_game(env, args)
