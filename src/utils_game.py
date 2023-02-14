@@ -1,19 +1,32 @@
-import csv
-import random
-import time
-import gym3
-import numpy as np
 import ast
-import pandas as pd
-from tqdm import tqdm
-import sys
+import csv
 import io
-from environments.procgen.procgen import ProcgenGym3Env
-from environments.coinjump.coinjump.imageviewer import ImageViewer
-from environments.coinjump.coinjump.coinjump.paramLevelGenerator import ParameterizedLevelGenerator
-from environments.coinjump.coinjump.coinjump.coinjump import CoinJump
-from environments.coinjump.coinjump.coinjump.actions import CoinJumpActions
+import os
+import random
+import sys
+import time
 
+import gym3
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from PIL import Image
+from tqdm import tqdm
+
+from environments.coinjump.coinjump.coinjump.actions import CoinJumpActions
+from environments.coinjump.coinjump.coinjump.coinjump import CoinJump
+from environments.coinjump.coinjump.coinjump.paramLevelGenerator import \
+    ParameterizedLevelGenerator
+from environments.coinjump.coinjump.imageviewer import ImageViewer
+from environments.procgen.procgen import ProcgenGym3Env
+
+
+def zscore(x, axis = None):
+    xmean = x.mean(axis=axis, keepdims=True)
+    xstd  = np.std(x, axis=axis, keepdims=True)
+    zscore = (x-xmean)/xstd
+    return zscore
 
 def run(env, nb_games=20):
     """
@@ -92,7 +105,7 @@ def render_getout(agent, args):
     # seed = random.randint(0, 100000000)
     # print(seed)
     coin_jump = create_coinjump_instance(args)
-    viewer = setup_image_viewer(coin_jump)
+    # viewer = setup_image_viewer(coin_jump)
 
     # frame rate limiting
     fps = 10
@@ -100,12 +113,15 @@ def render_getout(agent, args):
     last_frame_time = 0
 
     num_epi = 1
-    max_epi = 20
+    max_epi = 5
     total_reward = 0
     epi_reward = 0
     current_reward = 0
     step = 0
     last_explaining = None
+
+    # print weighted action rules
+    agent.model.print_program()
 
     if args.log:
         log_f = open(args.logfile, "w+")
@@ -133,7 +149,7 @@ def render_getout(agent, args):
         action = []
         if not coin_jump.level.terminated:
             if args.alg == 'logic':
-                action, explaining = agent.act(coin_jump)
+                action, explaining, atom_grad = agent.act(coin_jump)
             elif args.alg == 'ppo':
                 action = agent.act(coin_jump)
             elif args.alg == 'human':
@@ -184,14 +200,115 @@ def render_getout(agent, args):
         epi_reward += reward
 
         if args.render:
-            np_img = np.asarray(coin_jump.camera.screen)
-            viewer.show(np_img[:, :, :3])
+            action_preds = agent.model.prednames
+            atoms = [x for x in agent.model.atoms]
+            action_atoms = [x for x in agent.model.atoms if x.pred.name in action_preds]
+            # action_preds = ['jump', 'left_to_get_key', 'right_to_get_key', 'left_to_door', 'right_to_door']
+            if step % 1 == 0:
+                folder_path = f'grad_plot/{args.rules}/episode_{num_epi}'
+                if not os.path.exists(folder_path):
+                    os.makedirs(folder_path)
+                    print(f'folder {folder_path} created!!!!')
+                env_img = np.asarray(coin_jump.camera.screen)
+                Image.fromarray(env_img).save(f"{folder_path}/{args.rules}_{step}_env.png")
+                # grad_img = np.round(agent.action_grad, 2)
+                # grad_img = np.log(agent.action_grad+0.01)
+                # grad_img = zscore(agent.action_grad)
+                grad_img = np.round(agent.action_grad, 2)
+                grad_img.astype(np.float32)
+                #print("Action Gradients: ", agent.action_grad, agent.action_grad.shape)
+                # save grad plot
+
+                # im = ax.imshow(grad_img, cmap="plasma")
+                # im = ax.imshow(grad_img, cmap="cividis")
+
+                # prone redundant columns
+                # pruned_atoms = atoms
+                columns = []
+                pruned_atoms = []
+                for i in range(len(atoms)):
+                    #if True:
+                    if i > 1 and grad_img[:,i].max() > 0 and not atoms[i].pred.name in action_preds:
+                        columns.append(grad_img[:,i])
+                        pruned_atoms.append(atoms[i])
+                #grad_img = np.array(columns).reshape((len(action_preds), len(pruned_atoms)))
+                grad_img = np.stack(columns, axis=-1)
+
+                fig, ax = plt.subplots(figsize=(6, 6))
+                # fig, ax = plt.subplots(figsize=(16, 8))
+                # vmax = 0.3
+                # vmax = grad_img.max() / 2
+                vmax = grad_img.max()
+                normalize = matplotlib.colors.Normalize(vmin=0.0, vmax=vmax)
+                # im = ax.imshow(grad_img, cmap="jet", norm=normalize)
+                # im = ax.imshow(grad_img, cmap="cividis", norm=normalize)
+                im = ax.imshow(grad_img, cmap="cividis")
+
+                # We want to show all ticks...
+                ax.set_xticks(np.arange(len(pruned_atoms)))
+                ax.set_yticks(np.arange(len(action_preds)))
+                plt.yticks(fontname = "monospace", fontsize=12)
+                plt.xticks(fontname = "monospace", fontsize=11)
+                ax.set_xticklabels([str(x).replace('key(img)','key(agent)') for x in pruned_atoms])
+                ax.set_yticklabels([x.replace('_go_get_', '_').replace('_go_to_','_') for x in action_preds])
+                plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+                # Loop over data dimensions and create text annotations.
+                plt.rcParams.update({'font.size': 11})
+                for i in range(len(action_preds)):
+                    for j in range(len(pruned_atoms)):
+                        if grad_img[i, j] > 0:
+                            #print(grad_img[i,j], grad_img[i, j] / vmax )
+                            if grad_img[i, j] / vmax < 0.8:
+                                text = ax.text(j, i, grad_img[i, j], ha="center", va="center", color="w") 
+                            else:
+                                text = ax.text(j, i, grad_img[i, j], ha="center", va="center", color="b") 
+
+                ax.set_title("Gradients of actions w.r.t. input atoms", fontsize=16)
+                fig.tight_layout()
+                plt.show()
+                plt.savefig(f"{folder_path}/{args.rules}_{step}_action_grad.png")
+
+                # save action-atom dist
+                action_atom_dist_img = np.round(agent.action_atom_dist, 2)
+                # print(action_atom_dist_img)
+                fig, ax = plt.subplots()
+                plt.yticks(fontsize=14)
+                plt.xticks(fontname = "monospace", fontsize=14)
+                # plt.rcParams.update({'font.size': 22})
+                #m = ax.imshow(action_atom_dist_img, cmap="YlGn")
+                ax.bar(action_preds, action_atom_dist_img, color='darkviolet')
+
+                ax.set_xticks(np.arange(len(action_preds)))
+                #ax.set_yticks(np.arange(1))
+                # ax.set_xticklabels(action_preds)
+                ax.set_xticklabels([x.replace('_go_get_', '_').replace('_go_to_','_') for x in action_preds])
+                #ax.set_yticklabels()
+                plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+                # Loop over data dimensions and create text annotations.
+                #for j in range(len(action_preds)):
+                #    text = ax.text(j, 0, action_atom_dist_img[j], ha="center", va="center", color="w") 
+                ax.set_title("Distribution over action atoms", fontsize=16)
+                fig.tight_layout()
+                plt.show()
+                plt.savefig(f"{folder_path}/{args.rules}_{step}_action_atom_dist.png")
+
+
+                #plt.figure(figsize=(16,8))
+                #plt.imshow(grad_img)
+                #plt.colorbar()
+                # plt.imsave(f"grad_plot/{args.rules}_{step}_action_grad.png", grad_img)
+                #Image.fromarray(grad_img).save(f"grad_plot/{args.rules}_{step}_action_grad.png")
+                #atoms, action_grad = agent.model.get_action_grad()
+                #env_image = env.render(mode="rgb_array")
+                #print(env_image)
+                #old_action = action
+            # viewer.show(np_img[:, :, :3])
 
         # terminated = coin_jump.level.terminated
         # if terminated:
         #    break
-        if viewer.is_escape_pressed:
-            break
+        #if viewer.is_escape_pressed:
+        #    break
 
         if coin_jump.level.terminated:
             step = 0
@@ -372,17 +489,27 @@ def render_heist(agent, args):
 
 def render_ecoinrun(agent, args):
     seed = random.seed() if args.seed is None else int(args.seed)
+    os.mkdir('grad_plot/')
 
     env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
     if agent == "human":
         ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
         ia.run()
     else:
-        env = gym3.ViewerWrapper(env, info_key="rgb")
+        #env = gym3.ViewerWrapper(env, info_key="rgb")
         reward, obs, done = env.observe()
         i = 0
+        old_action = None
         while True:
             action = agent.act(obs)
+            if action != old_action:
+                atoms, action_grad = agent.get_action_grad()
+                #print('action: ', action)
+                #print('action_grad: ', action_grad)
+                env_image = env.render(mode="rgb_array")
+                #print(env_image)
+                Image.fromarray(env_image).save(f"grad_plot/{args.mode}_{i}.png")
+                old_action = action
             env.act(action)
             rew, obs, done = env.observe()
             # if i % 40 == 0:
