@@ -34,7 +34,7 @@ setup(
         "numpy",
         "seaborn",
         "setuptools",
-        "torch",
+#        "torch",
         "tqdm",
     ],
 )

@@ -66,7 +66,8 @@ def main():
     if args.alg not in ['random', 'human']:
         # read filename from models
         current_path = os.path.dirname(__file__)
-        model_name = input('Enter file name: ')
+        # model_name = input('Enter file name: ')
+        model_name = "beam_search_top1.pth"
         model_file = os.path.join(current_path, 'models', args.m, args.alg, model_name)
         model = load_model(model_file, args)
     else:
