@@ -44,11 +44,11 @@ def main():
                         choices=['getout_human_assisted', 'getout_redundant_actions', 'getout_bs_top10', 
                                 'getout_no_search', 'getout_no_search_5', 'getout_no_search_15', 'getout_no_search_50',
                                  'getout_bs_rf1', 'getout_bs_rf3', 'ppo_simple_policy',
-                                 'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_rf3', 'bigfish_no_search',
-                                'bigfish_no_search', 'bigfish_no_search_5', 'bigfish_no_search_15', 'bigfish_no_search_50',
+                                 'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_rf3', 'bigfish_no_search', 'bigfish_no_abstraction',
+                                 'bigfish_no_search_5', 'bigfish_no_search_15', 'bigfish_no_search_50',
                                  'bigfish_bs_rf1', 'bigfish_redundant_actions',
-                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_rf3', 'heist_bs_rf1', 'heist_no_search',
-                                'heist_no_search', 'heist_no_search_5', 'heist_no_search_15', 'heist_no_search_50',
+                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_rf3', 'heist_bs_rf1', 'heist_no_search', 'heist_no_abstraction',
+                                 'heist_no_search_5', 'heist_no_search_15', 'heist_no_search_50',
                                  'heist_redundant_actions'])
     parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
     parser.add_argument('-re', '--recovery', help='recover from crash', default=False, type=bool, dest='recover')
