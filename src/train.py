@@ -1,11 +1,12 @@
 import argparse
-import os
-import time
-import gym
-import sys
-import pickle
-import csv
 import copy
+import csv
+import os
+import pickle
+import sys
+import time
+
+import gym
 import numpy as np
 
 # import wandb
@@ -13,14 +14,15 @@ import environments.coinjump.env
 
 sys.path.insert(0, '../')
 
+from rtpt import RTPT
+from tqdm import tqdm
+
 from agents.logic_agent import LogicPPO
 from agents.neural_agent import NeuralPPO
-from environments.procgen.procgen import ProcgenGym3Env
-from utils import make_deterministic, initialize_game, env_step
 from config import *
-from tqdm import tqdm
-from rtpt import RTPT
+from environments.procgen.procgen import ProcgenGym3Env
 from make_graph import plot_weights
+from utils import env_step, initialize_game, make_deterministic
 
 
 def main():
@@ -39,11 +41,14 @@ def main():
                         required=True, action="store", dest="env",
                         choices=['getout', 'bigfish', 'heist'])
     parser.add_argument("-r", "--rules", dest="rules", default=None, required=False,
-                        choices=['getout_human_assisted', 'getout_redundant_actions', 'getout_bs_top10', 'getout_no_search',
+                        choices=['getout_human_assisted', 'getout_redundant_actions', 'getout_bs_top10', 
+                                'getout_no_search', 'getout_no_search_5', 'getout_no_search_15', 'getout_no_search_50',
                                  'getout_bs_rf1', 'getout_bs_rf3', 'ppo_simple_policy',
-                                 'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_rf3', 'bigfish_no_search',
+                                 'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_rf3', 'bigfish_no_search', 'bigfish_no_abstraction',
+                                 'bigfish_no_search_5', 'bigfish_no_search_15', 'bigfish_no_search_50',
                                  'bigfish_bs_rf1', 'bigfish_redundant_actions',
-                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_rf3', 'heist_bs_rf1', 'heist_no_search',
+                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_rf3', 'heist_bs_rf1', 'heist_no_search', 'heist_no_abstraction',
+                                 'heist_no_search_5', 'heist_no_search_15', 'heist_no_search_50',
                                  'heist_redundant_actions'])
     parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
     parser.add_argument('-re', '--recovery', help='recover from crash', default=False, type=bool, dest='recover')
@@ -162,6 +167,9 @@ def main():
         agent = NeuralPPO(lr_actor, lr_critic, optimizer, gamma, K_epochs, eps_clip, args)
     elif args.alg == "logic":
         agent = LogicPPO(lr_actor, lr_critic, optimizer, gamma, K_epochs, eps_clip, args)
+        print('Candidate Clauses:')
+        for clause in agent.policy.actor.clauses:
+            print(clause)
 
     time_step = 0
     i_episode = 0
@@ -204,13 +212,13 @@ def main():
     print_running_reward = 0
     print_running_episodes = 0
 
-    rtpt = RTPT(name_initials='QD', experiment_name='LogicRL',
+    rtpt = RTPT(name_initials='HS', experiment_name='LogicRL',
                 max_iterations=max_training_timesteps)
 
     # Start the RTPT tracking
     rtpt.start()
     # training loop
-    pbar = tqdm(total=max_training_timesteps)
+    pbar = tqdm(total=max_training_timesteps-time_step)
     while time_step <= max_training_timesteps:
         #  initialize game
         state = initialize_game(env, args)
