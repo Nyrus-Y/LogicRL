@@ -55,7 +55,7 @@ def main():
                                  ])
     parser.add_argument("-l", "--log", help="record the information of games", type=bool, default=False, dest="log")
     parser.add_argument("--log_file_name", help="the name of log file", required=False, dest='logfile')
-    parser.add_argument("--render", help="render the game", type=bool, default=True, dest="render")
+    parser.add_argument("--render", help="render the game", action="store_true", dest="render")
     # arg = ['-alg', 'human', '-m', 'getout', '-env', 'getout','-l','True']
     args = parser.parse_args()
 
@@ -68,13 +68,17 @@ def main():
         current_path = os.path.dirname(__file__)
 
         # model_name = input('Enter file name: ')
-        model_name = "beam_search_top1.pth"
-        model_file = os.path.join(current_path, 'models', args.m, args.alg, model_name)
-        # models_folder = os.path.join(current_path, 'models', args.m, args.alg)
-        # print(f"Please use one of the following agent: {os.listdir(models_folder)}")
-        # model_name = input('Enter file name: ')
+        if args.alg == "logic":
+            model_name = "beam_search_top1.pth"
+        elif args.alg == "ppo":
+            model_name = "ppo_.pth"
+        else:
+            models_folder = os.path.join(current_path, 'models', args.m, args.alg)
+            print(f"Please use one of the following agent: {os.listdir(models_folder)}")
+            model_name = input('Enter file name: ')
         # model_file = os.path.join(models_folder, model_name)
         # import ipdb; ipdb.set_trace()
+        model_file = os.path.join(current_path, 'models', args.m, args.alg, model_name)
         model = load_model(model_file, args)
     else:
         model = None

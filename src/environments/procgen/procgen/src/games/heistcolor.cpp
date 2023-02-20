@@ -54,13 +54,15 @@ class HeistColor : public BasicAbstractGame {
         } else if (type == PLAYER) {
             names.push_back("misc_assets/spaceAstronauts_008.png");
         } else if (type == KEY) {
-            names.push_back("misc_assets/keyBlue.png");
-            names.push_back("misc_assets/keyGreen.png");
             names.push_back("misc_assets/keyRed.png");
+            // names.push_back("misc_assets/keyPink.png");
+            names.push_back("misc_assets/keyBlue.png");
+            // names.push_back("misc_assets/keyGreen.png");
         } else if (type == LOCKED_DOOR) {
-            names.push_back("misc_assets/lock_blue.png");
-            names.push_back("misc_assets/lock_green.png");
             names.push_back("misc_assets/lock_red.png");
+            // names.push_back("misc_assets/lock_pink.png");
+            names.push_back("misc_assets/lock_blue.png");
+            // names.push_back("misc_assets/lock_green.png");
         }
     }
 
