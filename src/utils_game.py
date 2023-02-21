@@ -15,6 +15,9 @@ from environments.coinjump.coinjump.coinjump.coinjump import CoinJump
 from environments.coinjump.coinjump.coinjump.actions import CoinJumpActions
 
 
+def hexify(la):
+    return hex(int("".join([str(l) for l in la])))
+
 def run(env, nb_games=20):
     """
     Display a window to the user and loop until the window is closed
@@ -59,7 +62,8 @@ def get_values(summaries, key_str, stype=float):
 
 
 def render_getout(agent, args):
-    envname = "getout"
+    envname = args.env
+    # envname = "getout"
     KEY_SPACE = 32
     # KEY_SPACE = 32
     KEY_w = 119
@@ -69,6 +73,7 @@ def render_getout(agent, args):
     KEY_r = 114
 
     def setup_image_viewer(coinjump):
+        print(coinjump.camera.height, coinjump.camera.width)
         viewer = ImageViewer(
             "coinjump",
             coinjump.camera.height,
@@ -151,7 +156,9 @@ def render_getout(agent, args):
         else:
             coin_jump = create_coinjump_instance(args)
             # print("epi_reward: ", round(epi_reward, 2))
-            print("--------------------------     next game    --------------------------")
+            # print("--------------------------     next game    --------------------------")
+            print(f"Episode {num_epi}")
+            print(f"==========")
             if args.alg == 'human':
                 data = [(num_epi, round(epi_reward, 2))]
                 writer.writerows(data)
@@ -205,14 +212,15 @@ def render_getout(agent, args):
             break
 
     df = pd.DataFrame({'reward': scores})
-    df.to_csv(f"logs/{envname}/random_{envname}_log_{args.seed}.csv", index=False)
+    # df.to_csv(f"logs/{envname}/random_{envname}_log_{args.seed}.csv", index=False)
+    df.to_csv(f"logs/{envname}/{args.alg}_{envname}_log_{args.seed}.csv", index=False)
+    print(f"saved in logs/{envname}/{args.alg}_{envname}_log_{args.seed}.csv")
 
 
 
 def render_bigfish(agent, args):
-    envname = "bigfish"
-
-    env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array", seed=args.seed)
+    envname = args.env
+    env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array", rand_seed=args.seed, start_level=args.seed)
 
     if args.log:
         log_f = open(args.logfile, "w+")
@@ -228,7 +236,7 @@ def render_bigfish(agent, args):
     if agent == "human":
 
         ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
-        all_summaries = run(ia)
+        all_summaries = run(ia, 10)
 
         df_scores = get_values(all_summaries, "episode_return")
         data = {'reward': df_scores}
@@ -239,11 +247,13 @@ def render_bigfish(agent, args):
 
     else:
         if args.render:
-            env = gym3.ViewerWrapper(env, info_key="rgb")
+            env = gym3.ViewerWrapper(env, info_key="rgb", height=600, width=900)
         reward, obs, done = env.observe()
         scores = []
         last_explaining = None
         for epi in range(20):
+            print(f"Episode {epi}")
+            print(f"==========")
             total_r = 0
             step = 0
             while True:
@@ -255,13 +265,13 @@ def render_bigfish(agent, args):
                 env.act(action)
                 rew, obs, done = env.observe()
                 total_r += rew[0]
-                if args.alg == 'logic':
-                    if last_explaining is None:
-                        print(explaining)
-                        last_explaining = explaining
-                    elif explaining != last_explaining:
-                        print(explaining)
-                        last_explaining = explaining
+                # if args.alg == 'logic':
+                #     if last_explaining is None:
+                #         print(explaining)
+                #         last_explaining = explaining
+                #     elif explaining != last_explaining:
+                #         print(explaining)
+                #         last_explaining = explaining
 
                 # if args.log:
                 #     if args.alg == 'logic':
@@ -283,13 +293,12 @@ def render_bigfish(agent, args):
                     break
 
             df = pd.DataFrame({'reward': scores})
-            df.to_csv(f"logs/{envname}/random_{envname}_log_{args.seed}.csv", index=False)
+            df.to_csv(f"logs/{envname}/{args.alg}_{envname}_log_{args.seed}.csv", index=False)
 
 
 def render_loot(agent, args):
-    envname = "loot"
-
-    env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array", seed=args.seed)
+    envname = args.env
+    env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array", rand_seed=args.seed, start_level=args.seed)
 
     if args.log:
         log_f = open(args.logfile, "w+")
@@ -305,7 +314,7 @@ def render_loot(agent, args):
     if agent == "human":
 
         ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
-        all_summaries = run(ia, 2)
+        all_summaries = run(ia, 20)
 
         scores = get_values(all_summaries, "episode_return")
         df = pd.DataFrame({'reward': scores})
@@ -317,6 +326,8 @@ def render_loot(agent, args):
         scores = []
         last_explaining = None
         for epi in range(20):
+            print(f"Episode {epi}")
+            print(f"==========")
             total_r = 0
             step = 0
             while True:
@@ -328,13 +339,13 @@ def render_loot(agent, args):
                 env.act(action)
                 rew, obs, done = env.observe()
                 total_r += rew[0]
-                if args.alg == 'logic':
-                    if last_explaining is None:
-                        print(explaining)
-                        last_explaining = explaining
-                    elif explaining != last_explaining:
-                        print(explaining)
-                        last_explaining = explaining
+                # if args.alg == 'logic':
+                #     if last_explaining is None:
+                #         print(explaining)
+                #         last_explaining = explaining
+                #     elif explaining != last_explaining:
+                #         print(explaining)
+                #         last_explaining = explaining
 
                 # if args.log:
                 #     if args.alg == 'logic':
@@ -356,7 +367,7 @@ def render_loot(agent, args):
                     break
 
             df = pd.DataFrame({'reward': scores})
-            df.to_csv(f"logs/{envname}/random_{envname}_log_{args.seed}.csv", index=False)
+            df.to_csv(f"logs/{envname}/{args.alg}_{envname}_log_{args.seed}.csv", index=False)
 
 
 
