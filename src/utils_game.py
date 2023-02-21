@@ -211,9 +211,8 @@ def render_getout(agent, args):
 
 def render_bigfish(agent, args):
     envname = "bigfish"
-    seed = random.seed() if args.seed is None else int(args.seed)
 
-    env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
+    env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array", seed=args.seed)
 
     if args.log:
         log_f = open(args.logfile, "w+")
@@ -289,9 +288,8 @@ def render_bigfish(agent, args):
 
 def render_loot(agent, args):
     envname = "loot"
-    seed = random.seed() if args.seed is None else int(args.seed)
 
-    env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
+    env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array", seed=args.seed)
 
     if args.log:
         log_f = open(args.logfile, "w+")
@@ -363,9 +361,7 @@ def render_loot(agent, args):
 
 
 def render_ecoinrun(agent, args):
-    seed = random.seed() if args.seed is None else int(args.seed)
-
-    env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
+    env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array", seed=args.seed)
     if agent == "human":
         ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
         ia.run()

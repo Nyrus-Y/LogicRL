@@ -93,7 +93,7 @@ def _attempt_configure(build_type, package):
     check(run(configure_cmd), verbose=package)
 
 
-def build(package=False, debug=False):
+def build(package=False, debug=True):
     """
     Build the requested environment in a process-safe manner and only once per process.
     """

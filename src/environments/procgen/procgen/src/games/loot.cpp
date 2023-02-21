@@ -47,19 +47,13 @@ class Loot : public BasicAbstractGame {
     }
 
     void asset_for_type(int type, std::vector<std::string> &names) override {
-        if (type == WALL_OBJ) {
-            names.push_back("kenney/Ground/Dirt/dirtCenter.png");
-        } else if (type == EXIT) {
-            names.push_back("misc_assets/gemYellow.png");
-        } else if (type == PLAYER) {
+        if (type == PLAYER) {
             names.push_back("misc_assets/spaceAstronauts_008.png");
         } else if (type == KEY) {
             names.push_back("misc_assets/keyBlue.png");
-            names.push_back("misc_assets/keyGreen.png");
             names.push_back("misc_assets/keyRed.png");
         } else if (type == LOCKED_DOOR) {
             names.push_back("misc_assets/lock_blue.png");
-            names.push_back("misc_assets/lock_green.png");
             names.push_back("misc_assets/lock_red.png");
         }
     }
@@ -123,7 +117,7 @@ class Loot : public BasicAbstractGame {
             world_dim = 23;
         }
 
-        maxspeed = .75;
+        maxspeed = .65;
 
         main_width = world_dim;
         main_height = world_dim;
@@ -144,15 +138,6 @@ class Loot : public BasicAbstractGame {
         difficulty = 1;
 
         options.center_agent = options.distribution_mode == MemoryMode;
-
-//        if (options.distribution_mode == MemoryMode) {
-//            num_keys = rand_gen.randn(3) + 1;
-//        } else {
-//            num_keys = 1 + rand_gen.randn(3);
-//        }
-//
-//        if (num_keys > 3)
-//            num_keys = 3;
 
         if (options.distribution_mode == MemoryMode) {
         num_keys = rand_gen.randn(2) + 1;

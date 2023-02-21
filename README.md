@@ -59,7 +59,7 @@ _getoutplus_ has one more enemy.
 _bigfish_  contains one bigger fish and one smaller fish.  
 _bigfishcolor_  contains one red fish and one green fish. agent need to avoid red fish and eat green fish.  
 _loot_  contains 2 pairs of key and door.  
-_lootcolor_  contains 2 pairs of key and door with different color.  
+_lootcolor_  contains 2 pairs of key and door with different color than in loot.  
 _lootplus_    contains 3 pairs of key and door.
 
 * **--rules -r**:
