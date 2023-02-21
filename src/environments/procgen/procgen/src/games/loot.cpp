@@ -48,7 +48,7 @@ class Loot : public BasicAbstractGame {
 
     void asset_for_type(int type, std::vector<std::string> &names) override {
         if (type == PLAYER) {
-            names.push_back("misc_assets/spaceAstronauts_008.png");
+            names.push_back("misc_assets/character1.png");
         } else if (type == KEY) {
             names.push_back("misc_assets/keyBlue.png");
             names.push_back("misc_assets/keyRed.png");

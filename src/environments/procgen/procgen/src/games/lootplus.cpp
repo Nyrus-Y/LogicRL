@@ -48,7 +48,7 @@ class LootLKGame : public BasicAbstractGame {
 
     void asset_for_type(int type, std::vector<std::string> &names) override {
         if (type == PLAYER) {
-            names.push_back("misc_assets/spaceAstronauts_008.png");
+            names.push_back("misc_assets/character1.png");
         } else if (type == KEY) {
             names.push_back("misc_assets/keyBlue.png");
             names.push_back("misc_assets/keyGreen.png");
@@ -143,11 +143,8 @@ class LootLKGame : public BasicAbstractGame {
 
         options.center_agent = options.distribution_mode == MemoryMode;
 
-        if (options.distribution_mode == MemoryMode) {
-            num_keys = rand_gen.randn(3) + 1;
-        } else {
-            num_keys = 1 + rand_gen.randn(3);
-        }
+        num_keys = 2 + rand_gen.randn(3);
+
 
         if (num_keys > 4)
             num_keys = 4;
