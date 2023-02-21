@@ -5,7 +5,7 @@ import gym3
 from gym3 import types_np
 from procgen import ProcgenGym3Env
 
-env = ProcgenGym3Env(num=1, env_name="bigfish", render_mode="rgb_array")
+env = ProcgenGym3Env(num=1, env_name="threefish", render_mode="rgb_array")
 env = gym3.ViewerWrapper(env, info_key="rgb")
 step = 0
 while True:

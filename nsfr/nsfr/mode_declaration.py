@@ -110,7 +110,7 @@ def get_mode_declarations_loot(lang):
     return modeb_list
 
 
-def get_mode_declarations_bigfish(lang):
+def get_mode_declarations_threefish(lang):
 
     p_image = ModeTerm('+', DataType('image'))
     m_object = ModeTerm('-', DataType('object'))
@@ -152,8 +152,8 @@ def get_mode_declarations_coinjump(lang):
 def get_mode_declarations(args, lang):
     if args.m == 'getout':
         return get_mode_declarations_coinjump(lang)
-    if args.m == 'bigfish':
-        return get_mode_declarations_bigfish(lang)
+    if args.m == 'threefish':
+        return get_mode_declarations_threefish(lang)
     elif args.m == 'loot':
         return get_mode_declarations_loot(lang)
     else:

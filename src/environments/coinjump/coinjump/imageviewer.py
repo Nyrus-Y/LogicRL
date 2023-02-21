@@ -82,6 +82,7 @@ class ImageViewer(object):
             return
         # handle the press / release by appending / removing the key to pressed
         if is_press:
+            print(symbol)
             self._pressed_keys.append(symbol)
         else:
             try:

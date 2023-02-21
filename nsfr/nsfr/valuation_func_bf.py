@@ -3,7 +3,7 @@ import torch.nn as nn
 
 
 ################################
-# Valuation functions for bigfish #
+# Valuation functions for threefish #
 ################################
 
 
@@ -69,7 +69,7 @@ class OnTopValuationFunction(nn.Module):
         """
         Args:
             z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-             [sfish, agent, bigfish, x, y]
+             [sfish, agent, threefish, x, y]
 
         Returns:
             A batch of probabilities.
@@ -92,7 +92,7 @@ class HighLevelValuationFunction(nn.Module):
         """
         Args:
             z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-             [agent, bigfish,size, x, y]
+             [agent, threefish,size, x, y]
 
         Returns:
             A batch of probabilities.
@@ -116,7 +116,7 @@ class LowLevelValuationFunction(nn.Module):
         """
         Args:
             z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-             [sfish, agent, bigfish, x, y]
+             [sfish, agent, threefish, x, y]
 
         Returns:
             A batch of probabilities.
@@ -140,7 +140,7 @@ class OnLeftValuationFunction(nn.Module):
         """
         Args:
             z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-             [sfish, agent, bigfish, x, y]
+             [sfish, agent, threefish, x, y]
 
         Returns:
             A batch of probabilities.
@@ -163,7 +163,7 @@ class AtBottomValuationFunction(nn.Module):
         """
         Args:
             z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-             [sfish, agent, bigfish, x, y]
+             [sfish, agent, threefish, x, y]
 
         Returns:
             A batch of probabilities.
@@ -186,7 +186,7 @@ class OnRightValuationFunction(nn.Module):
         """
         Args:
             z_1 (tensor): 2-d tensor (B * D), the object-centric representation.
-             [sfish, agent, bigfish, x, y]
+             [sfish, agent, threefish, x, y]
 
         Returns:
             A batch of probabilities.

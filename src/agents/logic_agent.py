@@ -5,13 +5,13 @@ import pickle
 import os
 from torch.distributions import Categorical
 from nsfr.utils import get_nsfr_model
-from .MLPController.mlpbigfish import MLPBigfish
+from .MLPController.mlpthreefish import MLPThreefish
 from .MLPController.mlpcoinjump import MLPCoinjump
 from .MLPController.mlploot import MLPLoot
 from .utils_coinjump import extract_logic_state_coinjump, preds_to_action_coinjump, action_map_coinjump, \
     extract_neural_state_coinjump
-from .utils_bigfish import extract_logic_state_bigfish, preds_to_action_bigfish, action_map_bigfish, \
-    extract_neural_state_bigfish
+from .utils_threefish import extract_logic_state_threefish, preds_to_action_threefish, action_map_threefish, \
+    extract_neural_state_threefish
 from .utils_loot import extract_logic_state_loot, action_map_loot, extract_neural_state_loot, \
     preds_to_action_loot
 
@@ -25,8 +25,8 @@ class NSFR_ActorCritic(nn.Module):
         self.args = args
         self.actor = get_nsfr_model(self.args, train=True)
         self.prednames = self.get_prednames()
-        if self.args.m == 'bigfish':
-            self.critic = MLPBigfish(out_size=1, logic=True)
+        if self.args.m == 'threefish':
+            self.critic = MLPThreefish(out_size=1, logic=True)
         elif self.args.m == 'getout':
             self.critic = MLPCoinjump(out_size=1, logic=True)
         elif self.args.m == 'loot':
@@ -95,9 +95,9 @@ class LogicPPO:
         if self.args.m == 'getout':
             logic_state = extract_logic_state_coinjump(state, self.args)
             neural_state = extract_neural_state_coinjump(state, self.args)
-        elif self.args.m == 'bigfish':
-            logic_state = extract_logic_state_bigfish(state, self.args)
-            neural_state = extract_neural_state_bigfish(state, self.args)
+        elif self.args.m == 'threefish':
+            logic_state = extract_logic_state_threefish(state, self.args)
+            neural_state = extract_neural_state_threefish(state, self.args)
         elif self.args.m == 'loot':
             logic_state = extract_logic_state_loot(state, self.args)
             neural_state = extract_neural_state_loot(state, self.args)
@@ -119,8 +119,8 @@ class LogicPPO:
         action = action.item()
         if self.args.m == 'getout':
             action = action_map_coinjump(action, self.args, self.prednames)
-        elif self.args.m == 'bigfish':
-            action = action_map_bigfish(action, self.args, self.prednames)
+        elif self.args.m == 'threefish':
+            action = action_map_threefish(action, self.args, self.prednames)
         elif self.args.m == 'loot':
             action = action_map_loot(action, self.args, self.prednames)
 
@@ -219,8 +219,8 @@ class LogicPlayer:
     def act(self, state):
         if self.args.m == 'getout':
             action, explaining = self.coinjump_actor(state)
-        elif self.args.m == 'bigfish':
-            action, explaining = self.bigfish_actor(state)
+        elif self.args.m == 'threefish':
+            action, explaining = self.threefish_actor(state)
         elif self.args.m == 'loot':
             action, explaining = self.loot_actor(state)
         return action, explaining
@@ -236,8 +236,8 @@ class LogicPlayer:
     def get_state(self, state):
         if self.args.m == 'getout':
             logic_state = extract_logic_state_coinjump(state, self.args).squeeze(0)
-        elif self.args.m == 'bigfish':
-            logic_state = extract_logic_state_bigfish(state, self.args).squeeze(0)
+        elif self.args.m == 'threefish':
+            logic_state = extract_logic_state_threefish(state, self.args).squeeze(0)
         if self.args.m == 'loot':
             logic_state = extract_logic_state_loot(state, self.args).squeeze(0)
         logic_state = logic_state.tolist()
@@ -255,12 +255,12 @@ class LogicPlayer:
         action = preds_to_action_coinjump(prediction, self.prednames)
         return action, explaining
 
-    def bigfish_actor(self, state):
-        state = extract_logic_state_bigfish(state, self.args)
+    def threefish_actor(self, state):
+        state = extract_logic_state_threefish(state, self.args)
         predictions = self.model(state)
         action = torch.argmax(predictions)
         explaining = self.prednames[action.item()]
-        action = preds_to_action_bigfish(action, self.prednames)
+        action = preds_to_action_threefish(action, self.prednames)
         return action, explaining
 
     def loot_actor(self, state):

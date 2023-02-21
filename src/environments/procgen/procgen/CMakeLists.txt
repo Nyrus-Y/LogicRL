@@ -48,12 +48,12 @@ add_library(env
   src/game.cpp
   src/game-registry.cpp
   src/games/edodgeball.cpp
-  src/games/oribigfish.cpp
-  src/games/bigfishcolor.cpp
   src/games/bigfish.cpp
-  src/games/ebigfishs.cpp
-  src/games/ebigfish.cpp
-  src/games/ebigfishl.cpp
+  src/games/threefishcolor.cpp
+  src/games/threefish.cpp
+  # src/games/ethreefishs.cpp
+  # src/games/ethreefish.cpp
+  # src/games/ethreefishl.cpp
   src/games/coinrun_old.cpp
   src/games/coinrun.cpp
   src/games/heist.cpp

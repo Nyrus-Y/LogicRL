@@ -71,6 +71,9 @@ def render_getout(agent, args):
     KEY_s = 115
     KEY_d = 100
     KEY_r = 114
+    KEY_LEFT = 65361
+    KEY_RIGHT = 65363
+    KEY_UP = 65362
 
     def setup_image_viewer(coinjump):
         print(coinjump.camera.height, coinjump.camera.width)
@@ -143,11 +146,11 @@ def render_getout(agent, args):
             elif args.alg == 'ppo':
                 action = agent.act(coin_jump)
             elif args.alg == 'human':
-                if KEY_a in viewer.pressed_keys:
+                if KEY_a in viewer.pressed_keys or KEY_LEFT in viewer.pressed_keys:
                     action.append(CoinJumpActions.MOVE_LEFT)
-                if KEY_d in viewer.pressed_keys:
+                if KEY_d in viewer.pressed_keys or KEY_RIGHT in viewer.pressed_keys:
                     action.append(CoinJumpActions.MOVE_RIGHT)
-                if (KEY_SPACE in viewer.pressed_keys) or (KEY_w in viewer.pressed_keys):
+                if (KEY_SPACE in viewer.pressed_keys) or (KEY_w in viewer.pressed_keys) or KEY_UP in viewer.pressed_keys:
                     action.append(CoinJumpActions.MOVE_UP)
                 if KEY_s in viewer.pressed_keys:
                     action.append(CoinJumpActions.MOVE_DOWN)
@@ -161,7 +164,7 @@ def render_getout(agent, args):
             print(f"==========")
             if args.alg == 'human':
                 data = [(num_epi, round(epi_reward, 2))]
-                writer.writerows(data)
+                # writer.writerows(data)
             total_reward += epi_reward
             epi_reward = 0
             action = 0
@@ -218,7 +221,7 @@ def render_getout(agent, args):
 
 
 
-def render_bigfish(agent, args):
+def render_threefish(agent, args):
     envname = args.env
     env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array", rand_seed=args.seed, start_level=args.seed)
 

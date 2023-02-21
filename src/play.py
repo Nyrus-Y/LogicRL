@@ -3,7 +3,7 @@ import torch
 import os
 
 from utils import make_deterministic
-from utils_game import render_getout, render_bigfish, render_loot, render_ecoinrun
+from utils_game import render_getout, render_threefish, render_loot, render_ecoinrun
 from agents.neural_agent import ActorCritic, NeuralPlayer
 from agents.logic_agent import NSFR_ActorCritic, LogicPlayer
 from agents.random_agent import RandomPlayer
@@ -37,19 +37,19 @@ def main():
                         choices=['ppo', 'logic', 'random', 'human'])
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=True, action="store", dest="m",
-                        choices=['getout', 'bigfish', 'loot', 'ecoinrun'])
+                        choices=['getout', 'threefish', 'loot', 'ecoinrun'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
                         choices=['getout', 'getoutplus',
-                                 'bigfish', 'bigfishcolor',
+                                 'threefish', 'threefishcolor',
                                  'loot', 'lootcolor', 'lootplus',
                                  'ecoinrun'])
     parser.add_argument("-r", "--rules", dest="rules", default=None,
                         required=False,
                         choices=['getout_human_assisted', 'getout_bs_top10', 'getout_bs_rf1',
                                  'getout_bs_rf3', 'getoutplus', 'getout_redundant_actions',
-                                 'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_rf3',
-                                 'bigfish_bs_rf1', 'bigfish_redundant_actions',
+                                 'threefish_human_assisted', 'threefishcolor', 'threefish_bs_top5', 'threefish_bs_rf3',
+                                 'threefish_bs_rf1', 'threefish_redundant_actions',
                                  'loot_human_assisted', 'loot_bs_top5', 'loot_bs_rf3', 'loot_bs_rf1',
                                  'loot_redundant_actions'
                                  ])
@@ -121,8 +121,8 @@ def main():
     #### Continue to render
     if args.m == 'getout':
         render_getout(agent, args)
-    elif args.m == 'bigfish':
-        render_bigfish(agent, args)
+    elif args.m == 'threefish':
+        render_threefish(agent, args)
     elif args.m == 'loot':
         render_loot(agent, args)
     elif args.m == 'ecoinrun':

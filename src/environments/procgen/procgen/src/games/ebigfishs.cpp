@@ -4,7 +4,7 @@
 #include <queue>
 
  
-const std::string NAME = "ebigfishs";
+const std::string NAME = "ethreefishs";
 
 const float COMPLETION_BONUS = 10.0f;
 const float POSITIVE_REWARD = 1.0f;
@@ -22,12 +22,12 @@ const int UNDEFINED_POSITION = 0;
 const bool SINGLE_FISH = true;
 // const bool FISH_SMALLER_THAN_AGENT = false;
 
-class EBigFishS : public BasicAbstractGame {
+class EThreefishS : public BasicAbstractGame {
   public:
     int fish_eaten = 0;
     float r_inc = 0.0;
 
-    EBigFishS()
+    EThreefishS()
         : BasicAbstractGame(NAME) {
         timeout = 1000;
 
@@ -269,4 +269,4 @@ reward function used for 100M model that worked perfectly####
     }
 };
 
-REGISTER_GAME(NAME, EBigFishS);
+REGISTER_GAME(NAME, EThreefishS);

@@ -4,7 +4,7 @@
 #include <queue>
 
  
-const std::string NAME = "ebigfishl";
+const std::string NAME = "ethreefishl";
 
 const int COMPLETION_BONUS = 10.0f;
 const int POSITIVE_REWARD = 1.0f;
@@ -22,12 +22,12 @@ const int UNDEFINED_POSITION = 0;
 const bool SINGLE_FISH = true;
 // const bool FISH_SMALLER_THAN_AGENT = false;
 
-class EBigFishL : public BasicAbstractGame {
+class EThreefishL : public BasicAbstractGame {
   public:
     int fish_eaten = 0;
     float r_inc = 0.0;
 
-    EBigFishL()
+    EThreefishL()
         : BasicAbstractGame(NAME) {
         timeout = 500;
 
@@ -222,4 +222,4 @@ class EBigFishL : public BasicAbstractGame {
     }
 };
 
-REGISTER_GAME(NAME, EBigFishL);
+REGISTER_GAME(NAME, EThreefishL);

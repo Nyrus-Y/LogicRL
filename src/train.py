@@ -36,23 +36,23 @@ def main():
                         choices=['ppo', 'logic'])
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=True, action="store", dest="m",
-                        choices=['getout', 'bigfish', 'loot'])
+                        choices=['getout', 'threefish', 'loot'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['getout', 'bigfish', 'loot'])
+                        choices=['getout', 'threefish', 'loot'])
     parser.add_argument("-r", "--rules", dest="rules", default=None, required=False,
                         choices=['getout_human_assisted', 'getout_redundant_actions', 'getout_bs_top10', 
                                 'getout_no_search', 'getout_no_search_5', 'getout_no_search_15', 'getout_no_search_50',
                                  'getout_bs_rf1', 'getout_bs_rf3', 'ppo_simple_policy',
-                                 'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_rf3', 'bigfish_no_search', 'bigfish_no_abstraction',
-                                 'bigfish_no_search_5', 'bigfish_no_search_15', 'bigfish_no_search_50',
-                                 'bigfish_bs_rf1', 'bigfish_redundant_actions',
+                                 'threefish_human_assisted', 'threefishcolor', 'threefish_bs_top5', 'threefish_bs_rf3', 'threefish_no_search', 'threefish_no_abstraction',
+                                 'threefish_no_search_5', 'threefish_no_search_15', 'threefish_no_search_50',
+                                 'threefish_bs_rf1', 'threefish_redundant_actions',
                                  'loot_human_assisted', 'loot_bs_top5', 'loot_bs_rf3', 'loot_bs_rf1', 'loot_no_search', 'loot_no_abstraction',
                                  'loot_no_search_5', 'loot_no_search_15', 'loot_no_search_50',
                                  'loot_redundant_actions'])
     parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
     parser.add_argument('-re', '--recovery', help='recover from crash', default=False, type=bool, dest='recover')
-    # arg = ['-alg', 'logic', '-m', 'bigfish', '-env', 'bigfish', '-p', 'True', '-r', 'bigfish_human_assisted']
+    # arg = ['-alg', 'logic', '-m', 'threefish', '-env', 'threefish', '-p', 'True', '-r', 'threefish_human_assisted']
     args = parser.parse_args()
 
     #####################################################
@@ -75,7 +75,7 @@ def main():
 
     if args.m == "getout":
         env = gym.make(args.env, generator_args={"spawn_all_entities": False})
-    elif args.m == "bigfish" or args.m == 'loot':
+    elif args.m == "threefish" or args.m == 'loot':
         env = ProcgenGym3Env(num=1, env_name=args.env, render_mode=None)
 
     #####################################################
@@ -100,7 +100,7 @@ def main():
 
     # wandb.init(project="GETOUT-BS", entity="nyrus", config=config, name=runs_name)
     # wandb.init(project="LOOT", entity="nyrus", config=config, name=runs_name)
-    # wandb.init(project="BIGFISH", entity="nyrus", config=config, name=runs_name)
+    # wandb.init(project="THREEFISH", entity="nyrus", config=config, name=runs_name)
 
     ################### checkpointing ###################
 

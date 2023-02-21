@@ -6,7 +6,7 @@ sys.path.insert(0,'../')
 from src.utils import make_deterministic
 from src.environments.procgen.procgen import ProcgenGym3Env
 from nsfr.utils import get_nsfr_model, get_predictions
-from src.agents.utils_bigfish import extract_logic_state_bigfish
+from src.agents.utils_threefish import extract_logic_state_threefish
 
 
 def explaining_to_action(explaining):
@@ -28,16 +28,16 @@ def run():
     parser.add_argument("-s", "--seed", help="Seed for pytorch + env", default=0,
                         required=False, action="store", dest="seed", type=int)
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
-                        required=False, action="store", dest="m", default='bigfish',
-                        choices=['bigfish'])
+                        required=False, action="store", dest="m", default='threefish',
+                        choices=['threefish'])
     parser.add_argument("-alg", "--algorithm", help="algorithm that to use",
                         action="store", dest="alg", required=False, default='logic',
                         choices=['logic'])
-    parser.add_argument("-r", "--rules", dest="rules", default='bigfish_human_assisted',
-                        required=False, choices=['bigfish_human_assisted','bigfishcolor'])
+    parser.add_argument("-r", "--rules", dest="rules", default='threefish_human_assisted',
+                        required=False, choices=['threefish_human_assisted','threefishcolor'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
-                        required=False, action="store", dest="env", default='bigfish',
-                        choices=['bigfish', 'bigfishcolor'])
+                        required=False, action="store", dest="env", default='threefish',
+                        choices=['threefish', 'threefishcolor'])
     args = parser.parse_args()
     make_deterministic(args.seed)
 
@@ -58,7 +58,7 @@ def run():
     # action_space = [1, 3, 4, 5, 7]
 
     rew, obs, done = env.observe()
-    extracted_state = extract_logic_state_bigfish(obs, args)
+    extracted_state = extract_logic_state_threefish(obs, args)
 
     last_explaining = ""
     while NB_DONE < TO_SUCCEED:
@@ -72,7 +72,7 @@ def run():
             print(explaining)
             last_explaining = explaining
 
-        extracted_state = extract_logic_state_bigfish(obs, args)
+        extracted_state = extract_logic_state_threefish(obs, args)
         if done:
             print("--------------------------new game--------------------------")
         # print(f"reward : {rew}")

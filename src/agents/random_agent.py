@@ -10,8 +10,8 @@ class RandomPlayer:
         # TODO how to do if-else only once?
         if self.args.m == 'getout':
             action = self.coinjump_actor()
-        elif self.args.m == 'bigfish':
-            action = self.bigfish_actor()
+        elif self.args.m == 'threefish':
+            action = self.threefish_actor()
         elif self.args.m == 'loot':
             action = self.loot_actor()
         return action
@@ -20,7 +20,7 @@ class RandomPlayer:
         # action = coin_jump_actions_from_unified(random.randint(0, 10))
         return random.randint(0, 10)
 
-    def bigfish_actor(self):
+    def threefish_actor(self):
         return np.random.randint([9])
 
     def loot_actor(self):

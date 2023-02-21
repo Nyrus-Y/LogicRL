@@ -23,7 +23,7 @@ def get_nsfr_model(args, train=False):
         lark_path, lang_base_path, args.m, args.rules)
     if args.m == 'getout':
         VM = CJValuationModule(lang=lang, device=device)
-    elif args.m == 'bigfish':
+    elif args.m == 'threefish':
         VM = BFValuationModule(lang=lang, device=device)
     elif args.m == 'loot':
         VM = HValuationModule(lang=lang, device=device)
@@ -50,7 +50,7 @@ def get_nsfr(mode, rule):
         lark_path, lang_base_path, mode, rule)
     if mode == 'getout':
         VM = CJValuationModule(lang=lang, device=device)
-    elif mode == 'bigfish':
+    elif mode == 'threefish':
         VM = BFValuationModule(lang=lang, device=device)
     FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
     m = len(clauses)

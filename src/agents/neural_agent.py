@@ -6,11 +6,11 @@ import pickle
 
 from torch.distributions import Categorical
 from .MLPController.mlpcoinjump import MLPCoinjump
-from .MLPController.mlpbigfish import MLPBigfish
+from .MLPController.mlpthreefish import MLPThreefish
 from .MLPController.mlploot import MLPLoot
 from .utils_coinjump import extract_state, sample_to_model_input, collate, action_map_coinjump, \
     extract_neural_state_coinjump
-from .utils_bigfish import simplify_action_bf, action_map_bigfish, extract_neural_state_bigfish
+from .utils_threefish import simplify_action_bf, action_map_threefish, extract_neural_state_threefish
 from .utils_loot import simplify_action_loot, action_map_loot, extract_neural_state_loot
 
 device = torch.device('cuda:0')
@@ -26,10 +26,10 @@ class ActorCritic(nn.Module):
             self.num_action = 3
             self.actor = MLPCoinjump(has_softmax=True)
             self.critic = MLPCoinjump(has_softmax=False, out_size=1)
-        elif self.args.m == 'bigfish':
+        elif self.args.m == 'threefish':
             self.num_action = 5
-            self.actor = MLPBigfish(has_softmax=True)
-            self.critic = MLPBigfish(has_softmax=False, out_size=1)
+            self.actor = MLPThreefish(has_softmax=True)
+            self.critic = MLPThreefish(has_softmax=False, out_size=1)
         elif self.args.m == "loot":
             self.num_action = 5
             self.actor = MLPLoot(has_softmax=True)
@@ -94,8 +94,8 @@ class NeuralPPO:
             # model_input = collate([model_input])
             # state = model_input['state']
             # state = torch.cat([state['base'], state['entities']], dim=1)
-        elif self.args.m == 'bigfish':
-            state = extract_neural_state_bigfish(state, self.args)
+        elif self.args.m == 'threefish':
+            state = extract_neural_state_threefish(state, self.args)
             # state = state['positions'].reshape(-1)
             # state = torch.tensor(state.tolist()).to(device)
         elif self.args.m == 'loot':
@@ -115,8 +115,8 @@ class NeuralPPO:
 
         if self.args.m == 'getout':
             action = action_map_coinjump(action.item(), self.args)
-        elif self.args.m == 'bigfish':
-            action = action_map_bigfish(action.item(), self.args)
+        elif self.args.m == 'threefish':
+            action = action_map_threefish(action.item(), self.args)
         elif self.args.m == 'loot':
             action = action_map_loot(action.item(), self.args)
 
@@ -202,8 +202,8 @@ class NeuralPlayer:
     def act(self, state):
         if self.args.m == 'getout':
             action = self.coinjump_actor(state)
-        elif self.args.m == 'bigfish':
-            action = self.bigfish_actor(state)
+        elif self.args.m == 'threefish':
+            action = self.threefish_actor(state)
         elif self.args.m == 'loot':
             action = self.loot_actor(state)
         return action
@@ -219,8 +219,8 @@ class NeuralPlayer:
         action = torch.argmax(prediction).cpu().item() + 1
         return action
 
-    def bigfish_actor(self, state):
-        state = extract_neural_state_bigfish(state, self.args)
+    def threefish_actor(self, state):
+        state = extract_neural_state_threefish(state, self.args)
         # state = state.reshape(-1)
         # state = state.tolist()
         predictions = self.model(state)

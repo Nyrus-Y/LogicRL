@@ -228,7 +228,7 @@ class ClauseGenerator(object):
                 action_probs, actions = self.get_action_probs_go(predname)
                 # scores = torch.sum(self.buffer.action_buffer * body_scores, dim=1)
                 scores = self.scoring(action_probs, body_scores, actions)
-            elif self.args.m == 'bigfish':
+            elif self.args.m == 'threefish':
                 pass
             elif self.args.m == 'loot':
                 action_probs, actions = self.get_action_probs_h(predname)

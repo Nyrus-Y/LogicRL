@@ -8,8 +8,8 @@ The extracted logic state, all atoms and its probability are automatically saved
 # Logic Representation
 
 getout: [agent, key, door, enemy, X, Y]  
-bigfish: [agent, fish, size, X, Y]  
-bigfishcolor: [agent, fish, green, red, X, Y]  
+threefish: [agent, fish, size, X, Y]  
+threefishcolor: [agent, fish, green, red, X, Y]  
 loot: [agent, key, door, blue, red, got_key, X, Y] 
 lootdoors:   [agent, key, door, blue, green, red, got_key, X, Y]
 lootcolor: [agent, key, door, green, brown, got_key, X, Y]  

@@ -460,7 +460,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
           s.high.int32 = INT32_MAX;
           info_types.push_back(s);
       }
-    } else if (env_name.substr(0,8) == "ebigfish") {
+    } else if (env_name.substr(0,8) == "ethreefish") {
     {
         struct libenv_tensortype s; // table of all fish
         strcpy(s.name, "fish_pos");
@@ -621,7 +621,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
           info_types.push_back(s);
       }
     }
-    else if (env_name == "bigfish"){
+    else if (env_name == "threefish"){
     {
         struct libenv_tensortype s; // table of all fish
         strcpy(s.name, "fish_pos");
@@ -679,7 +679,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
         observation_types.push_back(s);
     }
     }
-    else if (env_name == "bigfishcolor"){
+    else if (env_name == "threefishcolor"){
     {
         struct libenv_tensortype s; // table of all fish
         strcpy(s.name, "fish_pos");
