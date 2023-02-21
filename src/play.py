@@ -3,7 +3,7 @@ import torch
 import os
 
 from utils import make_deterministic
-from utils_game import render_getout, render_bigfish, render_heist, render_ecoinrun
+from utils_game import render_getout, render_bigfish, render_loot, render_ecoinrun
 from agents.neural_agent import ActorCritic, NeuralPlayer
 from agents.logic_agent import NSFR_ActorCritic, LogicPlayer
 from agents.random_agent import RandomPlayer
@@ -37,12 +37,12 @@ def main():
                         choices=['ppo', 'logic', 'random', 'human'])
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=True, action="store", dest="m",
-                        choices=['getout', 'bigfish', 'heist', 'ecoinrun'])
+                        choices=['getout', 'bigfish', 'loot', 'ecoinrun'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
                         choices=['getout', 'getoutplus',
                                  'bigfish', 'bigfishcolor',
-                                 'heist', 'heistcolor', 'heistplus',
+                                 'loot', 'lootcolor', 'lootplus',
                                  'ecoinrun'])
     parser.add_argument("-r", "--rules", dest="rules", default=None,
                         required=False,
@@ -50,8 +50,8 @@ def main():
                                  'getout_bs_rf3', 'getoutplus', 'getout_redundant_actions',
                                  'bigfish_human_assisted', 'bigfishcolor', 'bigfish_bs_top5', 'bigfish_bs_rf3',
                                  'bigfish_bs_rf1', 'bigfish_redundant_actions',
-                                 'heist_human_assisted', 'heist_bs_top5', 'heist_bs_rf3', 'heist_bs_rf1',
-                                 'heist_redundant_actions'
+                                 'loot_human_assisted', 'loot_bs_top5', 'loot_bs_rf3', 'loot_bs_rf1',
+                                 'loot_redundant_actions'
                                  ])
     parser.add_argument("-l", "--log", help="record the information of games", type=bool, default=False, dest="log")
     parser.add_argument("--log_file_name", help="the name of log file", required=False, dest='logfile')
@@ -119,8 +119,8 @@ def main():
         render_getout(agent, args)
     elif args.m == 'bigfish':
         render_bigfish(agent, args)
-    elif args.m == 'heist':
-        render_heist(agent, args)
+    elif args.m == 'loot':
+        render_loot(agent, args)
     elif args.m == 'ecoinrun':
         render_ecoinrun(agent, args)
 

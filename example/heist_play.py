@@ -8,7 +8,7 @@ sys.path.insert(0, '../')
 from src.utils import make_deterministic
 from src.environments.procgen.procgen import ProcgenGym3Env
 from nsfr.utils import get_nsfr_model, get_predictions
-from src.agents.utils_heist import extract_logic_state_heist
+from src.agents.utils_loot import extract_logic_state_loot
 
 
 def explaining_to_action(explaining):
@@ -30,16 +30,16 @@ def run():
     parser.add_argument("-s", "--seed", help="Seed for pytorch + env", default=0,
                         required=False, action="store", dest="seed", type=int)
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
-                        required=False, action="store", dest="m", default='heist',
-                        choices=['heist'])
+                        required=False, action="store", dest="m", default='loot',
+                        choices=['loot'])
     parser.add_argument("-alg", "--algorithm", help="algorithm that to use",
                         action="store", dest="alg", required=False, default='logic',
                         choices=['logic'])
-    parser.add_argument("-r", "--rules", dest="rules", default='heist_human_assisted',
-                        required=False, choices=['heist_human_assisted', 'heist_bs_top1'])
+    parser.add_argument("-r", "--rules", dest="rules", default='loot_human_assisted',
+                        required=False, choices=['loot_human_assisted', 'loot_bs_top1'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
-                        required=False, action="store", dest="env", default='heistplus',
-                        choices=['heist', 'heistcolor', 'heistplus'])
+                        required=False, action="store", dest="env", default='lootplus',
+                        choices=['loot', 'lootcolor', 'lootplus'])
     args = parser.parse_args()
     make_deterministic(args.seed)
 
@@ -60,7 +60,7 @@ def run():
     # action_space = [1, 3, 4, 5, 7]
 
     rew, obs, done = env.observe()
-    extracted_state = extract_logic_state_heist(obs, args)
+    extracted_state = extract_logic_state_loot(obs, args)
     total_reward = 0
     reward = 0
     last_explaining = ""
@@ -76,7 +76,7 @@ def run():
             print(explaining)
             last_explaining = explaining
 
-        extracted_state = extract_logic_state_heist(obs, args)
+        extracted_state = extract_logic_state_loot(obs, args)
         if done:
             print("--------------------------new game--------------------------")
             # print("reward:", reward)

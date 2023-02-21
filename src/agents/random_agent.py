@@ -12,8 +12,8 @@ class RandomPlayer:
             action = self.coinjump_actor()
         elif self.args.m == 'bigfish':
             action = self.bigfish_actor()
-        elif self.args.m == 'heist':
-            action = self.heist_actor()
+        elif self.args.m == 'loot':
+            action = self.loot_actor()
         return action
 
     def coinjump_actor(self):
@@ -23,5 +23,5 @@ class RandomPlayer:
     def bigfish_actor(self):
         return np.random.randint([9])
 
-    def heist_actor(self):
+    def loot_actor(self):
         return np.random.randint([9])

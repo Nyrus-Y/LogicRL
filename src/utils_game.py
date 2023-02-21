@@ -287,8 +287,8 @@ def render_bigfish(agent, args):
             df.to_csv(f"logs/{envname}/random_{envname}_log_{args.seed}.csv", index=False)
 
 
-def render_heist(agent, args):
-    envname = "heist"
+def render_loot(agent, args):
+    envname = "loot"
     seed = random.seed() if args.seed is None else int(args.seed)
 
     env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")

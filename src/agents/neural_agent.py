@@ -7,11 +7,11 @@ import pickle
 from torch.distributions import Categorical
 from .MLPController.mlpcoinjump import MLPCoinjump
 from .MLPController.mlpbigfish import MLPBigfish
-from .MLPController.mlpheist import MLPHeist
+from .MLPController.mlploot import MLPLoot
 from .utils_coinjump import extract_state, sample_to_model_input, collate, action_map_coinjump, \
     extract_neural_state_coinjump
 from .utils_bigfish import simplify_action_bf, action_map_bigfish, extract_neural_state_bigfish
-from .utils_heist import simplify_action_heist, action_map_heist, extract_neural_state_heist
+from .utils_loot import simplify_action_loot, action_map_loot, extract_neural_state_loot
 
 device = torch.device('cuda:0')
 
@@ -30,10 +30,10 @@ class ActorCritic(nn.Module):
             self.num_action = 5
             self.actor = MLPBigfish(has_softmax=True)
             self.critic = MLPBigfish(has_softmax=False, out_size=1)
-        elif self.args.m == "heist":
+        elif self.args.m == "loot":
             self.num_action = 5
-            self.actor = MLPHeist(has_softmax=True)
-            self.critic = MLPHeist(has_softmax=False, out_size=1)
+            self.actor = MLPLoot(has_softmax=True)
+            self.critic = MLPLoot(has_softmax=False, out_size=1)
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_action for _ in range(3)], device=device))
 
@@ -98,8 +98,8 @@ class NeuralPPO:
             state = extract_neural_state_bigfish(state, self.args)
             # state = state['positions'].reshape(-1)
             # state = torch.tensor(state.tolist()).to(device)
-        elif self.args.m == 'heist':
-            state = extract_neural_state_heist(state, self.args)
+        elif self.args.m == 'loot':
+            state = extract_neural_state_loot(state, self.args)
             # state = state['positions'].reshape(-1)
             # state = torch.tensor(state.tolist()).to(device)
         # select random action with epsilon probability and policy probiability with 1-epsilon
@@ -117,8 +117,8 @@ class NeuralPPO:
             action = action_map_coinjump(action.item(), self.args)
         elif self.args.m == 'bigfish':
             action = action_map_bigfish(action.item(), self.args)
-        elif self.args.m == 'heist':
-            action = action_map_heist(action.item(), self.args)
+        elif self.args.m == 'loot':
+            action = action_map_loot(action.item(), self.args)
 
         return action
 
@@ -204,8 +204,8 @@ class NeuralPlayer:
             action = self.coinjump_actor(state)
         elif self.args.m == 'bigfish':
             action = self.bigfish_actor(state)
-        elif self.args.m == 'heist':
-            action = self.heist_actor(state)
+        elif self.args.m == 'loot':
+            action = self.loot_actor(state)
         return action
 
     def coinjump_actor(self, coinjump):
@@ -228,13 +228,13 @@ class NeuralPlayer:
         action = simplify_action_bf(action)
         return action
 
-    def heist_actor(self, state):
-        state = extract_neural_state_heist(state, self.args)
+    def loot_actor(self, state):
+        state = extract_neural_state_loot(state, self.args)
         # state = state.reshape(-1)
         # state = state.tolist()
         predictions = self.model(state)
         action = torch.argmax(predictions)
-        action = simplify_action_heist(action)
+        action = simplify_action_loot(action)
         return action
 
 

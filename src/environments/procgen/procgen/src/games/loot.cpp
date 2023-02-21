@@ -6,7 +6,7 @@
 #include "../cpp-utils.h"
 #include <iostream>
 
-const std::string NAME = "heistcolor";
+const std::string NAME = "loot";
 
 const float COMPLETION_BONUS = 10.0f;
 const float STEP_PENALTY = -0.01f;
@@ -17,7 +17,7 @@ const int EXIT = 9;
 const int KEY_ON_RING = 11;
 const int AGENT = 0;
 
-class HeistColor : public BasicAbstractGame {
+class Loot : public BasicAbstractGame {
   public:
     std::shared_ptr<MazeGen> maze_gen;
     int world_dim = 0;
@@ -25,7 +25,7 @@ class HeistColor : public BasicAbstractGame {
     std::vector<bool> has_keys;
     std::vector<bool> num_locks_unlocked;
 
-    HeistColor()
+    Loot()
         : BasicAbstractGame(NAME) {
         timeout = 100;
         maze_gen = nullptr;
@@ -145,8 +145,17 @@ class HeistColor : public BasicAbstractGame {
 
         options.center_agent = options.distribution_mode == MemoryMode;
 
+//        if (options.distribution_mode == MemoryMode) {
+//            num_keys = rand_gen.randn(3) + 1;
+//        } else {
+//            num_keys = 1 + rand_gen.randn(3);
+//        }
+//
+//        if (num_keys > 3)
+//            num_keys = 3;
+
         if (options.distribution_mode == MemoryMode) {
-            num_keys = rand_gen.randn(2) + 1;
+        num_keys = rand_gen.randn(2) + 1;
         } else {
             num_keys = 1 + rand_gen.randn(2);
         }
@@ -310,4 +319,4 @@ class HeistColor : public BasicAbstractGame {
     }
 };
 
-REGISTER_GAME(NAME, HeistColor);
+REGISTER_GAME(NAME, Loot);

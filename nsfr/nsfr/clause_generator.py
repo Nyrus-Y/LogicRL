@@ -230,7 +230,7 @@ class ClauseGenerator(object):
                 scores = self.scoring(action_probs, body_scores, actions)
             elif self.args.m == 'bigfish':
                 pass
-            elif self.args.m == 'heist':
+            elif self.args.m == 'loot':
                 action_probs, actions = self.get_action_probs_h(predname)
                 scores = self.scoring(action_probs, body_scores, actions)
         else:

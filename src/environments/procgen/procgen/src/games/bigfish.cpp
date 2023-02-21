@@ -13,7 +13,7 @@ const float EATEN_PENALTY = -1;
 
 const int FISH = 2;
 
-const float FISH_MIN_R = .25;
+const float FISH_MIN_R = .75;
 const float FISH_MAX_R = 3;
 
 const int FISH_QUOTA = 30;
@@ -33,7 +33,7 @@ class BigFish : public BasicAbstractGame {
         timeout = 500;
 
         main_width = 20;
-        main_height = 10;
+        main_height = 20;
     }
 
     void load_background_images() override {
@@ -73,7 +73,7 @@ class BigFish : public BasicAbstractGame {
         options.center_agent = false;
         fish_eaten = 0;
 
-        float start_r = .5;
+        float start_r = 1;
 
         if (options.distribution_mode == EasyMode) {
             start_r = 1;

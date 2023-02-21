@@ -56,11 +56,10 @@ add_library(env
   src/games/ebigfishl.cpp
   src/games/coinrun_old.cpp
   src/games/coinrun.cpp
-  src/games/ecoinrun.cpp
-  src/games/oriheist.cpp
   src/games/heist.cpp
-  src/games/heistcolor.cpp
-  src/games/heistplus.cpp
+  src/games/loot.cpp
+  src/games/lootcolor.cpp
+  src/games/lootplus.cpp
   src/mazegen.cpp
   src/randgen.cpp
   src/roomgen.cpp

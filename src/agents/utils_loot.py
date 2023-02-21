@@ -4,13 +4,13 @@ import torch
 device = torch.device('cuda:0')
 
 
-def extract_logic_state_heist(state, args):
+def extract_logic_state_loot(state, args):
     """
     [X,Y]
     [agent,key_b,door_b,key_g,door_g,key_r,door_r]
     """
     states = torch.from_numpy(state['positions']).squeeze()
-    if args.env == 'heistplus':
+    if args.env == 'lootplus':
         # input shape: [X,Y]* [agent,key_b,door_b,key_g,door_g,key_r,door_r]
         # output shape:[agent, key, door, blue, green, red ,got_key, X, Y]
         extracted_state = torch.tensor([
@@ -27,7 +27,7 @@ def extract_logic_state_heist(state, args):
                 extracted_state[i] = torch.zeros((1, 9))
             elif i in [2, 4, 6] and state[-1] != 0 and extracted_state[i - 1][1] == 0:
                 extracted_state[i][-3] = 1
-    elif args.env == "heist":
+    elif args.env == "loot":
         # input shape: [X,Y]* [agent,key_b,door_b,key_g,door_g]
         # output shape:[agent, key, door, blue, red ,got_key, X, Y]
         extracted_state = torch.tensor([
@@ -46,7 +46,7 @@ def extract_logic_state_heist(state, args):
             # if key = 0 but door !=0, means key of this door has picked
             elif i in [2, 4] and state[-1] != 0 and extracted_state[i - 1][1] == 0:
                 extracted_state[i][-3] = 1
-    elif args.env == "heistcolor":
+    elif args.env == "lootcolor":
         # input shape: [X,Y]* [agent,key_b,door_b,key_g,door_g]
         # output shape:[agent, key, door, green, brown ,got_key, X, Y]
         extracted_state = torch.tensor([
@@ -69,10 +69,10 @@ def extract_logic_state_heist(state, args):
     return extracted_state.to(device)
 
 
-def extract_neural_state_heist(state, args):
+def extract_neural_state_loot(state, args):
     state = state['positions']
 
-    if args.env == 'heistplus':
+    if args.env == 'lootplus':
         raw_state = np.array([[0, 0, 0, 0],
                               [0, 0, 1, 1],
                               [0, 0, 2, 1],
@@ -82,7 +82,7 @@ def extract_neural_state_heist(state, args):
                               [0, 0, 2, 3]], dtype=np.float32)
         raw_state[:, 0:2] = state[0][:]
 
-    elif args.env == 'heist':
+    elif args.env == 'loot':
 
         raw_state = np.array([[0, 0, 0, 0],
                               [0, 0, 1, 1],
@@ -93,7 +93,7 @@ def extract_neural_state_heist(state, args):
                               [0, 0, 0, 0]], dtype=np.float32)
         raw_state[:, 0:2] = state[0][:]
 
-    elif args.env == 'heistcolor':
+    elif args.env == 'lootcolor':
         raw_state = np.array([[0, 0, 0, 0],
                               [0, 0, 1, 10],
                               [0, 0, 2, 10],
@@ -108,7 +108,7 @@ def extract_neural_state_heist(state, args):
     return torch.tensor(state).to(device)
 
 
-def simplify_action_heist(action):
+def simplify_action_loot(action):
     """simplify 9 actions to 5 actions
     """
     #          left,down,idle,up,right
@@ -118,7 +118,7 @@ def simplify_action_heist(action):
     return np.array([action])
 
 
-def preds_to_action_heist(action, prednames):
+def preds_to_action_loot(action, prednames):
     """
     map explaining to action
     action_space = [1, 3, 4, 5, 7]
@@ -135,10 +135,10 @@ def preds_to_action_heist(action, prednames):
         return np.array([4])
 
 
-def action_map_heist(prediction, args, prednames=None):
+def action_map_loot(prediction, args, prednames=None):
     """map model action to game action"""
     if args.alg == 'ppo':
-        action = simplify_action_heist(prediction)
+        action = simplify_action_loot(prediction)
     elif args.alg == 'logic':
-        action = preds_to_action_heist(prediction, prednames)
+        action = preds_to_action_loot(prediction, prednames)
     return action

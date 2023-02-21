@@ -7,13 +7,13 @@ from torch.distributions import Categorical
 from nsfr.utils import get_nsfr_model
 from .MLPController.mlpbigfish import MLPBigfish
 from .MLPController.mlpcoinjump import MLPCoinjump
-from .MLPController.mlpheist import MLPHeist
+from .MLPController.mlploot import MLPLoot
 from .utils_coinjump import extract_logic_state_coinjump, preds_to_action_coinjump, action_map_coinjump, \
     extract_neural_state_coinjump
 from .utils_bigfish import extract_logic_state_bigfish, preds_to_action_bigfish, action_map_bigfish, \
     extract_neural_state_bigfish
-from .utils_heist import extract_logic_state_heist, action_map_heist, extract_neural_state_heist, \
-    preds_to_action_heist
+from .utils_loot import extract_logic_state_loot, action_map_loot, extract_neural_state_loot, \
+    preds_to_action_loot
 
 device = torch.device('cuda:0')
 
@@ -29,8 +29,8 @@ class NSFR_ActorCritic(nn.Module):
             self.critic = MLPBigfish(out_size=1, logic=True)
         elif self.args.m == 'getout':
             self.critic = MLPCoinjump(out_size=1, logic=True)
-        elif self.args.m == 'heist':
-            self.critic = MLPHeist(out_size=1, logic=True)
+        elif self.args.m == 'loot':
+            self.critic = MLPLoot(out_size=1, logic=True)
         self.num_actions = len(self.prednames)
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
@@ -98,9 +98,9 @@ class LogicPPO:
         elif self.args.m == 'bigfish':
             logic_state = extract_logic_state_bigfish(state, self.args)
             neural_state = extract_neural_state_bigfish(state, self.args)
-        elif self.args.m == 'heist':
-            logic_state = extract_logic_state_heist(state, self.args)
-            neural_state = extract_neural_state_heist(state, self.args)
+        elif self.args.m == 'loot':
+            logic_state = extract_logic_state_loot(state, self.args)
+            neural_state = extract_neural_state_loot(state, self.args)
 
         # select random action with epsilon probability and policy probiability with 1-epsilon
         with torch.no_grad():
@@ -121,8 +121,8 @@ class LogicPPO:
             action = action_map_coinjump(action, self.args, self.prednames)
         elif self.args.m == 'bigfish':
             action = action_map_bigfish(action, self.args, self.prednames)
-        elif self.args.m == 'heist':
-            action = action_map_heist(action, self.args, self.prednames)
+        elif self.args.m == 'loot':
+            action = action_map_loot(action, self.args, self.prednames)
 
         return action
 
@@ -221,8 +221,8 @@ class LogicPlayer:
             action, explaining = self.coinjump_actor(state)
         elif self.args.m == 'bigfish':
             action, explaining = self.bigfish_actor(state)
-        elif self.args.m == 'heist':
-            action, explaining = self.heist_actor(state)
+        elif self.args.m == 'loot':
+            action, explaining = self.loot_actor(state)
         return action, explaining
 
     def get_probs(self):
@@ -238,8 +238,8 @@ class LogicPlayer:
             logic_state = extract_logic_state_coinjump(state, self.args).squeeze(0)
         elif self.args.m == 'bigfish':
             logic_state = extract_logic_state_bigfish(state, self.args).squeeze(0)
-        if self.args.m == 'heist':
-            logic_state = extract_logic_state_heist(state, self.args).squeeze(0)
+        if self.args.m == 'loot':
+            logic_state = extract_logic_state_loot(state, self.args).squeeze(0)
         logic_state = logic_state.tolist()
         result = []
         for list in logic_state:
@@ -263,12 +263,12 @@ class LogicPlayer:
         action = preds_to_action_bigfish(action, self.prednames)
         return action, explaining
 
-    def heist_actor(self, state):
-        state = extract_logic_state_heist(state, self.args)
+    def loot_actor(self, state):
+        state = extract_logic_state_loot(state, self.args)
         predictions = self.model(state)
         action = torch.argmax(predictions)
         explaining = self.prednames[action.item()]
-        action = preds_to_action_heist(action, self.prednames)
+        action = preds_to_action_loot(action, self.prednames)
         return action, explaining
 
 

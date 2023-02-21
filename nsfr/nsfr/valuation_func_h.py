@@ -4,7 +4,7 @@ import math
 
 
 ################################
-# Valuation functions for heist #
+# Valuation functions for loot #
 ################################
 
 

@@ -25,7 +25,7 @@ def get_nsfr_model(args, train=False):
         VM = CJValuationModule(lang=lang, device=device)
     elif args.m == 'bigfish':
         VM = BFValuationModule(lang=lang, device=device)
-    elif args.m == 'heist':
+    elif args.m == 'loot':
         VM = HValuationModule(lang=lang, device=device)
     FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
     prednames = []

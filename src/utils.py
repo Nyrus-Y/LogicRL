@@ -12,7 +12,7 @@ def make_deterministic(seed):
 
 def initialize_game(env, args):
     """initialize game"""
-    if args.m == 'bigfish' or args.m == 'heist':
+    if args.m == 'bigfish' or args.m == 'loot':
         reward, state, done = env.observe()
     elif args.m == 'getout':
         # return the whole coinjump information
@@ -29,7 +29,7 @@ def env_step(action, env, args):
             # simpler policy
             if action in [3]:
                 reward += -0.2
-    elif args.m == 'bigfish' or args.m == 'heist':
+    elif args.m == 'bigfish' or args.m == 'loot':
         env.act(action)
         reward, state, done = env.observe()
         reward = reward[0]

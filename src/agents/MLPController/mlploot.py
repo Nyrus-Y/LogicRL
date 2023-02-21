@@ -2,7 +2,7 @@ import torch
 import numpy as np
 
 
-class MLPHeist(torch.nn.Module):
+class MLPLoot(torch.nn.Module):
 
     def __init__(self, has_softmax=False, out_size=5, logic=False):
         super().__init__()

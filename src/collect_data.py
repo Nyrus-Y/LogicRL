@@ -11,7 +11,7 @@ from environments.coinjump.coinjump.coinjump.coinjump import CoinJump
 from environments.coinjump.coinjump.coinjump.paramLevelGenerator import ParameterizedLevelGenerator
 from agents.utils_coinjump import extract_state, sample_to_model_input, collate
 from agents.neural_agent import ActorCritic
-from agents.utils_heist import extract_neural_state_heist, simplify_action_heist, extract_logic_state_heist
+from agents.utils_loot import extract_neural_state_loot, simplify_action_loot, extract_logic_state_loot
 from agents.utils_bigfish import extract_logic_state_bigfish, extract_neural_state_bigfish
 from tqdm import tqdm
 from nsfr.utils import extract_for_cgen_explaining
@@ -84,13 +84,13 @@ def parse_args():
     parser = ArgumentParser("Loads a model and lets it play coinjump")
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=True, action="store", dest="m", default='coinjump',
-                        choices=['getout', 'bigfish', 'heist'])
+                        choices=['getout', 'bigfish', 'loot'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env", default='CoinJumpEnv-v1',
-                        choices=['getout', 'bigfish', 'heist', 'heistcolor'])
+                        choices=['getout', 'bigfish', 'loot', 'lootcolor'])
     parser.add_argument("-mo", "--model_file", dest="model_file", default=None)
     parser.add_argument("-s", "--seed", dest="seed", default=0, type=int)
-    arg = ['-m', 'heist', '-env', 'eheistc1']
+    arg = ['-m', 'loot', '-env', 'elootc1']
     args = parser.parse_args(arg)
 
     if args.model_file is None:
@@ -167,19 +167,19 @@ def main():
             reward = coin_jump.step(action)
 
         buffer.save_data(args)
-    elif args.m == 'heist':
+    elif args.m == 'loot':
 
         env = ProcgenGym3Env(num=1, env_name=args.env, render_mode="rgb_array")
         reward, obs, done = env.observe()
         for i in tqdm(range(max_states)):
             # step game
             step += 1
-            neural_state = extract_neural_state_heist(obs, args)
-            logic_state = extract_logic_state_heist(obs, args)
+            neural_state = extract_neural_state_loot(obs, args)
+            logic_state = extract_logic_state_loot(obs, args)
             logic_state =logic_state.squeeze(0)
             predictions = model(neural_state)
             action = torch.argmax(predictions)
-            action = simplify_action_heist(action)
+            action = simplify_action_loot(action)
             env.act(action)
             rew, obs, done = env.observe()
             if step % save_frequence == 0:
@@ -201,7 +201,7 @@ def main():
             logic_state = extract_logic_state_bigfish(obs, args)
             predictions = model(neural_state)
             action = torch.argmax(predictions)
-            action = simplify_action_heist(action)
+            action = simplify_action_loot(action)
             env.act(action)
             rew, obs, done = env.observe()
             if step % save_frequence == 0:

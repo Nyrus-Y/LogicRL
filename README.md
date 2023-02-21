@@ -15,7 +15,7 @@ from the nsfr folder:
 pip install -e . # installs in dev mode
 ```
 
-You also need to install QT-5 for Bigfish and Heist:
+You also need to install QT-5 for Bigfish and Loot:
 
 ```bash
 apt-get install qt5-default
@@ -48,7 +48,7 @@ The algorithm to use for playing or training, choice: _ppo_, _logic_.
 
 * **--mode -m**:
 
-Game mode to play or train with, choice: _getout_, _bigfish_, _heist_.
+Game mode to play or train with, choice: _getout_, _bigfish_, _loot_.
 
 * **--environment -env**:
 
@@ -58,9 +58,9 @@ _getout_ contains key, door and one enemy.
 _getoutplus_ has one more enemy.  
 _bigfish_  contains one bigger fish and one smaller fish.  
 _bigfishcolor_  contains one red fish and one green fish. agent need to avoid red fish and eat green fish.  
-_heist_  contains 2 pairs of key and door.  
-_heistcolor_  contains 2 pairs of key and door with different color.  
-_heistplus_    contains 3 pairs of key and door.
+_loot_  contains 2 pairs of key and door.  
+_lootcolor_  contains 2 pairs of key and door with different color.  
+_lootplus_    contains 3 pairs of key and door.
 
 * **--rules -r**:
 

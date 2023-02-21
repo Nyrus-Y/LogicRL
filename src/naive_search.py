@@ -55,9 +55,9 @@ def get_args():
     parser.add_argument("--batch-size", type=int, default=24, help="Batch size to infer with")
     parser.add_argument("--batch-size-bs", type=int, default=1, help="Batch size in beam search")
     parser.add_argument('-r', "--rules", required=True, help="choose to root rules", dest='r',
-                        choices=["getout_root", 'bigfish_root', 'heist_root'])
+                        choices=["getout_root", 'bigfish_root', 'loot_root'])
     parser.add_argument('-m', "--model", required=True, help="the game mode for beam-search", dest='m',
-                        choices=['getout', 'bigfish', 'heist'])
+                        choices=['getout', 'bigfish', 'loot'])
     parser.add_argument('-t', "--t-beam", type=int, default=3, help="Number of rule expantion of clause generation.")
     parser.add_argument('-n', "--n-beam", type=int, default=8, help="The size of the beam.")
     parser.add_argument("--n-max", type=int, default=100, help="The maximum number of clauses.")
@@ -65,7 +65,7 @@ def get_args():
     parser.add_argument('--scoring', type=bool, help='beam search rules with scored rule by trained ppo agent',
                         default=False, dest='scoring')
     parser.add_argument('-d', '--dataset', required=False, help='the dataset to load if scoring', dest='d',
-                        choices=['getout.json', 'heist.json'])
+                        choices=['getout.json', 'loot.json'])
     args = parser.parse_args()
     return args
 

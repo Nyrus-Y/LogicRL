@@ -87,7 +87,7 @@ class ModeTerm(object):
         return self.__str__()
 
 
-def get_mode_declarations_heist(lang):
+def get_mode_declarations_loot(lang):
     p_image = ModeTerm('+', DataType('image'))
     m_object = ModeTerm('-', DataType('object'))
     p_object = ModeTerm('+', DataType('object'))
@@ -154,7 +154,7 @@ def get_mode_declarations(args, lang):
         return get_mode_declarations_coinjump(lang)
     if args.m == 'bigfish':
         return get_mode_declarations_bigfish(lang)
-    elif args.m == 'heist':
-        return get_mode_declarations_heist(lang)
+    elif args.m == 'loot':
+        return get_mode_declarations_loot(lang)
     else:
         assert False, "Invalid data type."

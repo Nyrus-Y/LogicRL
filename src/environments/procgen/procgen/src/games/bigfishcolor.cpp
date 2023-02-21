@@ -34,7 +34,7 @@ class BigFishColor : public BasicAbstractGame {
         timeout = 500;
 
         main_width = 20;
-        main_height = 10;
+        main_height = 20;
     }
 
     void load_background_images() override {
@@ -61,8 +61,6 @@ class BigFishColor : public BasicAbstractGame {
             else {
                 step_data.reward += POSITIVE_REWARD;
                 obj->will_erase = true;
-                //agent->rx += r_inc;
-                //agent->ry += r_inc;
                 fish_eaten += 1;
             }
     }
@@ -73,11 +71,7 @@ class BigFishColor : public BasicAbstractGame {
         options.center_agent = false;
         fish_eaten = 0;
 
-        float start_r = .5;
-
-        if (options.distribution_mode == EasyMode) {
-            start_r = 1;
-        }
+        float start_r = 1;
 
         r_inc = (FISH_MAX_R - start_r) / FISH_QUOTA;
 

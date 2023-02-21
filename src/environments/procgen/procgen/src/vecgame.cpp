@@ -382,7 +382,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
       //     s.high.int32 = INT32_MAX;
       //     info_types.push_back(s);
       // }
-    } else if (env_name == "oriheist") {
+    } else if (env_name == "oriloot") {
       {
           struct libenv_tensortype s;
           strcpy(s.name, "key_count");
@@ -517,7 +517,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
         s.high.float32 = 2.0f;
         observation_types.push_back(s);
     }
-    } else if (env_name == "heistplus"){
+    } else if (env_name == "lootplus"){
       {
           struct libenv_tensortype s;
           strcpy(s.name, "positions");
@@ -551,7 +551,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
           s.high.int32 = INT32_MAX;
           info_types.push_back(s);
       }
-    } else if (env_name == "heist"){
+    } else if (env_name == "loot"){
       {
           struct libenv_tensortype s;
           strcpy(s.name, "positions");
@@ -586,7 +586,7 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
           info_types.push_back(s);
       }
     }
-    else if (env_name == "heistcolor"){
+    else if (env_name == "lootcolor"){
       {
           struct libenv_tensortype s;
           strcpy(s.name, "positions");
