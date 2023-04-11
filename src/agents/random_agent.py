@@ -9,14 +9,14 @@ class RandomPlayer:
     def act(self, state):
         # TODO how to do if-else only once?
         if self.args.m == 'getout':
-            action = self.coinjump_actor()
+            action = self.getout_actor()
         elif self.args.m == 'threefish':
             action = self.threefish_actor()
         elif self.args.m == 'loot':
             action = self.loot_actor()
         return action
 
-    def coinjump_actor(self):
+    def getout_actor(self):
         # action = coin_jump_actions_from_unified(random.randint(0, 10))
         return random.randint(0, 10)
 

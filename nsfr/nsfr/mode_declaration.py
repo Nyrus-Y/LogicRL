@@ -132,7 +132,7 @@ def get_mode_declarations_threefish(lang):
     return modeb_list
 
 
-def get_mode_declarations_coinjump(lang):
+def get_mode_declarations_getout(lang):
     p_image = ModeTerm('+', DataType('image'))
     m_object = ModeTerm('-', DataType('object'))
     p_object = ModeTerm('+', DataType('object'))
@@ -151,7 +151,7 @@ def get_mode_declarations_coinjump(lang):
 
 def get_mode_declarations(args, lang):
     if args.m == 'getout':
-        return get_mode_declarations_coinjump(lang)
+        return get_mode_declarations_getout(lang)
     if args.m == 'threefish':
         return get_mode_declarations_threefish(lang)
     elif args.m == 'loot':

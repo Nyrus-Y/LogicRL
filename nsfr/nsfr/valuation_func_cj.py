@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 ################################
-# Valuation functions for coinjump #
+# Valuation functions for getout #
 ################################
 
 device = torch.device('cuda:0')

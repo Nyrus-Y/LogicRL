@@ -1,4 +1,4 @@
-# a logic player example of coinjump
+# a logic player example of getout
 import time
 import argparse
 import numpy as np
@@ -6,10 +6,10 @@ import sys
 
 sys.path.insert(0, '../')
 from src.utils import make_deterministic
-from src.environments.coinjump.coinjump.imageviewer import ImageViewer
-from src.environments.coinjump.coinjump.coinjump.helpers import create_coinjump_instance
+from src.environments.getout.getout.imageviewer import ImageViewer
+from src.environments.getout.getout.getout.helpers import create_getout_instance
 from nsfr.utils import get_nsfr_model, get_predictions
-from src.agents.utils_coinjump import extract_logic_state_coinjump
+from src.agents.utils_getout import extract_logic_state_getout
 
 KEY_SPACE = 32
 KEY_w = 119
@@ -19,11 +19,11 @@ KEY_d = 100
 KEY_r = 114
 
 
-def setup_image_viewer(coinjump):
+def setup_image_viewer(getout):
     viewer = ImageViewer(
-        "coinjump1",
-        coinjump.camera.height,
-        coinjump.camera.width,
+        "getout1",
+        getout.camera.height,
+        getout.camera.width,
         monitor_keyboard=True,
         # relevant_keys=set('W','A','S','D','SPACE')
     )
@@ -58,13 +58,13 @@ def run():
     make_deterministic(args.seed)
 
     if args.env == "Getout":
-        coin_jump = create_coinjump_instance()
+        coin_jump = create_getout_instance()
     elif args.env == "GetoutKD":
-        coin_jump = create_coinjump_instance(key_door=True)
+        coin_jump = create_getout_instance(key_door=True)
     elif args.env == "GetoutE":
-        coin_jump = create_coinjump_instance(enemy=True)
+        coin_jump = create_getout_instance(enemy=True)
     else:
-        coin_jump = create_coinjump_instance(enemies=True)
+        coin_jump = create_getout_instance(enemies=True)
     viewer = setup_image_viewer(coin_jump)
 
     # frame rate limiting
@@ -88,17 +88,17 @@ def run():
         action = []
 
         # if KEY_r in viewer.pressed_keys:
-        #     if args.env == "coinjump":
-        #         coin_jump = create_coinjump_instance()
-        #     elif args.env == "coinjump_kd":
-        #         coin_jump = create_coinjump_instance(key_door=True)
-        #     elif args.env == "coinjump_e":
-        #         coin_jump = create_coinjump_instance(enemy=True)
+        #     if args.env == "getout":
+        #         coin_jump = create_getout_instance()
+        #     elif args.env == "getout_kd":
+        #         coin_jump = create_getout_instance(key_door=True)
+        #     elif args.env == "getout_e":
+        #         coin_jump = create_getout_instance(enemy=True)
 
         if not coin_jump.level.terminated:
 
             # extract state for expextracted_statelaining
-            extracted_state = extract_logic_state_coinjump(coin_jump, args)
+            extracted_state = extract_logic_state_getout(coin_jump, args)
             explaining = get_predictions(extracted_state, nsfr)
             action = explaining_to_action(explaining)
 
@@ -110,13 +110,13 @@ def run():
                 last_explaining = explaining
         else:
             if args.env == "Getout":
-                coin_jump = create_coinjump_instance()
+                coin_jump = create_getout_instance()
             elif args.env == "GetoutKD":
-                coin_jump = create_coinjump_instance(key_door=True)
+                coin_jump = create_getout_instance(key_door=True)
             elif args.env == "GetoutE":
-                coin_jump = create_coinjump_instance(enemy=True)
+                coin_jump = create_getout_instance(enemy=True)
             else:
-                coin_jump = create_coinjump_instance(enemies=True)
+                coin_jump = create_getout_instance(enemies=True)
             action = 0
             print("--------------------------     next game    --------------------------")
 

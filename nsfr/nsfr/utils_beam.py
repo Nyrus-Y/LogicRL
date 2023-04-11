@@ -31,7 +31,7 @@ def get_nsfr_model(args, lang, clauses, atoms, bk, bk_clauses, device, train=Fal
 
 
 def get_nsfr_cgen_model(args, lang, clauses, atoms, bk, device, train=False):
-    if args.m == 'coinjump':
+    if args.m == 'getout':
         VM = CJValuationModule(lang=lang, device=device)
     elif args.m == 'threefish':
         VM = BFValuationModule(lang=lang, device=device)

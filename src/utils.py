@@ -15,7 +15,7 @@ def initialize_game(env, args):
     if args.m == 'threefish' or args.m == 'loot':
         reward, state, done = env.observe()
     elif args.m == 'getout':
-        # return the whole coinjump information
+        # return the whole getout information
         state = env.reset()
     return state
 

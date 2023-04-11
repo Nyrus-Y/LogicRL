@@ -19,7 +19,7 @@ class DataUtils(object):
         base_path: The base path of the dataset.
     """
 
-    def __init__(self, lark_path, lang_base_path, dataset_type='coinjump', dataset='coinjump_5a'):
+    def __init__(self, lark_path, lang_base_path, dataset_type='getout', dataset='getout_5a'):
         self.base_path = lang_base_path + dataset_type + '/' + dataset + '/'
         with open(lark_path, encoding="utf-8") as grammar:
             self.lp_atom = Lark(grammar.read(), start="atom")

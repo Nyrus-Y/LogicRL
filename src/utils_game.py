@@ -9,10 +9,10 @@ from tqdm import tqdm
 import sys
 import io
 from environments.procgen.procgen import ProcgenGym3Env
-from environments.coinjump.coinjump.imageviewer import ImageViewer
-from environments.coinjump.coinjump.coinjump.paramLevelGenerator import ParameterizedLevelGenerator
-from environments.coinjump.coinjump.coinjump.coinjump import CoinJump
-from environments.coinjump.coinjump.coinjump.actions import CoinJumpActions
+from environments.getout.getout.imageviewer import ImageViewer
+from environments.getout.getout.getout.paramLevelGenerator import ParameterizedLevelGenerator
+from environments.getout.getout.getout.getout import Getout
+from environments.getout.getout.getout.actions import GetoutActions
 
 
 def hexify(la):
@@ -75,23 +75,23 @@ def render_getout(agent, args):
     KEY_RIGHT = 65363
     KEY_UP = 65362
 
-    def setup_image_viewer(coinjump):
-        print(coinjump.camera.height, coinjump.camera.width)
+    def setup_image_viewer(getout):
+        print(getout.camera.height, getout.camera.width)
         viewer = ImageViewer(
-            "coinjump",
-            coinjump.camera.height,
-            coinjump.camera.width,
+            "getout",
+            getout.camera.height,
+            getout.camera.width,
             monitor_keyboard=True,
         )
         return viewer
 
-    def create_coinjump_instance(args, seed=None):
+    def create_getout_instance(args, seed=None):
         if args.env == 'getoutplus':
             enemies = True
         else:
             enemies = False
         # level_generator = DummyGenerator()
-        coin_jump = CoinJump()
+        coin_jump = Getout()
         level_generator = ParameterizedLevelGenerator(enemies=enemies)
         level_generator.generate(coin_jump, seed=seed)
         coin_jump.render()
@@ -100,7 +100,7 @@ def render_getout(agent, args):
 
     # seed = random.randint(0, 100000000)
     # print(seed)
-    coin_jump = create_coinjump_instance(args)
+    coin_jump = create_getout_instance(args)
     viewer = setup_image_viewer(coin_jump)
 
     # frame rate limiting
@@ -147,17 +147,17 @@ def render_getout(agent, args):
                 action = agent.act(coin_jump)
             elif args.alg == 'human':
                 if KEY_a in viewer.pressed_keys or KEY_LEFT in viewer.pressed_keys:
-                    action.append(CoinJumpActions.MOVE_LEFT)
+                    action.append(GetoutActions.MOVE_LEFT)
                 if KEY_d in viewer.pressed_keys or KEY_RIGHT in viewer.pressed_keys:
-                    action.append(CoinJumpActions.MOVE_RIGHT)
+                    action.append(GetoutActions.MOVE_RIGHT)
                 if (KEY_SPACE in viewer.pressed_keys) or (KEY_w in viewer.pressed_keys) or KEY_UP in viewer.pressed_keys:
-                    action.append(CoinJumpActions.MOVE_UP)
+                    action.append(GetoutActions.MOVE_UP)
                 if KEY_s in viewer.pressed_keys:
-                    action.append(CoinJumpActions.MOVE_DOWN)
+                    action.append(GetoutActions.MOVE_DOWN)
             elif args.alg == 'random':
                 action = agent.act(coin_jump)
         else:
-            coin_jump = create_coinjump_instance(args)
+            coin_jump = create_getout_instance(args)
             # print("epi_reward: ", round(epi_reward, 2))
             # print("--------------------------     next game    --------------------------")
             print(f"Episode {num_epi}")

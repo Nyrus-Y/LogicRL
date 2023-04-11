@@ -6,10 +6,10 @@ import os
 from torch.distributions import Categorical
 from nsfr.utils import get_nsfr_model
 from .MLPController.mlpthreefish import MLPThreefish
-from .MLPController.mlpcoinjump import MLPCoinjump
+from .MLPController.mlpgetout import MLPGetout
 from .MLPController.mlploot import MLPLoot
-from .utils_coinjump import extract_logic_state_coinjump, preds_to_action_coinjump, action_map_coinjump, \
-    extract_neural_state_coinjump
+from .utils_getout import extract_logic_state_getout, preds_to_action_getout, action_map_getout, \
+    extract_neural_state_getout
 from .utils_threefish import extract_logic_state_threefish, preds_to_action_threefish, action_map_threefish, \
     extract_neural_state_threefish
 from .utils_loot import extract_logic_state_loot, action_map_loot, extract_neural_state_loot, \
@@ -28,7 +28,7 @@ class NSFR_ActorCritic(nn.Module):
         if self.args.m == 'threefish':
             self.critic = MLPThreefish(out_size=1, logic=True)
         elif self.args.m == 'getout':
-            self.critic = MLPCoinjump(out_size=1, logic=True)
+            self.critic = MLPGetout(out_size=1, logic=True)
         elif self.args.m == 'loot':
             self.critic = MLPLoot(out_size=1, logic=True)
         self.num_actions = len(self.prednames)
@@ -93,8 +93,8 @@ class LogicPPO:
 
         # extract state for different games
         if self.args.m == 'getout':
-            logic_state = extract_logic_state_coinjump(state, self.args)
-            neural_state = extract_neural_state_coinjump(state, self.args)
+            logic_state = extract_logic_state_getout(state, self.args)
+            neural_state = extract_neural_state_getout(state, self.args)
         elif self.args.m == 'threefish':
             logic_state = extract_logic_state_threefish(state, self.args)
             neural_state = extract_neural_state_threefish(state, self.args)
@@ -118,7 +118,7 @@ class LogicPPO:
         # action of logic game means a String, need to map string to the correct action,
         action = action.item()
         if self.args.m == 'getout':
-            action = action_map_coinjump(action, self.args, self.prednames)
+            action = action_map_getout(action, self.args, self.prednames)
         elif self.args.m == 'threefish':
             action = action_map_threefish(action, self.args, self.prednames)
         elif self.args.m == 'loot':
@@ -218,7 +218,7 @@ class LogicPlayer:
 
     def act(self, state):
         if self.args.m == 'getout':
-            action, explaining = self.coinjump_actor(state)
+            action, explaining = self.getout_actor(state)
         elif self.args.m == 'threefish':
             action, explaining = self.threefish_actor(state)
         elif self.args.m == 'loot':
@@ -235,7 +235,7 @@ class LogicPlayer:
 
     def get_state(self, state):
         if self.args.m == 'getout':
-            logic_state = extract_logic_state_coinjump(state, self.args).squeeze(0)
+            logic_state = extract_logic_state_getout(state, self.args).squeeze(0)
         elif self.args.m == 'threefish':
             logic_state = extract_logic_state_threefish(state, self.args).squeeze(0)
         if self.args.m == 'loot':
@@ -247,12 +247,12 @@ class LogicPlayer:
             result.append(obj_state)
         return result
 
-    def coinjump_actor(self, coinjump):
-        extracted_state = extract_logic_state_coinjump(coinjump, self.args)
+    def getout_actor(self, getout):
+        extracted_state = extract_logic_state_getout(getout, self.args)
         predictions = self.model(extracted_state)
         prediction = torch.argmax(predictions).cpu().item()
         explaining = self.prednames[prediction]
-        action = preds_to_action_coinjump(prediction, self.prednames)
+        action = preds_to_action_getout(prediction, self.prednames)
         return action, explaining
 
     def threefish_actor(self, state):

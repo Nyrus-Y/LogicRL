@@ -5,11 +5,11 @@ import random
 import pickle
 
 from torch.distributions import Categorical
-from .MLPController.mlpcoinjump import MLPCoinjump
+from .MLPController.mlpgetout import MLPGetout
 from .MLPController.mlpthreefish import MLPThreefish
 from .MLPController.mlploot import MLPLoot
-from .utils_coinjump import extract_state, sample_to_model_input, collate, action_map_coinjump, \
-    extract_neural_state_coinjump
+from .utils_getout import extract_state, sample_to_model_input, collate, action_map_getout, \
+    extract_neural_state_getout
 from .utils_threefish import simplify_action_bf, action_map_threefish, extract_neural_state_threefish
 from .utils_loot import simplify_action_loot, action_map_loot, extract_neural_state_loot
 
@@ -24,8 +24,8 @@ class ActorCritic(nn.Module):
         self.args = args
         if self.args.m == 'getout':
             self.num_action = 3
-            self.actor = MLPCoinjump(has_softmax=True)
-            self.critic = MLPCoinjump(has_softmax=False, out_size=1)
+            self.actor = MLPGetout(has_softmax=True)
+            self.critic = MLPGetout(has_softmax=False, out_size=1)
         elif self.args.m == 'threefish':
             self.num_action = 5
             self.actor = MLPThreefish(has_softmax=True)
@@ -89,7 +89,7 @@ class NeuralPPO:
 
         # extract state info for different games
         if self.args.m == 'getout':
-            state = extract_neural_state_coinjump(state, self.args)
+            state = extract_neural_state_getout(state, self.args)
             # model_input = sample_to_model_input((extract_state(state), []))
             # model_input = collate([model_input])
             # state = model_input['state']
@@ -114,7 +114,7 @@ class NeuralPPO:
         self.buffer.logprobs.append(action_logprob)
 
         if self.args.m == 'getout':
-            action = action_map_coinjump(action.item(), self.args)
+            action = action_map_getout(action.item(), self.args)
         elif self.args.m == 'threefish':
             action = action_map_threefish(action.item(), self.args)
         elif self.args.m == 'loot':
@@ -201,16 +201,16 @@ class NeuralPlayer:
 
     def act(self, state):
         if self.args.m == 'getout':
-            action = self.coinjump_actor(state)
+            action = self.getout_actor(state)
         elif self.args.m == 'threefish':
             action = self.threefish_actor(state)
         elif self.args.m == 'loot':
             action = self.loot_actor(state)
         return action
 
-    def coinjump_actor(self, coinjump):
-        state = extract_neural_state_coinjump(coinjump, self.args)
-        # model_input = sample_to_model_input((extract_state(coinjump), []))
+    def getout_actor(self, getout):
+        state = extract_neural_state_getout(getout, self.args)
+        # model_input = sample_to_model_input((extract_state(getout), []))
         # model_input = collate([model_input])
         # state = model_input['state']
         # state = torch.cat([state['base'], state['entities']], dim=1)

@@ -6,10 +6,10 @@ import pathlib
 import gym3
 
 from argparse import ArgumentParser
-from environments.coinjump.coinjump.imageviewer import ImageViewer
-from environments.coinjump.coinjump.coinjump.coinjump import CoinJump
-from environments.coinjump.coinjump.coinjump.paramLevelGenerator import ParameterizedLevelGenerator
-from agents.utils_coinjump import extract_state, sample_to_model_input, collate
+from environments.getout.getout.imageviewer import ImageViewer
+from environments.getout.getout.getout.getout import Getout
+from environments.getout.getout.getout.paramLevelGenerator import ParameterizedLevelGenerator
+from agents.utils_getout import extract_state, sample_to_model_input, collate
 from agents.neural_agent import ActorCritic
 from agents.utils_loot import extract_neural_state_loot, simplify_action_loot, extract_logic_state_loot
 from agents.utils_threefish import extract_logic_state_threefish, extract_neural_state_threefish
@@ -56,22 +56,22 @@ class RolloutBuffer:
         print('data collected')
 
 
-def setup_image_viewer(coinjump):
+def setup_image_viewer(getout):
     viewer = ImageViewer(
-        "coinjump1",
-        coinjump.camera.height,
-        coinjump.camera.width,
+        "getout1",
+        getout.camera.height,
+        getout.camera.width,
         monitor_keyboard=True,
         # relevant_keys=set('W','A','S','D','SPACE')
     )
     return viewer
 
 
-def create_coinjump_instance(seed=None):
+def create_getout_instance(seed=None):
     seed = random.randint(0, 100000000) if seed is None else seed
 
     # level_generator = DummyGenerator()
-    coin_jump = CoinJump(start_on_first_action=False)
+    coin_jump = Getout(start_on_first_action=False)
     level_generator = ParameterizedLevelGenerator()
 
     level_generator.generate(coin_jump, seed=seed)
@@ -81,12 +81,12 @@ def create_coinjump_instance(seed=None):
 
 
 def parse_args():
-    parser = ArgumentParser("Loads a model and lets it play coinjump")
+    parser = ArgumentParser("Loads a model and lets it play getout")
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
-                        required=True, action="store", dest="m", default='coinjump',
+                        required=True, action="store", dest="m", default='getout',
                         choices=['getout', 'threefish', 'loot'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
-                        required=True, action="store", dest="env", default='CoinJumpEnv-v1',
+                        required=True, action="store", dest="env", default='GetoutEnv-v1',
                         choices=['getout', 'threefish', 'loot', 'lootcolor'])
     parser.add_argument("-mo", "--model_file", dest="model_file", default=None)
     parser.add_argument("-s", "--seed", dest="seed", default=0, type=int)
@@ -98,7 +98,7 @@ def parse_args():
         current_path = os.path.dirname(__file__)
         model_name = input('Enter file name: ')
         model_file = os.path.join(current_path, 'models', args.m, 'ppo', model_name)
-        # model_file = f"../src/ppo_coinjump_model/{input('Enter file name: ')}"
+        # model_file = f"../src/ppo_getout_model/{input('Enter file name: ')}"
 
     else:
         model_file = pathlib.Path(args.model_file)
@@ -135,7 +135,7 @@ def main():
     step = 0
     collected_states = 0
     if args.m == 'getout':
-        coin_jump = create_coinjump_instance(seed=seed)
+        coin_jump = create_getout_instance(seed=seed)
         # viewer = setup_image_viewer(coin_jump)
 
         # frame rate limiting
@@ -161,7 +161,7 @@ def main():
                     buffer.action_probs.append(prediction.detach().tolist())
                     buffer.neural_states.append(neural_state.tolist())
             else:
-                coin_jump = create_coinjump_instance(seed=seed)
+                coin_jump = create_getout_instance(seed=seed)
                 action = 0
 
             reward = coin_jump.step(action)

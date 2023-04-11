@@ -106,7 +106,7 @@ If True, render the game.
 With scoring:
 
 ```
-python3 beam_search.py -m coinjump -r coinjump_root -t 3 -n 8 --scoring True -d coinjump.json  
+python3 beam_search.py -m getout -r getout_root -t 3 -n 8 --scoring True -d getout.json  
 ``` 
 
 Without scoring:

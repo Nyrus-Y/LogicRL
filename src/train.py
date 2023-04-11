@@ -10,7 +10,7 @@ import gym
 import numpy as np
 
 # import wandb
-import environments.coinjump.env
+import environments.getout.env
 
 sys.path.insert(0, '../')
 
