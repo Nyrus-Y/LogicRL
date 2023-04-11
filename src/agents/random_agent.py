@@ -5,6 +5,7 @@ import numpy as np
 class RandomPlayer:
     def __init__(self, args):
         self.args = args
+        self.nb_action = None
 
     def act(self, state):
         # TODO how to do if-else only once?
@@ -14,6 +15,8 @@ class RandomPlayer:
             action = self.threefish_actor()
         elif self.args.m == 'loot':
             action = self.loot_actor()
+        elif "atari" in self.args.m:
+            action = random.randint(0, self.nb_actions-1)
         return action
 
     def getout_actor(self):

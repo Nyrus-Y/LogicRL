@@ -13,7 +13,7 @@ from environments.getout.getout.imageviewer import ImageViewer
 from environments.getout.getout.getout.paramLevelGenerator import ParameterizedLevelGenerator
 from environments.getout.getout.getout.getout import Getout
 from environments.getout.getout.getout.actions import GetoutActions
-
+from ocatari.core import OCAtari
 
 def hexify(la):
     return hex(int("".join([str(l) for l in la])))
@@ -391,3 +391,22 @@ def render_ecoinrun(agent, args):
             #     print("\n" * 50)
             #     print(obs["positions"])
             i += 1
+
+def render_atari(agent, args):
+    # gamename = 
+    from ocatari.vision.utils import mark_bb, make_darker
+    import matplotlib.pyplot as plt
+    env = OCAtari(env_name="Freeway", render_mode="rgb_array")
+    i = 0
+    obs = env.reset()
+    agent.nb_actions = env.nb_actions
+    while True:
+        action = agent.act(obs)
+        obs, reward, terminated, truncated, info = env.step(action)
+        rpr = env.render()
+        if i % 10 == 0:
+            for obj in env.objects:
+                mark_bb(rpr, obj.xywh, color=obj.rgb)
+            plt.imshow(rpr)
+            plt.show()
+        i += 1

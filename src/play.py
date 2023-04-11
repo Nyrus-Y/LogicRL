@@ -3,7 +3,7 @@ import torch
 import os
 
 from utils import make_deterministic
-from utils_game import render_getout, render_threefish, render_loot, render_ecoinrun
+from utils_game import render_getout, render_threefish, render_loot, render_ecoinrun, render_atari
 from agents.neural_agent import ActorCritic, NeuralPlayer
 from agents.logic_agent import NSFR_ActorCritic, LogicPlayer
 from agents.random_agent import RandomPlayer
@@ -37,7 +37,7 @@ def main():
                         choices=['ppo', 'logic', 'random', 'human'])
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=True, action="store", dest="m",
-                        choices=['getout', 'threefish', 'loot', 'ecoinrun'])
+                        choices=['getout', 'threefish', 'loot', 'ecoinrun', 'atari'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
                         choices=['getout', 'getoutplus',
@@ -127,6 +127,8 @@ def main():
         render_loot(agent, args)
     elif args.m == 'ecoinrun':
         render_ecoinrun(agent, args)
+    elif args.m == 'atari':
+        render_atari(agent, args)
 
 
 if __name__ == "__main__":
