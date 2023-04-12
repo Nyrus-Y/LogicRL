@@ -4,12 +4,12 @@ import numpy as np
 import torch
 
 
-def extract_logic_state_getout(coin_jump, args, noise=False):
-    if args.env == 'getoutplus':
+def extract_logic_state_atari(env, args, noise=False):
+    # if args.env == 'freeway':
+    if True:
         num_of_feature = 6
-        num_of_object = 6
-        representation = coin_jump.level.get_representation()
-        import ipdb; ipdb.set_trace()
+        num_of_object = 11
+        representation = env.level.get_representation()
         extracted_states = np.zeros((num_of_object, num_of_feature))
         for entity in representation["entities"]:
             if entity[0].name == 'PLAYER':
@@ -32,49 +32,6 @@ def extract_logic_state_getout(coin_jump, args, noise=False):
             elif entity[0].name == 'GROUND_ENEMY2':
                 extracted_states[4][3] = 1
                 extracted_states[4][-2:] = entity[1:3]
-                # extracted_states[3][-2:] /= 27
-            elif entity[0].name == 'GROUND_ENEMY3':
-                extracted_states[5][3] = 1
-                extracted_states[5][-2:] = entity[1:3]
-    else:
-        """
-        extract state to metric
-        input: coin_jump instance
-        output: extracted_state to be explained
-        set noise to True to add noise
-    
-        x:  agent, key, door, enemy, position_X, position_Y
-        y:  obj1(agent), obj2(key), obj3(door)，obj4(enemy)
-    
-        To be changed when using object-detection tech
-        """
-        num_of_feature = 6
-        num_of_object = 4
-        representation = coin_jump.level.get_representation()
-        extracted_states = np.zeros((num_of_object, num_of_feature))
-        for entity in representation["entities"]:
-            if entity[0].name == 'PLAYER':
-                extracted_states[0][0] = 1
-                extracted_states[0][-2:] = entity[1:3]
-                # 27 is the width of map, this is normalization
-                # extracted_states[0][-2:] /= 27
-            elif entity[0].name == 'KEY':
-                extracted_states[1][1] = 1
-                extracted_states[1][-2:] = entity[1:3]
-                # extracted_states[1][-2:] /= 27
-            elif entity[0].name == 'DOOR':
-                extracted_states[2][2] = 1
-                extracted_states[2][-2:] = entity[1:3]
-                # extracted_states[2][-2:] /= 27
-            elif entity[0].name == 'GROUND_ENEMY':
-                extracted_states[3][3] = 1
-                extracted_states[3][-2:] = entity[1:3]
-                # extracted_states[3][-2:] /= 27
-
-    if sum(extracted_states[:, 1]) == 0:
-        key_picked = True
-    else:
-        key_picked = False
 
     def simulate_prob(extracted_states, num_of_objs, key_picked):
         for i, obj in enumerate(extracted_states):
@@ -102,8 +59,8 @@ def extract_logic_state_getout(coin_jump, args, noise=False):
     return states
 
 
-def extract_neural_state_getout(getout, args):
-    model_input = sample_to_model_input((extract_state(getout), []))
+def extract_neural_state_atari(atari, args):
+    model_input = sample_to_model_input((extract_state(atari), []))
     model_input = collate([model_input])
     state = model_input['state']
     state = torch.cat([state['base'], state['entities']], dim=1)
@@ -344,7 +301,7 @@ def state_to_extended_repr(state, coin_jump, swap_coins=None, coin0_x=None):
     return tr_ext, swap_coins, coin0_x
 
 
-def preds_to_action_getout(action, prednames):
+def preds_to_action_atari(action, prednames):
     """
     map explaining to action
     0:jump
@@ -367,12 +324,12 @@ def preds_to_action_getout(action, prednames):
         return 0
 
 
-def action_map_getout(prediction, args, prednames=None):
+def action_map_atari(prediction, args, prednames=None):
     """map model action to game action"""
     if args.alg == 'ppo':
         # simplified action--- only left right up
         # action = coin_jump_actions_from_unified(torch.argmax(predictions).cpu().item() + 1)
         action = prediction + 1
     elif args.alg == 'logic':
-        action = preds_to_action_getout(prediction, prednames)
+        action = preds_to_action_atari(prediction, prednames)
     return action

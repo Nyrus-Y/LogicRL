@@ -14,6 +14,8 @@ from .utils_threefish import extract_logic_state_threefish, preds_to_action_thre
     extract_neural_state_threefish
 from .utils_loot import extract_logic_state_loot, action_map_loot, extract_neural_state_loot, \
     preds_to_action_loot
+from .utils_atari import extract_logic_state_atari, preds_to_action_atari, action_map_atari, \
+    extract_neural_state_atari
 
 device = torch.device('cuda:0')
 
@@ -260,7 +262,7 @@ class LogicPlayer:
         return action, explaining
 
     def atari_actor(self, env):
-
+        import ipdb; ipdb.set_trace()
 
     def threefish_actor(self, state):
         state = extract_logic_state_threefish(state, self.args)

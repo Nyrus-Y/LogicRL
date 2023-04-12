@@ -27,6 +27,8 @@ def get_nsfr_model(args, train=False):
         VM = BFValuationModule(lang=lang, device=device)
     elif args.m == 'loot':
         VM = HValuationModule(lang=lang, device=device)
+    if args.m == 'atari':
+        VM = CJValuationModule(lang=lang, device=device)
     FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
     prednames = []
     for clause in clauses:
