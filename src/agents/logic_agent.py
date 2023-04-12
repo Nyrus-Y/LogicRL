@@ -223,6 +223,8 @@ class LogicPlayer:
             action, explaining = self.threefish_actor(state)
         elif self.args.m == 'loot':
             action, explaining = self.loot_actor(state)
+        elif self.args.m == 'atari':
+            action, explaining = self.atari_actor(state)
         return action, explaining
 
     def get_probs(self):
@@ -240,6 +242,8 @@ class LogicPlayer:
             logic_state = extract_logic_state_threefish(state, self.args).squeeze(0)
         if self.args.m == 'loot':
             logic_state = extract_logic_state_loot(state, self.args).squeeze(0)
+        if self.args.m == 'atari':
+            logic_state = extract_logic_state_atari(state, self.args).squeeze(0)
         logic_state = logic_state.tolist()
         result = []
         for list in logic_state:
@@ -254,6 +258,9 @@ class LogicPlayer:
         explaining = self.prednames[prediction]
         action = preds_to_action_getout(prediction, self.prednames)
         return action, explaining
+
+    def atari_actor(self, env):
+
 
     def threefish_actor(self, state):
         state = extract_logic_state_threefish(state, self.args)

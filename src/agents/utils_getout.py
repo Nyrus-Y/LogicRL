@@ -4,10 +4,41 @@ import numpy as np
 import torch
 
 
+def extract_logic_state_atari(env, args, noise=False):
+    # if args.env == 'freeway':
+    if True:
+        num_of_feature = 6
+        num_of_object = 5
+        representation = env.level.get_representation()
+        extracted_states = np.zeros((num_of_object, num_of_feature))
+        for entity in representation["entities"]:
+            if entity[0].name == 'PLAYER':
+                extracted_states[0][0] = 1
+                extracted_states[0][-2:] = entity[1:3]
+                # 27 is the width of map, this is normalization
+                # extracted_states[0][-2:] /= 27
+            elif entity[0].name == 'KEY':
+                extracted_states[1][1] = 1
+                extracted_states[1][-2:] = entity[1:3]
+                # extracted_states[1][-2:] /= 27
+            elif entity[0].name == 'DOOR':
+                extracted_states[2][2] = 1
+                extracted_states[2][-2:] = entity[1:3]
+                # extracted_states[2][-2:] /= 27
+            elif entity[0].name == 'GROUND_ENEMY':
+                extracted_states[3][3] = 1
+                extracted_states[3][-2:] = entity[1:3]
+                # extracted_states[3][-2:] /= 27
+            elif entity[0].name == 'GROUND_ENEMY2':
+                extracted_states[4][3] = 1
+                extracted_states[4][-2:] = entity[1:3]
+
+
+
 def extract_logic_state_getout(coin_jump, args, noise=False):
     if args.env == 'getoutplus':
         num_of_feature = 6
-        num_of_object = 5
+        num_of_object = 6
         representation = coin_jump.level.get_representation()
         extracted_states = np.zeros((num_of_object, num_of_feature))
         for entity in representation["entities"]:
@@ -32,6 +63,9 @@ def extract_logic_state_getout(coin_jump, args, noise=False):
                 extracted_states[4][3] = 1
                 extracted_states[4][-2:] = entity[1:3]
                 # extracted_states[3][-2:] /= 27
+            elif entity[0].name == 'GROUND_ENEMY3':
+                extracted_states[5][3] = 1
+                extracted_states[5][-2:] = entity[1:3]
     else:
         """
         extract state to metric

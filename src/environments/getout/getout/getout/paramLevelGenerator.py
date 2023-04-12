@@ -5,8 +5,7 @@ from .block import Block
 from .getout import Getout
 from .door import Door
 from .key import Key
-from .groundEnemy import GroundEnemy
-from .groundEnemy2 import GroundEnemy2
+from .groundEnemy import GroundEnemy, GroundEnemy2, GroundEnemy3
 
 
 class ParameterizedLevelGenerator:
@@ -50,7 +49,9 @@ class ParameterizedLevelGenerator:
             (11, 2),
             (15, 2),
             (19, 2),
-            (23, 2)
+            (23, 2),
+            (9, 2),
+            (3, 2),
         ]
 
         # positions = [
@@ -72,9 +73,14 @@ class ParameterizedLevelGenerator:
             level.entities.append(GroundEnemy(level, positions[3][0], positions[3][1], resource_loader=resource_loader))
         elif self.enemies:
             level.entities.append(Key(level, positions[1][0] - 0.5, positions[1][1], resource_loader=resource_loader))
+            # level.entities.append(Key(level, positions[6][0] - 0.5, positions[1][1], resource_loader=resource_loader))
             level.entities.append(Door(level, positions[2][0], positions[2][1], resource_loader=resource_loader))
             level.entities.append(GroundEnemy(level, positions[3][0], positions[3][1], resource_loader=resource_loader))
             level.entities.append(GroundEnemy2(level, positions[4][0], positions[4][1], resource_loader=resource_loader))
+            level.entities.append(GroundEnemy3(level, positions[5][0], positions[5][1], resource_loader=resource_loader))
+            # level.entities.append(GroundEnemy(level, positions[6][0], positions[6][1], resource_loader=resource_loader))
+            # level.entities.append(GroundEnemy3(level, positions[4][0], positions[4][1], resource_loader=resource_loader))
+            # level.entities.append(GroundEnemy4(level, positions[4][0], positions[4][1], resource_loader=resource_loader))
         elif self.key_door:
             level.entities.append(Key(level, positions[1][0] - 0.5, positions[1][1], resource_loader=resource_loader))
             level.entities.append(Door(level, positions[2][0], positions[2][1], resource_loader=resource_loader))

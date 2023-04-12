@@ -142,6 +142,7 @@ def render_getout(agent, args):
         action = []
         if not coin_jump.level.terminated:
             if args.alg == 'logic':
+                # import ipdb; ipdb.set_trace()
                 action, explaining = agent.act(coin_jump)
             elif args.alg == 'ppo':
                 action = agent.act(coin_jump)
@@ -396,17 +397,24 @@ def render_atari(agent, args):
     # gamename = 
     from ocatari.vision.utils import mark_bb, make_darker
     import matplotlib.pyplot as plt
-    env = OCAtari(env_name="Freeway", render_mode="rgb_array")
+    rdr_mode = "human" if args.render else "rgb_array"
+    env = OCAtari(env_name="Kangaroo", render_mode=rdr_mode, mode="revised")
     i = 0
     obs = env.reset()
-    agent.nb_actions = env.nb_actions
+    try:
+        agent.nb_actions = env.nb_actions
+    except:
+        pass
     while True:
-        action = agent.act(obs)
+        action = random.randint(0, env.nb_actions-1)
+        if args.alg == 'logic':
+            action, explaining = agent.act(env)
         obs, reward, terminated, truncated, info = env.step(action)
         rpr = env.render()
-        if i % 10 == 0:
-            for obj in env.objects:
-                mark_bb(rpr, obj.xywh, color=obj.rgb)
-            plt.imshow(rpr)
-            plt.show()
+        if not args.render:
+            if i % 10 == 0:
+                for obj in env.objects:
+                    mark_bb(rpr, obj.xywh, color=obj.rgb)
+                plt.imshow(rpr)
+                plt.show()
         i += 1

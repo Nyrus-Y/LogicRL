@@ -40,7 +40,7 @@ def main():
                         choices=['getout', 'threefish', 'loot', 'ecoinrun', 'atari'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['getout', 'getoutplus',
+                        choices=['getout', 'getoutplus', 'getout4en',
                                  'threefish', 'threefishcolor',
                                  'loot', 'lootcolor', 'lootplus',
                                  'ecoinrun'])

@@ -7,6 +7,7 @@ class EntityID(Enum):
     PLAYER = 1
     FLAG = 2
     COIN = 3
+    GROUND_ENEMY3 = 8
     GROUND_ENEMY2 = 4
     GROUND_ENEMY = 5
     DOOR = 6

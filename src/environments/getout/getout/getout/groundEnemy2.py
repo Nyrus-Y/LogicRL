@@ -17,7 +17,7 @@ class GroundEnemy2(Entity):
         self.size = (1.0, 0.5)
         self._update_bounding_box()
 
-        self.move_speed = 0.49
+        self.move_speed = 0.39
         self.max_movement = 0.49
         self.sprites = self._load_sprites(resource_loader) if resource_loader is not None else None
 
