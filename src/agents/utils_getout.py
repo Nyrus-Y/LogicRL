@@ -7,9 +7,9 @@ import torch
 def extract_logic_state_getout(coin_jump, args, noise=False):
     if args.env == 'getoutplus':
         num_of_feature = 6
-        num_of_object = 6
+        num_of_object = 8
         representation = coin_jump.level.get_representation()
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         extracted_states = np.zeros((num_of_object, num_of_feature))
         for entity in representation["entities"]:
             if entity[0].name == 'PLAYER':
@@ -36,6 +36,12 @@ def extract_logic_state_getout(coin_jump, args, noise=False):
             elif entity[0].name == 'GROUND_ENEMY3':
                 extracted_states[5][3] = 1
                 extracted_states[5][-2:] = entity[1:3]
+            elif entity[0].name == 'BUZZSAW1':
+                extracted_states[6][3] = 1
+                extracted_states[6][-2:] = entity[1:3]
+            elif entity[0].name == 'BUZZSAW2':
+                extracted_states[7][3] = 1
+                extracted_states[7][-2:] = entity[1:3]
     else:
         """
         extract state to metric

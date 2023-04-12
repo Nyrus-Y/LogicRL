@@ -398,7 +398,7 @@ def render_atari(agent, args):
     from ocatari.vision.utils import mark_bb, make_darker
     import matplotlib.pyplot as plt
     rdr_mode = "human" if args.render else "rgb_array"
-    env = OCAtari(env_name="Kangaroo", render_mode=rdr_mode, mode="revised")
+    env = OCAtari(env_name=args.env.capitalize(), render_mode=rdr_mode, mode="revised")
     i = 0
     obs = env.reset()
     try:

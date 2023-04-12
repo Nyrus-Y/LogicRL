@@ -13,7 +13,7 @@ class Player(Entity):
         self.action = self._noop_action
 
         self.move_speed = 0.2
-        self.jump_strength = 0.9
+        self.jump_strength = 0.95
 
         self.facing_left = False
 

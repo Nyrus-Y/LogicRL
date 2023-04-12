@@ -43,7 +43,7 @@ def main():
                         choices=['getout', 'getoutplus', 'getout4en',
                                  'threefish', 'threefishcolor',
                                  'loot', 'lootcolor', 'lootplus',
-                                 'ecoinrun', 'freeway'])
+                                 'ecoinrun', 'freeway', 'kangaroo'])
     parser.add_argument("-r", "--rules", dest="rules", default=None,
                         required=False,
                         choices=['getout_human_assisted', 'getout_bs_top10', 'getout_bs_rf1',

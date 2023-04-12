@@ -11,8 +11,8 @@ from .player_v1 import Player
 
 class Getout:
 
-    def __init__(self, render=True, resource_path=None, start_on_first_action=False):
-        self.zoom = 32
+    def __init__(self, render=True, resource_path=None, start_on_first_action=False, width=50):
+        self.zoom = 42 - width//2
 
         if resource_path is None:
             resource_path = pathlib.Path(__file__).joinpath('../../assets/kenney/')
@@ -22,9 +22,10 @@ class Getout:
         """ change here to choose  mode """
 
         self.score = 0.0
-        self.level = Level(27, 16)
+        self.level = Level(width, 16)
         self.player = Player(self.level, 2, 2, self.resource_loader)
         self.level.entities.append(self.player)
+        self.width = width
 
         # self.camera = TrackingCamera(900, 600, self.player, zoom=self.zoom) if render else None
         self.camera = Camera(900, 600, x=-10, y=-50, zoom=self.zoom) if render else None
