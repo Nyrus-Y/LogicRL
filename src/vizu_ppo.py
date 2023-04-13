@@ -166,10 +166,11 @@ if __name__ == "__main__":
     )
     assert isinstance(envs.single_action_space, gym.spaces.Discrete), "only discrete action space is supported"
 
-    agent = Agent(envs).to(device)
-    agent.network.load_state_dict(torch.load("ppo_checkpoints/Freeway-v4_s0_step92K_network.pth"))
-    agent.actor.load_state_dict(torch.load("ppo_checkpoints/Freeway-v4_s0_step92K_actor.pth"))
-    agent.critic.load_state_dict(torch.load("ppo_checkpoints/Freeway-v4_s0_step92K_critic.pth"))
+    #agent = Agent(envs).to(device)
+    #agent.network.load_state_dict(torch.load("ppo_checkpoints/Freeway-v4_s0_step92K_network.pth"))
+    #agent.actor.load_state_dict(torch.load("ppo_checkpoints/Freeway-v4_s0_step92K_actor.pth"))
+    #agent.critic.load_state_dict(torch.load("ppo_checkpoints/Freeway-v4_s0_step92K_critic.pth"))
+    agent = pickle.load(open("ppo_checkpoints/Freeway-v4_s0_step92K.pkl", "rb"))
 
     # ALGO Logic: Storage setup
     obs = torch.zeros((args.num_steps, args.num_envs) + envs.single_observation_space.shape).to(device)
