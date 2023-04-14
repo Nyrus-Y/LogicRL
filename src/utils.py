@@ -17,6 +17,9 @@ def initialize_game(env, args):
     elif args.m == 'getout':
         # return the whole getout information
         state = env.reset()
+    elif args.m == "atari":
+        state = env.reset()
+        state = env.objects
     return state
 
 

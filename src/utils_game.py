@@ -413,6 +413,8 @@ def render_atari(agent, args):
         rpr = env.render()
         if not args.render:
             if i % 10 == 0:
+                from pprint import pprint
+                pprint(env.objects)
                 for obj in env.objects:
                     mark_bb(rpr, obj.xywh, color=obj.rgb)
                 plt.imshow(rpr)

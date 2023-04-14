@@ -4,34 +4,22 @@ import numpy as np
 import torch
 
 
-def extract_logic_state_atari(env, args, noise=False):
+def extract_logic_state_atari(state, args, noise=False):
     # if args.env == 'freeway':
     if True:
         num_of_feature = 6
         num_of_object = 11
-        representation = env.level.get_representation()
+        representation = state
         extracted_states = np.zeros((num_of_object, num_of_feature))
-        for entity in representation["entities"]:
-            if entity[0].name == 'PLAYER':
+        for i, entity in enumerate(representation):
+            if entity.category == "Chicken" and i == 0:
+                # import ipdb; ipdb.set_trace()
                 extracted_states[0][0] = 1
-                extracted_states[0][-2:] = entity[1:3]
-                # 27 is the width of map, this is normalization
-                # extracted_states[0][-2:] /= 27
-            elif entity[0].name == 'KEY':
-                extracted_states[1][1] = 1
-                extracted_states[1][-2:] = entity[1:3]
+                extracted_states[0][-2:] = entity.xy
+            elif entity.category == 'Car':
+                extracted_states[i-1][1] = 1
+                extracted_states[i-1][-2:] = entity.xy
                 # extracted_states[1][-2:] /= 27
-            elif entity[0].name == 'DOOR':
-                extracted_states[2][2] = 1
-                extracted_states[2][-2:] = entity[1:3]
-                # extracted_states[2][-2:] /= 27
-            elif entity[0].name == 'GROUND_ENEMY':
-                extracted_states[3][3] = 1
-                extracted_states[3][-2:] = entity[1:3]
-                # extracted_states[3][-2:] /= 27
-            elif entity[0].name == 'GROUND_ENEMY2':
-                extracted_states[4][3] = 1
-                extracted_states[4][-2:] = entity[1:3]
 
     def simulate_prob(extracted_states, num_of_objs, key_picked):
         for i, obj in enumerate(extracted_states):
@@ -53,8 +41,8 @@ def extract_logic_state_atari(env, args, noise=False):
             obj[i] = rand_noises[i]
         return obj
 
-    if noise:
-        extracted_states = simulate_prob(extracted_states, num_of_object, key_picked)
+    # if noise:
+    #     extracted_states = simulate_prob(extracted_states, num_of_object, key_picked)
     states = torch.tensor(np.array(extracted_states), dtype=torch.float32, device="cuda:0").unsqueeze(0)
     return states
 
@@ -91,6 +79,7 @@ def collate(samples, to_cuda=True, double_to_float=True):
 
 
 def extract_state(coin_jump):
+    import ipdb; ipdb.set_trace()
     repr = coin_jump.level.get_representation()
     repr["reward"] = coin_jump.level.reward
     repr["score"] = coin_jump.score

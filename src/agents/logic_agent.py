@@ -7,6 +7,7 @@ from torch.distributions import Categorical
 from nsfr.utils import get_nsfr_model
 from .MLPController.mlpthreefish import MLPThreefish
 from .MLPController.mlpgetout import MLPGetout
+from .MLPController.mlpatari import MLPAtari
 from .MLPController.mlploot import MLPLoot
 from .utils_getout import extract_logic_state_getout, preds_to_action_getout, action_map_getout, \
     extract_neural_state_getout
@@ -33,6 +34,8 @@ class NSFR_ActorCritic(nn.Module):
             self.critic = MLPGetout(out_size=1, logic=True)
         elif self.args.m == 'loot':
             self.critic = MLPLoot(out_size=1, logic=True)
+        elif self.args.m == 'atari':
+            self.critic = MLPAtari(out_size=1, logic=True)
         self.num_actions = len(self.prednames)
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
@@ -103,6 +106,9 @@ class LogicPPO:
         elif self.args.m == 'loot':
             logic_state = extract_logic_state_loot(state, self.args)
             neural_state = extract_neural_state_loot(state, self.args)
+        elif self.args.m == 'atari':
+            logic_state = extract_logic_state_atari(state, self.args)
+            neural_state = extract_neural_state_atari(state, self.args)
 
         # select random action with epsilon probability and policy probiability with 1-epsilon
         with torch.no_grad():
@@ -261,8 +267,14 @@ class LogicPlayer:
         action = preds_to_action_getout(prediction, self.prednames)
         return action, explaining
 
-    def atari_actor(self, env):
-        import ipdb; ipdb.set_trace()
+    def atari_actor(self, atari_env):
+        # import ipdb; ipdb.set_trace()
+        extracted_state = extract_logic_state_atari(atari_env, self.args)
+        predictions = self.model(extracted_state)
+        prediction = torch.argmax(predictions).cpu().item()
+        explaining = self.prednames[prediction]
+        action = preds_to_action_atari(prediction, self.prednames)
+        return action, explaining
 
     def threefish_actor(self, state):
         state = extract_logic_state_threefish(state, self.args)

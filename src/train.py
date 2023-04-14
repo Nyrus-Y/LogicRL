@@ -10,7 +10,7 @@ import gym
 import numpy as np
 
 # import wandb
-import environments.getout.env
+# import environments.getout.env
 
 sys.path.insert(0, '../')
 
@@ -21,8 +21,9 @@ from agents.logic_agent import LogicPPO
 from agents.neural_agent import NeuralPPO
 from config import *
 from environments.procgen.procgen import ProcgenGym3Env
-from make_graph import plot_weights
+# from make_graph import plot_weights
 from utils import env_step, initialize_game, make_deterministic
+from ocatari.core import OCAtari
 
 
 def main():
@@ -36,10 +37,10 @@ def main():
                         choices=['ppo', 'logic'])
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=True, action="store", dest="m",
-                        choices=['getout', 'threefish', 'loot'])
+                        choices=['getout', 'threefish', 'loot', 'atari'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['getout', 'threefish', 'loot'])
+                        choices=['getout', 'threefish', 'loot', 'freeway', 'kangaroo'])
     parser.add_argument("-r", "--rules", dest="rules", default=None, required=False,
                         choices=['getout_human_assisted', 'getout_redundant_actions', 'getout_bs_top10', 
                                 'getout_no_search', 'getout_no_search_5', 'getout_no_search_15', 'getout_no_search_50',
@@ -49,7 +50,7 @@ def main():
                                  'threefish_bs_rf1', 'threefish_redundant_actions',
                                  'loot_human_assisted', 'loot_bs_top5', 'loot_bs_rf3', 'loot_bs_rf1', 'loot_no_search', 'loot_no_abstraction',
                                  'loot_no_search_5', 'loot_no_search_15', 'loot_no_search_50',
-                                 'loot_redundant_actions'])
+                                 'loot_redundant_actions', 'freeway_bs_rf1'])
     parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
     parser.add_argument('-re', '--recovery', help='recover from crash', default=False, type=bool, dest='recover')
     # arg = ['-alg', 'logic', '-m', 'threefish', '-env', 'threefish', '-p', 'True', '-r', 'threefish_human_assisted']
@@ -77,6 +78,8 @@ def main():
         env = gym.make(args.env, generator_args={"spawn_all_entities": False})
     elif args.m == "threefish" or args.m == 'loot':
         env = ProcgenGym3Env(num=1, env_name=args.env, render_mode=None)
+    elif args.m == "atari":
+        env = OCAtari(env_name=args.env.capitalize(), mode="revised")
 
     #####################################################
     # config = {
@@ -204,9 +207,9 @@ def main():
     if not os.path.exists(image_directory):
         os.makedirs(image_directory)
 
-    if args.plot:
-        if args.alg == 'logic':
-            plot_weights(agent.get_weights(), image_directory)
+    # if args.plot:
+    #     if args.alg == 'logic':
+    #         plot_weights(agent.get_weights(), image_directory)
 
     # printing and logging variables
     print_running_reward = 0
@@ -231,7 +234,8 @@ def main():
             # select action with policy
             action = agent.select_action(state, epsilon=epsilon)
             reward, state, done = env_step(action, env, args)
-
+            if args.m == "atari":
+                state = env.objects
             # saving reward and is_terminals
             agent.buffer.rewards.append(reward)
             agent.buffer.is_terminals.append(done)
@@ -277,9 +281,9 @@ def main():
                 print("--------------------------------------------------------------------------------------------")
 
                 # save image of weights
-                if args.plot:
-                    if args.alg == 'logic':
-                        plot_weights(agent.get_weights(), image_directory, time_step)
+                # if args.plot:
+                #     if args.alg == 'logic':
+                #         plot_weights(agent.get_weights(), image_directory, time_step)
 
             # break; if the episode is over
             if done:
