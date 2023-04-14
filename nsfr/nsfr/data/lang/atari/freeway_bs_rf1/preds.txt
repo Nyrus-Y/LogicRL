@@ -1,5 +1,3 @@
-jump:1:image
-left_go_get_key:1:image
-right_go_get_key:1:image
-left_go_to_door:1:image
-right_go_to_door:1:image
+nomove:1:image
+up:1:image
+down:1:image

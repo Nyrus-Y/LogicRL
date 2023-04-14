@@ -3,6 +3,8 @@ from typing import List, Final
 import numpy as np
 import torch
 
+device = torch.device('cuda:0')
+
 
 def extract_logic_state_atari(state, args, noise=False):
     # if args.env == 'freeway':
@@ -47,12 +49,26 @@ def extract_logic_state_atari(state, args, noise=False):
     return states
 
 
-def extract_neural_state_atari(atari, args):
-    model_input = sample_to_model_input((extract_state(atari), []))
-    model_input = collate([model_input])
-    state = model_input['state']
-    state = torch.cat([state['base'], state['entities']], dim=1)
-    return state
+def extract_neural_state_atari(state, args):
+    if 'freeway' in args.env.lower():
+        raw_state = []
+        for i, inst in enumerate(state):
+            if inst.category == "Chicken" and i == 1:
+                raw_state.append([1, 0] + list(inst.xy))
+            elif inst.category == "Car":
+                raw_state.append([0, 1] + list(inst.xy))
+    else:
+        print("Not yet implemented, utils_atari l 64")
+        exit(1)
+    state = np.array(raw_state).reshape(-1)
+    return torch.tensor(state).to(device)
+
+# def extract_neural_state_atari(atari, args):
+#     model_input = sample_to_model_input((extract_state(atari), []))
+#     model_input = collate([model_input])
+#     state = model_input['state']
+#     state = torch.cat([state['base'], state['entities']], dim=1)
+#     return state
 
 
 def for_each_tensor(o, fn):
@@ -124,8 +140,8 @@ def fixed_size_entity_representation(state, swap_coins=None):
     """
 
     entities = state['entities']
-    MAX_ENTITIES = 6  # maximum number of entities in the level (1*player, 1*flag, 1*powerup, 1*enemy, 2*coin)
-    ENTITY_ENCODING = 9  # number of parameters by which each entity is encoded
+    MAX_ENTITIES = 12  # maximum number of entities in the level (1*player, 1*flag, 1*powerup, 1*enemy, 2*coin)
+    ENTITY_ENCODING = 6  # number of parameters by which each entity is encoded
     tr_entities = [0] * ENTITY_ENCODING * MAX_ENTITIES
 
     # we assume that player,flag,powerup and enemy occur at max once and coins at max twice

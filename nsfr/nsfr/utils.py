@@ -10,6 +10,7 @@ from .logic_utils import build_infer_module, get_lang
 from .valuation_cj import CJValuationModule
 from .valuation_bf import BFValuationModule
 from .valuation_h import HValuationModule
+from .valuation_a import AValuationModule
 
 device = torch.device('cuda:0')
 
@@ -28,7 +29,7 @@ def get_nsfr_model(args, train=False):
     elif args.m == 'loot':
         VM = HValuationModule(lang=lang, device=device)
     if args.m == 'atari':
-        VM = CJValuationModule(lang=lang, device=device)
+        VM = AValuationModule(lang=lang, device=device)
     FC = FactsConverter(lang=lang, valuation_module=VM, device=device)
     prednames = []
     for clause in clauses:

@@ -97,6 +97,7 @@ class LogicPPO:
     def select_action(self, state, epsilon=0.0):
 
         # extract state for different games
+        # import ipdb; ipdb.set_trace()
         if self.args.m == 'getout':
             logic_state = extract_logic_state_getout(state, self.args)
             neural_state = extract_neural_state_getout(state, self.args)
@@ -113,6 +114,7 @@ class LogicPPO:
         # select random action with epsilon probability and policy probiability with 1-epsilon
         with torch.no_grad():
             # state = torch.FloatTensor(state).to(device)
+            import ipdb; ipdb.set_trace()
             action, action_logprob = self.policy_old.act(logic_state, epsilon=epsilon)
 
         self.buffer.neural_states.append(neural_state)

@@ -36,4 +36,8 @@ def env_step(action, env, args):
         env.act(action)
         reward, state, done = env.observe()
         reward = reward[0]
+    elif args.m == 'atari':
+        pix_state, reward, done, _, _ = env.step(action)
+        state = env.objects
+        # reward = reward[0]
     return reward, state, done

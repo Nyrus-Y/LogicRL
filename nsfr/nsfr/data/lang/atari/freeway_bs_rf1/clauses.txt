@@ -1,5 +1,5 @@
-jump(X):-closeby(O1,O2),type(O1,agent),type(O2,enemy).
-left_go_get_key(X):-not_have_key(X),on_right(O1,O2),type(O1,agent),type(O2,key).
-left_go_to_door(X):-have_key(X),on_left(O2,O1),type(O1,agent),type(O2,door).
-right_go_get_key(X):-not_have_key(X),on_left(O1,O2),type(O1,agent),type(O2,key).
-right_go_to_door(X):-have_key(X),on_left(O1,O2),type(O1,agent),type(O2,door).
+up(X):
+noop_from_left(X):-on_left(O2,O1),type(O1,player),type(O2,car),above_row(02,01),closeby(O2,01).
+noop_from_right(X):-on_right(O2,O1),type(O1,player),type(O2,car),above_row(02,01),closeby(O2,01).
+down(X)_from_right:-on_right(O2,O1),type(O1,player),type(O2,car),above_row(02,01),closeby(O2,01),on_right(O3,O1),type(O3,car),same_row(03,01),closeby(O3,01).
+down(X)_from_left:-on_left(O2,O1),type(O1,player),type(O2,car),above_row(02,01),closeby(O2,01),on_left(O3,O1),type(O3,car),same_row(03,01),closeby(O3,01).
