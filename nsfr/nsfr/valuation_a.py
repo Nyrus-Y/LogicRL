@@ -51,19 +51,23 @@ class AValuationModule(nn.Module):
         vfs['on_right'] = v_on_right
         layers.append(v_on_right)
 
-        v_have_key = HaveKeyValuationFunction()
-        vfs['have_key'] = v_have_key
-        layers.append(v_have_key)
+        v_same_row = SameRowValuationFunction()
+        vfs['same_row'] = v_same_row
+        layers.append(v_same_row)
 
-        v_not_have_key = NotHaveKeyValuationFunction()
-        vfs['not_have_key'] = v_not_have_key
-        layers.append(v_have_key)
+        v_above_row = AboveRowValuationFunction()
+        vfs['above_row'] = v_above_row
+        layers.append(v_above_row)
 
-        v_safe = SafeValuationFunction()
-        vfs['safe'] = v_safe
-        layers.append(v_safe)
+        v_top5cars = Top5CarsValuationFunction()
+        vfs['top5car'] = v_top5cars
+        layers.append(v_top5cars)
 
-        return nn.ModuleList([v_type, v_closeby, v_on_left, v_on_right, v_have_key, v_not_have_key, v_safe]), vfs
+        v_bottom5cars = Bottom5CarsValuationFunction()
+        vfs['bottom5car'] = v_bottom5cars
+        layers.append(v_bottom5cars)
+
+        return nn.ModuleList([v_type, v_closeby, v_on_left, v_on_right, v_same_row, v_above_row, v_top5cars, v_bottom5cars]), vfs
 
     def forward(self, zs, atom):
         """Convert the object-centric representation to a valuation tensor.

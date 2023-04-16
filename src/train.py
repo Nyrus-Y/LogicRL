@@ -14,6 +14,7 @@ import numpy as np
 
 sys.path.insert(0, '../')
 
+from ocatari.core import OCAtari
 from rtpt import RTPT
 from tqdm import tqdm
 
@@ -23,7 +24,6 @@ from config import *
 from environments.procgen.procgen import ProcgenGym3Env
 # from make_graph import plot_weights
 from utils import env_step, initialize_game, make_deterministic
-from ocatari.core import OCAtari
 
 
 def main():
@@ -58,13 +58,16 @@ def main():
 
     #####################################################
     # load environment
-    print("training environment name : " + args.env)
+    print("training environment name : " + args.env.capitalize())
     make_deterministic(args.seed)
 
     #####################################################
     # config setting
     if args.alg == 'ppo':
         update_timestep = max_ep_len * 4
+    elif args.alg == 'logic' and args.m == 'atari':
+        # a large num causes out of memory
+        update_timestep = 20
     else:
         update_timestep = max_ep_len * 2
 
@@ -80,6 +83,7 @@ def main():
         env = ProcgenGym3Env(num=1, env_name=args.env, render_mode=None)
     elif args.m == "atari":
         env = OCAtari(env_name=args.env.capitalize(), mode="revised")
+        #env = OCAtari(env_name='Freeway', mode="revised")
 
     #####################################################
     # config = {
@@ -287,6 +291,7 @@ def main():
 
             # break; if the episode is over
             if done:
+                print("Game over. New episode.")
                 break
 
         print_running_reward += current_ep_reward

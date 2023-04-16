@@ -1,22 +1,27 @@
+import os
+import pickle
 import random
+
 import torch
 import torch.nn as nn
-import pickle
-import os
 from torch.distributions import Categorical
+
 from nsfr.utils import get_nsfr_model
-from .MLPController.mlpthreefish import MLPThreefish
-from .MLPController.mlpgetout import MLPGetout
+
 from .MLPController.mlpatari import MLPAtari
+from .MLPController.mlpgetout import MLPGetout
 from .MLPController.mlploot import MLPLoot
-from .utils_getout import extract_logic_state_getout, preds_to_action_getout, action_map_getout, \
-    extract_neural_state_getout
-from .utils_threefish import extract_logic_state_threefish, preds_to_action_threefish, action_map_threefish, \
-    extract_neural_state_threefish
-from .utils_loot import extract_logic_state_loot, action_map_loot, extract_neural_state_loot, \
-    preds_to_action_loot
-from .utils_atari import extract_logic_state_atari, preds_to_action_atari, action_map_atari, \
-    extract_neural_state_atari
+from .MLPController.mlpthreefish import MLPThreefish
+from .utils_atari import (action_map_atari, extract_logic_state_atari,
+                          extract_neural_state_atari, preds_to_action_atari)
+from .utils_getout import (action_map_getout, extract_logic_state_getout,
+                           extract_neural_state_getout, preds_to_action_getout)
+from .utils_loot import (action_map_loot, extract_logic_state_loot,
+                         extract_neural_state_loot, preds_to_action_loot)
+from .utils_threefish import (action_map_threefish,
+                              extract_logic_state_threefish,
+                              extract_neural_state_threefish,
+                              preds_to_action_threefish)
 
 device = torch.device('cuda:0')
 
@@ -114,7 +119,7 @@ class LogicPPO:
         # select random action with epsilon probability and policy probiability with 1-epsilon
         with torch.no_grad():
             # state = torch.FloatTensor(state).to(device)
-            import ipdb; ipdb.set_trace()
+            # import ipdb; ipdb.set_trace()
             action, action_logprob = self.policy_old.act(logic_state, epsilon=epsilon)
 
         self.buffer.neural_states.append(neural_state)
@@ -133,6 +138,8 @@ class LogicPPO:
             action = action_map_threefish(action, self.args, self.prednames)
         elif self.args.m == 'loot':
             action = action_map_loot(action, self.args, self.prednames)
+        elif self.args.m == 'atari':
+            action = action_map_atari(action, self.args, self.prednames)
 
         return action
 

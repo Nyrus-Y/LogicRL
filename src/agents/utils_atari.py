@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import List, Final
+from typing import Final, List
+
 import numpy as np
 import torch
 
@@ -309,24 +310,20 @@ def state_to_extended_repr(state, coin_jump, swap_coins=None, coin0_x=None):
 def preds_to_action_atari(action, prednames):
     """
     map explaining to action
-    0:jump
-    1:left_go_get_key
-    2:right_go_get_key
-    3:left_go_to_door
-    4:right_go_to_door
+    0:noop
+    1:down
+    2:up
 
     CJA_MOVE_LEFT: Final[int] = 1
     CJA_MOVE_RIGHT: Final[int] = 2
     CJA_MOVE_UP: Final[int] = 3
     """
-    if 'jump' in prednames[action]:
-        return 3
-    elif 'left' in prednames[action]:
-        return 1
-    elif 'right' in prednames[action]:
-        return 2
-    elif 'stay' in prednames[action] or 'idle' in prednames[action]:
+    if 'noop' in prednames[action]:
         return 0
+    elif 'up' in prednames[action]:
+        return 2
+    elif 'down' in prednames[action]:
+        return 1
 
 
 def action_map_atari(prediction, args, prednames=None):
