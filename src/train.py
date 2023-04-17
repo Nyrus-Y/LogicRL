@@ -42,7 +42,7 @@ def main():
                         choices=['getout', 'threefish', 'loot', 'atari'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['getout', 'threefish', 'loot', 'freeway', 'kangaroo'])
+                        choices=['getout', 'threefish', 'loot', 'freeway', 'kangaroo', 'asterix'])
     parser.add_argument("-r", "--rules", dest="rules", default=None, required=False,
                         choices=['getout_human_assisted', 'getout_redundant_actions', 'getout_bs_top10', 
                                 'getout_no_search', 'getout_no_search_5', 'getout_no_search_15', 'getout_no_search_50',
@@ -52,7 +52,7 @@ def main():
                                  'threefish_bs_rf1', 'threefish_redundant_actions',
                                  'loot_human_assisted', 'loot_bs_top5', 'loot_bs_rf3', 'loot_bs_rf1', 'loot_no_search', 'loot_no_abstraction',
                                  'loot_no_search_5', 'loot_no_search_15', 'loot_no_search_50',
-                                 'loot_redundant_actions', 'freeway_bs_rf1'])
+                                 'loot_redundant_actions', 'freeway_bs_rf1','asterix_bs_rf1', ])
     parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
     parser.add_argument('-re', '--recovery', help='recover from crash', default=False, type=bool, dest='recover')
     # arg = ['-alg', 'logic', '-m', 'threefish', '-env', 'threefish', '-p', 'True', '-r', 'threefish_human_assisted']
@@ -69,7 +69,7 @@ def main():
         update_timestep = max_ep_len * 4
     elif args.alg == 'logic' and args.m == 'atari':
         # a large num causes out of memory
-        update_timestep = 100
+        update_timestep = max_ep_len
         # print("PUT BACK 20 ! ")
         # update_timestep = 7
         # max_ep_len = 100

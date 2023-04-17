@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 
-################################
-# Valuation functions for freeway #
-################################
+###################################
+# Valuation functions for asterix #
+###################################
 
 device = torch.device('cuda:0')
 

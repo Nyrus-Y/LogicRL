@@ -58,6 +58,30 @@ def extract_neural_state_atari(state, args):
                 raw_state.append([1, 0] + list(inst.xy))
             elif inst.category == "Car":
                 raw_state.append([0, 1] + list(inst.xy))
+    elif 'asterix' in args.env.lower():
+        import ipdb; ipdb.set_trace()
+        raw_state = []
+        for i, inst in enumerate(state):
+            if inst.category == "Player" and i == 1:
+                raw_state.append([1, 0, 0] + list(inst.xy))
+            elif inst.category == "Enemy":
+                raw_state.append([0, 1, 0] + list(inst.xy))
+            else:
+                raw_state.append([0, 1, 0] + list(inst.xy))
+            # elif inst.category == "Cauldron":
+            #     raw_state.append([0, 1] + list(inst.xy))
+            # elif inst.category == "Helmet":
+            #     raw_state.append([0, 1] + list(inst.xy))
+            # elif inst.category == "Shield":
+            #     raw_state.append([0, 1] + list(inst.xy))
+            # elif inst.category == "Lamp":
+            #     raw_state.append([0, 1] + list(inst.xy))
+            # elif inst.category == "Apple":
+            #     raw_state.append([0, 1] + list(inst.xy))
+            # elif inst.category == "Fish":
+            #     raw_state.append([0, 1] + list(inst.xy))
+            # elif inst.category == "Meat":
+            #     raw_state.append([0, 1] + list(inst.xy))
     else:
         print("Not yet implemented, utils_atari l 64")
         exit(1)
@@ -318,6 +342,7 @@ def preds_to_action_atari(action, prednames):
     CJA_MOVE_RIGHT: Final[int] = 2
     CJA_MOVE_UP: Final[int] = 3
     """
+    import ipdb; ipdb.set_trace()
     if 'noop' in prednames[action]:
         return 0
     elif 'up' in prednames[action]:
