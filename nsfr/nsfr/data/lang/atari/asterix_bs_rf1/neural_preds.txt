@@ -4,5 +4,10 @@ on_left:2:object,object
 on_right:2:object,object
 same_row:2:object,object
 above_row:2:object,object
-top5car:1:object
-bottom5car:1:object
+below_row:2:object,object
+on_odd:1:object
+on_even:1:object
+at_left:1:object
+at_right:1:object
+at_top:1:object
+at_bottom:1:object

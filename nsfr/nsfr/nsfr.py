@@ -13,7 +13,6 @@ class NSFReasoner(nn.Module):
         infer_module (nn.Module): The differentiable forward-chaining inference module.
         atoms (list(atom)): The set of ground atoms (facts).
     """
-
     def __init__(self, facts_converter, infer_module, atoms, bk, clauses, train=False):
         super().__init__()
         self.fc = facts_converter

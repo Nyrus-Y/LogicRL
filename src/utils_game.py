@@ -409,19 +409,26 @@ def render_atari(agent, args):
         total_r = 0
         step = 0
         print(f"Episode {epi}")
-        print(f"==========")
+        print(f"==========")        
         while True:
             # action = random.randint(0, env.nb_actions-1)
             if args.alg == 'logic':
                 action, explaining = agent.act(env.objects)
-            print(action, explaining)
+                print(action, explaining)
+            elif args.alg == 'random':
+                action = np.random.randint(env.nb_actions)
             obs, reward, terminated, truncated, info = env.step(action)
             total_r += reward
             step += 1
+            if step % 10 == 0:
+                import matplotlib.pyplot as plt
+                plt.imshow(env._get_obs())
+                plt.show()
             if terminated:
-                step = 0
                 print("episode: ", epi)
                 print("return: ", total_r)
                 scores.append(total_r)
+                env.reset()
+                step = 0
                 break
         print()

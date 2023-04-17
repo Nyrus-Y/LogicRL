@@ -8,8 +8,7 @@ device = torch.device('cuda:0')
 
 
 def extract_logic_state_atari(state, args, noise=False):
-    # if args.env == 'freeway':
-    if True:
+    if 'freeway' in args.env.lower():
         num_of_feature = 6
         num_of_object = 11
         representation = state
@@ -23,6 +22,26 @@ def extract_logic_state_atari(state, args, noise=False):
                 extracted_states[i-1][1] = 1
                 extracted_states[i-1][-2:] = entity.xy
                 # extracted_states[1][-2:] /= 27
+    elif 'asterix' in args.env.lower():
+        num_of_feature = 6
+        num_of_object = 11
+        representation = state
+        extracted_states = np.zeros((num_of_object, num_of_feature))
+        for i, entity in enumerate(representation):
+            if entity.category == "Player" and i == 0:
+                extracted_states[0][0] = 1
+                extracted_states[0][-2:] = entity.xy
+            elif entity.category == 'Enemy':
+                extracted_states[i-1][1] = 1
+                extracted_states[i-1][-2:] = entity.xy
+            elif "Reward" in entity.category:
+                extracted_states[i-1][2] = 1
+                extracted_states[i-1][-2:] = entity.xy
+            else:
+                extracted_states[i-1][3] = 1
+                extracted_states[i-1][-2:] = entity.xy
+    else:
+        print("Not implemented yet, utils_atari.py:28")
 
     def simulate_prob(extracted_states, num_of_objs, key_picked):
         for i, obj in enumerate(extracted_states):
@@ -55,19 +74,21 @@ def extract_neural_state_atari(state, args):
         raw_state = []
         for i, inst in enumerate(state):
             if inst.category == "Chicken" and i == 1:
-                raw_state.append([1, 0] + list(inst.xy))
+                raw_state.append([1, 0, 0, 0] + list(inst.xy))
             elif inst.category == "Car":
-                raw_state.append([0, 1] + list(inst.xy))
+                raw_state.append([0, 1, 0, 0] + list(inst.xy))
     elif 'asterix' in args.env.lower():
         import ipdb; ipdb.set_trace()
         raw_state = []
         for i, inst in enumerate(state):
             if inst.category == "Player" and i == 1:
-                raw_state.append([1, 0, 0] + list(inst.xy))
+                raw_state.append([1, 0, 0, 0] + list(inst.xy))
             elif inst.category == "Enemy":
-                raw_state.append([0, 1, 0] + list(inst.xy))
+                raw_state.append([0, 1, 0, 0] + list(inst.xy))
+            elif "Reward" in inst.category:
+                raw_state.append([0, 0, 1, 0] + list(inst.xy))
             else:
-                raw_state.append([0, 1, 0] + list(inst.xy))
+                raw_state.append([0, 0, 0, 1] + list(inst.xy))
             # elif inst.category == "Cauldron":
             #     raw_state.append([0, 1] + list(inst.xy))
             # elif inst.category == "Helmet":
@@ -342,13 +363,24 @@ def preds_to_action_atari(action, prednames):
     CJA_MOVE_RIGHT: Final[int] = 2
     CJA_MOVE_UP: Final[int] = 3
     """
-    import ipdb; ipdb.set_trace()
-    if 'noop' in prednames[action]:
-        return 0
-    elif 'up' in prednames[action]:
-        return 1
-    elif 'down' in prednames[action]:
-        return 2
+    if len(prednames) == 13: # asterix:
+        if 'noop' in prednames[action]:
+            return 0
+        elif 'up' in prednames[action]:
+            return 1
+        elif 'right' in prednames[action]:
+            return 2
+        elif 'left' in prednames[action]:
+            return 3
+        elif 'down' in prednames[action]:
+            return 4
+    else: # freeway
+        if 'noop' in prednames[action]:
+            return 0
+        elif 'up' in prednames[action]:
+            return 1
+        elif 'down' in prednames[action]:
+            return 2
 
 
 def action_map_atari(prediction, args, prednames=None):

@@ -33,6 +33,7 @@ class AAValuationModule(nn.Module):
         vfs = {}  # pred name -> valuation function
         v_type = TypeValuationFunction()
         vfs['type'] = v_type
+        layers.append(v_type)
 
         # TODO
         v_closeby = ClosebyValuationFunction(device)
@@ -59,15 +60,36 @@ class AAValuationModule(nn.Module):
         vfs['above_row'] = v_above_row
         layers.append(v_above_row)
 
-        v_top5cars = Top5CarsValuationFunction()
-        vfs['top5car'] = v_top5cars
-        layers.append(v_top5cars)
+        v_below_row = BelowRowValuationFunction()
+        vfs['below_row'] = v_below_row
+        layers.append(v_below_row)
 
-        v_bottom5cars = Bottom5CarsValuationFunction()
-        vfs['bottom5car'] = v_bottom5cars
-        layers.append(v_bottom5cars)
+        v_atleft = AtLeftValuationFunction()
+        vfs['at_left'] = v_atleft
+        layers.append(v_atleft)
 
-        return nn.ModuleList([v_type, v_closeby, v_on_left, v_on_right, v_same_row, v_above_row, v_top5cars, v_bottom5cars]), vfs
+        v_atright = AtRightValuationFunction()
+        vfs['at_right'] = v_atright
+        layers.append(v_atright)
+
+        v_atbottom = AtBottomValuationFunction()
+        vfs['at_bottom'] = v_atbottom
+        layers.append(v_atbottom)
+
+        v_attop = AtTopValuationFunction()
+        vfs['at_top'] = v_attop
+        layers.append(v_attop)
+
+        v_oneven = OnEvenValuationFunction()
+        vfs['on_even'] = v_oneven
+        layers.append(v_oneven)
+
+        v_onodd = OnOddValuationFunction()
+        vfs['on_odd'] = v_onodd
+        layers.append(v_onodd)
+
+
+        return nn.ModuleList(layers), vfs
 
     def forward(self, zs, atom):
         """Convert the object-centric representation to a valuation tensor.

@@ -49,8 +49,8 @@ class ClosebyValuationFunction(nn.Module):
         Returns:
             A batch of probabilities.
         """
-        c_1 = z_1[:, 4:]
-        c_2 = z_2[:, 4:]
+        c_1 = z_1[:, -2:]
+        c_2 = z_2[:, -2:]
 
         dis_x = abs(c_1[:, 0] - c_2[:, 0]) / 171
         dis_y = abs(c_1[:, 1] - c_2[:, 1]) / 171
@@ -76,8 +76,8 @@ class OnLeftValuationFunction(nn.Module):
         Returns:
             A batch of probabilities.
         """
-        c_1 = z_1[:, 4]
-        c_2 = z_2[:, 4]
+        c_1 = z_1[:, -2]
+        c_2 = z_2[:, -2]
         diff = c_2 - c_1
         result = torch.where(diff > 0, 0.99, 0.01)
         return result
@@ -99,8 +99,8 @@ class OnRightValuationFunction(nn.Module):
         Returns:
             A batch of probabilities.
         """
-        c_1 = z_1[:, 4]
-        c_2 = z_2[:, 4]
+        c_1 = z_1[:, -2]
+        c_2 = z_2[:, -2]
         diff = c_2 - c_1
         result = torch.where(diff < 0, 0.99, 0.01)
         return result
@@ -121,10 +121,10 @@ class SameRowValuationFunction(nn.Module):
         Returns:
             A batch of probabilities.
         """
-        c_1 = z_1[:, 5]
-        c_2 = z_2[:, 5]
-        diff = abs(c_2 - c_1) / 171
-        result = torch.where(diff < 0, 0.99, 0.01)
+        c_1 = z_1[:, -1]
+        c_2 = z_2[:, -1]
+        diff = abs(c_2 - c_1)
+        result = torch.where(diff < 6, 0.99, 0.01)
         return result
     
 class AboveRowValuationFunction(nn.Module):
@@ -143,10 +143,10 @@ class AboveRowValuationFunction(nn.Module):
         Returns:
             A batch of probabilities.
         """
-        c_1 = z_1[:, 5]
-        c_2 = z_2[:, 5]
+        c_1 = z_1[:, -1]
+        c_2 = z_2[:, -1]
         diff = c_2 - c_1
-        result = torch.where(diff == 16, 0.99, 0.01)
+        result = torch.where(diff < 23 and diff > 4, 0.99, 0.01)
         return result  
     
 
@@ -166,7 +166,7 @@ class Top5CarsValuationFunction(nn.Module):
         Returns:
             A batch of probabilities.
         """
-        y = z_1[:, 4]
+        y = z_1[:, -1]
         result = torch.where(y > 100, 0.99, 0.01)
         return result
 
@@ -186,7 +186,7 @@ class Bottom5CarsValuationFunction(nn.Module):
         Returns:
             A batch of probabilities.
         """
-        y = z_1[:, 4]
+        y = z_1[:, -1]
         result = torch.where(y < 100, 0.99, 0.01)
         return result
     
@@ -251,8 +251,8 @@ class SafeValuationFunction(nn.Module):
         Returns:
             A batch of probabilities.
         """
-        c_1 = z_1[:, 4:]
-        c_2 = z_2[:, 4:]
+        c_1 = z_1[:, -2:]
+        c_2 = z_2[:, -2:]
 
         dis_x = abs(c_1[:, 0] - c_2[:, 0])
         result = torch.where(dis_x > 2, 0.99, 0.01)

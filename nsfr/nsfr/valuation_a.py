@@ -33,6 +33,7 @@ class AValuationModule(nn.Module):
         vfs = {}  # pred name -> valuation function
         v_type = TypeValuationFunction()
         vfs['type'] = v_type
+        layers.append(v_type)
 
         # TODO
         v_closeby = ClosebyValuationFunction(device)
@@ -67,7 +68,7 @@ class AValuationModule(nn.Module):
         vfs['bottom5car'] = v_bottom5cars
         layers.append(v_bottom5cars)
 
-        return nn.ModuleList([v_type, v_closeby, v_on_left, v_on_right, v_same_row, v_above_row, v_top5cars, v_bottom5cars]), vfs
+        return nn.ModuleList(layers), vfs
 
     def forward(self, zs, atom):
         """Convert the object-centric representation to a valuation tensor.
