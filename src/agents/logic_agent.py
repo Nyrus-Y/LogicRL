@@ -57,7 +57,7 @@ class NSFR_ActorCritic(nn.Module):
         # e-greedy
         if self.rng.random() < epsilon:
             # random action with epsilon probability
-            dist = self.upprior
+            dist = self.uniform
             action = dist.sample()
         else:
             dist = Categorical(action_probs)
