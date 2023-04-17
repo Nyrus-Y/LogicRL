@@ -147,8 +147,9 @@ class AboveRowValuationFunction(nn.Module):
         c_1 = z_1[:, -1]
         c_2 = z_2[:, -1]
         diff = c_1 - c_2
-        result = torch.where(diff < 23 and diff > 4, 0.99, 0.01)
-        return result 
+        result1 = torch.where(diff < 23, 0.99, 0.01)
+        result2 = torch.where(diff > 4, 0.99, 0.01)
+        return result1 * result2 
 
 class BelowRowValuationFunction(nn.Module):
     """The function v_closeby.
@@ -169,8 +170,9 @@ class BelowRowValuationFunction(nn.Module):
         c_1 = z_1[:, -1]
         c_2 = z_2[:, -1]
         diff = c_2 - c_1
-        result = torch.where(diff < 23 and diff > 4, 0.99, 0.01)
-        return result  
+        result1 = torch.where(diff < 23, 0.99, 0.01)
+        result2 = torch.where(diff > 4, 0.99, 0.01)
+        return result1 * result2 
     
 
 class AtTopValuationFunction(nn.Module):
