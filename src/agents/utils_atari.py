@@ -78,7 +78,6 @@ def extract_neural_state_atari(state, args):
             elif inst.category == "Car":
                 raw_state.append([0, 1, 0, 0] + list(inst.xy))
     elif 'asterix' in args.env.lower():
-        import ipdb; ipdb.set_trace()
         raw_state = []
         for i, inst in enumerate(state):
             if inst.category == "Player" and i == 1:
@@ -104,7 +103,8 @@ def extract_neural_state_atari(state, args):
             # elif inst.category == "Meat":
             #     raw_state.append([0, 1] + list(inst.xy))
         if len(raw_state) < 11:
-            raw_state.append([[0] * 6 for _ in range(11 - len(raw_state))])
+            raw_state.extend([[0] * 6 for _ in range(11 - len(raw_state))])
+        
     else:
         print("Not yet implemented, utils_atari l 64")
         exit(1)
