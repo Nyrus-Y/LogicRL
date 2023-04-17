@@ -103,6 +103,8 @@ def extract_neural_state_atari(state, args):
             #     raw_state.append([0, 1] + list(inst.xy))
             # elif inst.category == "Meat":
             #     raw_state.append([0, 1] + list(inst.xy))
+        if len(raw_state) < 11:
+            raw_state.append([[0] * 6 for _ in range(11 - len(raw_state))])
     else:
         print("Not yet implemented, utils_atari l 64")
         exit(1)
