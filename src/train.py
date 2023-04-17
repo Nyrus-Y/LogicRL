@@ -69,7 +69,7 @@ def main():
         update_timestep = max_ep_len * 4
     elif args.alg == 'logic' and args.m == 'atari':
         # a large num causes out of memory
-        update_timestep = max_ep_len
+        update_timestep = 100
         # print("PUT BACK 20 ! ")
         # update_timestep = 7
         # max_ep_len = 100
@@ -246,7 +246,7 @@ def main():
             # select action with policy
             action = agent.select_action(state, epsilon=epsilon)
             reward, state, done = env_step(action, env, args)
-            print(action)
+            # print(action)
             if args.m == "atari":
                 state = env.objects
             # saving reward and is_terminals
