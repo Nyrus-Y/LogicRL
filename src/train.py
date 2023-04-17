@@ -24,6 +24,8 @@ from config import *
 from environments.procgen.procgen import ProcgenGym3Env
 # from make_graph import plot_weights
 from utils import env_step, initialize_game, make_deterministic
+from torch.utils.tensorboard import SummaryWriter
+import datetime
 
 
 def main():
@@ -67,7 +69,10 @@ def main():
         update_timestep = max_ep_len * 4
     elif args.alg == 'logic' and args.m == 'atari':
         # a large num causes out of memory
-        update_timestep = 20
+        update_timestep = 100
+        # print("PUT BACK 20 ! ")
+        # update_timestep = 7
+        # max_ep_len = 100
     else:
         update_timestep = max_ep_len * 2
 
@@ -82,7 +87,7 @@ def main():
     elif args.m == "threefish" or args.m == 'loot':
         env = ProcgenGym3Env(num=1, env_name=args.env, render_mode=None)
     elif args.m == "atari":
-        env = OCAtari(env_name=args.env.capitalize(), mode="revised")
+        env = OCAtari(env_name=args.env.capitalize(), mode="revised", render_mode="rgb_array")
         #env = OCAtari(env_name='Freeway', mode="revised")
 
     #####################################################
@@ -223,6 +228,9 @@ def main():
                 max_iterations=max_training_timesteps)
 
     # Start the RTPT tracking
+    folder_name = f"{args.m}_{args.env}_{args.alg}_{args.rules}_s{args.seed}"
+    folder_name += datetime.datetime.now().strftime("%m%d-%H:%M")
+    writer = SummaryWriter(f"runs/{folder_name}")
     rtpt.start()
     # training loop
     pbar = tqdm(total=max_training_timesteps-time_step)
@@ -238,11 +246,14 @@ def main():
             # select action with policy
             action = agent.select_action(state, epsilon=epsilon)
             reward, state, done = env_step(action, env, args)
+            print(action)
             if args.m == "atari":
                 state = env.objects
             # saving reward and is_terminals
             agent.buffer.rewards.append(reward)
             agent.buffer.is_terminals.append(done)
+            if reward:
+                print("REWARD! :", reward)
 
             time_step += 1
             pbar.update(1)
@@ -252,6 +263,10 @@ def main():
             # update PPO agent
             if time_step % update_timestep == 0:
                 agent.update()
+            # if time_step % 10 == 0:
+            #     import matplotlib.pyplot as plt
+            #     plt.imshow(env._get_obs())
+            #     plt.show()
 
             # printing average reward
             if time_step % print_freq == 0:
@@ -296,8 +311,9 @@ def main():
 
         print_running_reward += current_ep_reward
         print_running_episodes += 1
-
         i_episode += 1
+        writer.add_scalar('Episode reward', current_ep_reward, i_episode)
+        writer.add_scalar('Epsilon', epsilon, i_episode)
 
     env.close()
 

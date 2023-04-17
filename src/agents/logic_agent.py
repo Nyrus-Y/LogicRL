@@ -44,6 +44,8 @@ class NSFR_ActorCritic(nn.Module):
         self.num_actions = len(self.prednames)
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
+        self.upprior = Categorical(
+            torch.tensor([0.9] + [0.1 / (self.num_actions-1) for _ in range(self.num_actions-1)], device="cuda"))
 
     def forward(self):
         raise NotImplementedError
@@ -55,7 +57,7 @@ class NSFR_ActorCritic(nn.Module):
         # e-greedy
         if self.rng.random() < epsilon:
             # random action with epsilon probability
-            dist = self.uniform
+            dist = self.upprior
             action = dist.sample()
         else:
             dist = Categorical(action_probs)
@@ -64,7 +66,6 @@ class NSFR_ActorCritic(nn.Module):
                 action = action[0]
         # action = dist.sample()
         action_logprob = dist.log_prob(action)
-
         return action.detach(), action_logprob.detach()
 
     def evaluate(self, neural_state, logic_state, action):
@@ -121,7 +122,7 @@ class LogicPPO:
             # state = torch.FloatTensor(state).to(device)
             # import ipdb; ipdb.set_trace()
             action, action_logprob = self.policy_old.act(logic_state, epsilon=epsilon)
-
+        
         self.buffer.neural_states.append(neural_state)
         self.buffer.logic_states.append(logic_state)
         action = torch.squeeze(action)

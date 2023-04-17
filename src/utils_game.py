@@ -307,7 +307,6 @@ def render_loot(agent, args):
     if args.log:
         log_f = open(args.logfile, "w+")
         writer = csv.writer(log_f)
-
         if args.alg == 'logic':
             head = ['episode', 'step', 'reward', 'average_reward', 'logic_state', 'probs']
             writer.writerow(head)
@@ -316,7 +315,6 @@ def render_loot(agent, args):
             writer.writerow(head)
 
     if agent == "human":
-
         ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
         all_summaries = run(ia, 20)
 
@@ -399,24 +397,31 @@ def render_atari(agent, args):
     import matplotlib.pyplot as plt
     rdr_mode = "human" if args.render else "rgb_array"
     env = OCAtari(env_name=args.env.capitalize(), render_mode=rdr_mode, mode="revised")
-    i = 0
     obs = env.reset()
+    # from pprint import pprint
+    # pprint(env.objects)
     try:
         agent.nb_actions = env.nb_actions
     except:
         pass
-    while True:
-        action = random.randint(0, env.nb_actions-1)
-        if args.alg == 'logic':
-            action, explaining = agent.act(env)
-        obs, reward, terminated, truncated, info = env.step(action)
-        rpr = env.render()
-        if not args.render:
-            if i % 10 == 0:
-                from pprint import pprint
-                pprint(env.objects)
-                for obj in env.objects:
-                    mark_bb(rpr, obj.xywh, color=obj.rgb)
-                plt.imshow(rpr)
-                plt.show()
-        i += 1
+    scores = []
+    for epi in range(20):
+        total_r = 0
+        step = 0
+        print(f"Episode {epi}")
+        print(f"==========")
+        while True:
+            # action = random.randint(0, env.nb_actions-1)
+            if args.alg == 'logic':
+                action, explaining = agent.act(env.objects)
+            print(action, explaining)
+            obs, reward, terminated, truncated, info = env.step(action)
+            total_r += reward
+            step += 1
+            if terminated:
+                step = 0
+                print("episode: ", epi)
+                print("return: ", total_r)
+                scores.append(total_r)
+                break
+        print()

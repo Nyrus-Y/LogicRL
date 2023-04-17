@@ -311,8 +311,8 @@ def preds_to_action_atari(action, prednames):
     """
     map explaining to action
     0:noop
-    1:down
-    2:up
+    1:up
+    2:down
 
     CJA_MOVE_LEFT: Final[int] = 1
     CJA_MOVE_RIGHT: Final[int] = 2
@@ -321,9 +321,9 @@ def preds_to_action_atari(action, prednames):
     if 'noop' in prednames[action]:
         return 0
     elif 'up' in prednames[action]:
-        return 2
-    elif 'down' in prednames[action]:
         return 1
+    elif 'down' in prednames[action]:
+        return 2
 
 
 def action_map_atari(prediction, args, prednames=None):

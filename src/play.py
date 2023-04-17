@@ -18,7 +18,7 @@ def load_model(model_path, args, set_eval=True):
         elif args.alg == 'logic':
             model = NSFR_ActorCritic(args).to(device)
         # import ipdb; ipdb.set_trace()
-        model.load_state_dict(state_dict=torch.load(f))
+        # model.load_state_dict(state_dict=torch.load(f))
 
     model = model.actor
     model.as_dict = True
