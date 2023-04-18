@@ -405,7 +405,8 @@ def render_atari(agent, args):
     except:
         pass
     scores = []
-    for epi in range(20):
+    nb_epi = 20
+    for epi in range(nb_epi):
         total_r = 0
         step = 0
         print(f"Episode {epi}")
@@ -420,10 +421,10 @@ def render_atari(agent, args):
             obs, reward, terminated, truncated, info = env.step(action)
             total_r += reward
             step += 1
-            if step % 10 == 0:
-                import matplotlib.pyplot as plt
-                plt.imshow(env._get_obs())
-                plt.show()
+            # if step % 10 == 0:
+            #     import matplotlib.pyplot as plt
+            #     plt.imshow(env._get_obs())
+            #     plt.show()
             if terminated:
                 print("episode: ", epi)
                 print("return: ", total_r)
@@ -431,4 +432,5 @@ def render_atari(agent, args):
                 env.reset()
                 step = 0
                 break
-        print()
+    print(np.average(scores))
+        

@@ -28,18 +28,18 @@ def extract_logic_state_atari(state, args, noise=False):
         representation = state
         extracted_states = np.zeros((num_of_object, num_of_feature))
         for i, entity in enumerate(representation):
-            if entity.category == "Player" and i == 0:
-                extracted_states[0][0] = 1
-                extracted_states[0][-2:] = entity.xy
+            if entity.category == "Player":
+                extracted_states[i][0] = 1
+                extracted_states[i][-2:] = entity.xy
             elif entity.category == 'Enemy':
-                extracted_states[i-1][1] = 1
-                extracted_states[i-1][-2:] = entity.xy
+                extracted_states[i][1] = 1
+                extracted_states[i][-2:] = entity.xy
             elif "Reward" in entity.category:
-                extracted_states[i-1][2] = 1
-                extracted_states[i-1][-2:] = entity.xy
+                extracted_states[i][2] = 1
+                extracted_states[i][-2:] = entity.xy
             else:
-                extracted_states[i-1][3] = 1
-                extracted_states[i-1][-2:] = entity.xy
+                extracted_states[i][3] = 1
+                extracted_states[i][-2:] = entity.xy
     else:
         print("Not implemented yet, utils_atari.py:28")
 
@@ -80,7 +80,7 @@ def extract_neural_state_atari(state, args):
     elif 'asterix' in args.env.lower():
         raw_state = []
         for i, inst in enumerate(state):
-            if inst.category == "Player" and i == 1:
+            if inst.category == "Player" and i == 0:
                 raw_state.append([1, 0, 0, 0] + list(inst.xy))
             elif inst.category == "Enemy":
                 raw_state.append([0, 1, 0, 0] + list(inst.xy))
