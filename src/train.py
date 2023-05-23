@@ -10,10 +10,11 @@ import gym
 import numpy as np
 
 # import wandb
-import environments.getout.env
+# import environments.getout.env
 
 sys.path.insert(0, '../')
 
+from ocatari.core import OCAtari
 from rtpt import RTPT
 from tqdm import tqdm
 
@@ -21,8 +22,10 @@ from agents.logic_agent import LogicPPO
 from agents.neural_agent import NeuralPPO
 from config import *
 from environments.procgen.procgen import ProcgenGym3Env
-from make_graph import plot_weights
+# from make_graph import plot_weights
 from utils import env_step, initialize_game, make_deterministic
+from torch.utils.tensorboard import SummaryWriter
+import datetime
 
 
 def main():
@@ -36,10 +39,10 @@ def main():
                         choices=['ppo', 'logic'])
     parser.add_argument("-m", "--mode", help="the game mode you want to play with",
                         required=True, action="store", dest="m",
-                        choices=['getout', 'threefish', 'loot'])
+                        choices=['getout', 'threefish', 'loot', 'atari'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['getout', 'threefish', 'loot'])
+                        choices=['getout', 'threefish', 'loot', 'freeway', 'kangaroo', 'asterix'])
     parser.add_argument("-r", "--rules", dest="rules", default=None, required=False,
                         choices=['getout_human_assisted', 'getout_redundant_actions', 'getout_bs_top10', 
                                 'getout_no_search', 'getout_no_search_5', 'getout_no_search_15', 'getout_no_search_50',
@@ -49,7 +52,7 @@ def main():
                                  'threefish_bs_rf1', 'threefish_redundant_actions',
                                  'loot_human_assisted', 'loot_bs_top5', 'loot_bs_rf3', 'loot_bs_rf1', 'loot_no_search', 'loot_no_abstraction',
                                  'loot_no_search_5', 'loot_no_search_15', 'loot_no_search_50',
-                                 'loot_redundant_actions'])
+                                 'loot_redundant_actions', 'freeway_bs_rf1','asterix_bs_rf1', ])
     parser.add_argument('-p', '--plot', help="plot the image of weights", type=bool, default=False, dest='plot')
     parser.add_argument('-re', '--recovery', help='recover from crash', default=False, type=bool, dest='recover')
     # arg = ['-alg', 'logic', '-m', 'threefish', '-env', 'threefish', '-p', 'True', '-r', 'threefish_human_assisted']
@@ -57,13 +60,19 @@ def main():
 
     #####################################################
     # load environment
-    print("training environment name : " + args.env)
+    print("training environment name : " + args.env.capitalize())
     make_deterministic(args.seed)
 
     #####################################################
     # config setting
     if args.alg == 'ppo':
         update_timestep = max_ep_len * 4
+    elif args.alg == 'logic' and args.m == 'atari':
+        # a large num causes out of memory
+        update_timestep = 100
+        # print("PUT BACK 20 ! ")
+        # update_timestep = 7
+        # max_ep_len = 100
     else:
         update_timestep = max_ep_len * 2
 
@@ -77,6 +86,9 @@ def main():
         env = gym.make(args.env, generator_args={"spawn_all_entities": False})
     elif args.m == "threefish" or args.m == 'loot':
         env = ProcgenGym3Env(num=1, env_name=args.env, render_mode=None)
+    elif args.m == "atari":
+        env = OCAtari(env_name=args.env.capitalize(), mode="revised", render_mode="rgb_array")
+        #env = OCAtari(env_name='Freeway', mode="revised")
 
     #####################################################
     # config = {
@@ -204,9 +216,9 @@ def main():
     if not os.path.exists(image_directory):
         os.makedirs(image_directory)
 
-    if args.plot:
-        if args.alg == 'logic':
-            plot_weights(agent.get_weights(), image_directory)
+    # if args.plot:
+    #     if args.alg == 'logic':
+    #         plot_weights(agent.get_weights(), image_directory)
 
     # printing and logging variables
     print_running_reward = 0
@@ -216,6 +228,9 @@ def main():
                 max_iterations=max_training_timesteps)
 
     # Start the RTPT tracking
+    folder_name = f"{args.m}_{args.env}_{args.alg}_{args.rules}_s{args.seed}"
+    folder_name += datetime.datetime.now().strftime("%m%d-%H:%M")
+    writer = SummaryWriter(f"runs/{folder_name}")
     rtpt.start()
     # training loop
     pbar = tqdm(total=max_training_timesteps-time_step)
@@ -231,10 +246,14 @@ def main():
             # select action with policy
             action = agent.select_action(state, epsilon=epsilon)
             reward, state, done = env_step(action, env, args)
-
+            # print(action)
+            if args.m == "atari":
+                state = env.objects
             # saving reward and is_terminals
             agent.buffer.rewards.append(reward)
             agent.buffer.is_terminals.append(done)
+            if reward:
+                print("REWARD! :", reward)
 
             time_step += 1
             pbar.update(1)
@@ -244,6 +263,10 @@ def main():
             # update PPO agent
             if time_step % update_timestep == 0:
                 agent.update()
+            # if time_step % 10 == 0:
+            #     import matplotlib.pyplot as plt
+            #     plt.imshow(env._get_obs())
+            #     plt.show()
 
             # printing average reward
             if time_step % print_freq == 0:
@@ -277,18 +300,20 @@ def main():
                 print("--------------------------------------------------------------------------------------------")
 
                 # save image of weights
-                if args.plot:
-                    if args.alg == 'logic':
-                        plot_weights(agent.get_weights(), image_directory, time_step)
+                # if args.plot:
+                #     if args.alg == 'logic':
+                #         plot_weights(agent.get_weights(), image_directory, time_step)
 
             # break; if the episode is over
             if done:
+                print("Game over. New episode.")
                 break
 
         print_running_reward += current_ep_reward
         print_running_episodes += 1
-
         i_episode += 1
+        writer.add_scalar('Episode reward', current_ep_reward, i_episode)
+        writer.add_scalar('Epsilon', epsilon, i_episode)
 
     env.close()
 

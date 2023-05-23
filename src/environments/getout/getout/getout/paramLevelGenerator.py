@@ -5,8 +5,7 @@ from .block import Block
 from .getout import Getout
 from .door import Door
 from .key import Key
-from .groundEnemy import GroundEnemy
-from .groundEnemy2 import GroundEnemy2
+from .groundEnemy import GroundEnemy, GroundEnemy2, GroundEnemy3, BuzzSaw1, BuzzSaw2
 
 
 class ParameterizedLevelGenerator:
@@ -18,7 +17,6 @@ class ParameterizedLevelGenerator:
         self.enemies = enemies
 
     def generate(self, getout: Getout, seed=None, dynamic_reward=False, spawn_all_entities=False):
-
         seed = random.randint(0, 500) if seed is None else seed
         rng = random.Random()
         rng.seed(seed, version=3)
@@ -50,8 +48,15 @@ class ParameterizedLevelGenerator:
             (11, 2),
             (15, 2),
             (19, 2),
-            (23, 2)
+            (23, 2),
+            (9, 2),
+            (3, 2),
+            (27, 2),
+            (31, 2)
         ]
+
+        if getout.width > 27:
+            positions = [(max(min(getout.width-5, int(pos[0] * getout.width / 27)), 3), pos[1]) for pos in positions]
 
         # positions = [
         #     (6, 2),
@@ -72,9 +77,16 @@ class ParameterizedLevelGenerator:
             level.entities.append(GroundEnemy(level, positions[3][0], positions[3][1], resource_loader=resource_loader))
         elif self.enemies:
             level.entities.append(Key(level, positions[1][0] - 0.5, positions[1][1], resource_loader=resource_loader))
+            # level.entities.append(Key(level, positions[6][0] - 0.5, positions[1][1], resource_loader=resource_loader))
             level.entities.append(Door(level, positions[2][0], positions[2][1], resource_loader=resource_loader))
             level.entities.append(GroundEnemy(level, positions[3][0], positions[3][1], resource_loader=resource_loader))
             level.entities.append(GroundEnemy2(level, positions[4][0], positions[4][1], resource_loader=resource_loader))
+            level.entities.append(GroundEnemy3(level, positions[5][0], positions[5][1], resource_loader=resource_loader))
+            level.entities.append(BuzzSaw1(level, positions[6][0], positions[6][1], resource_loader=resource_loader))
+            level.entities.append(BuzzSaw2(level, positions[7][0], positions[7][1], resource_loader=resource_loader))
+            # level.entities.append(GroundEnemy(level, positions[6][0], positions[6][1], resource_loader=resource_loader))
+            # level.entities.append(GroundEnemy3(level, positions[4][0], positions[4][1], resource_loader=resource_loader))
+            # level.entities.append(GroundEnemy4(level, positions[4][0], positions[4][1], resource_loader=resource_loader))
         elif self.key_door:
             level.entities.append(Key(level, positions[1][0] - 0.5, positions[1][1], resource_loader=resource_loader))
             level.entities.append(Door(level, positions[2][0], positions[2][1], resource_loader=resource_loader))

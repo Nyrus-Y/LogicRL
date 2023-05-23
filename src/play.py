@@ -17,7 +17,8 @@ def load_model(model_path, args, set_eval=True):
             model = ActorCritic(args).to(device)
         elif args.alg == 'logic':
             model = NSFR_ActorCritic(args).to(device)
-        model.load_state_dict(state_dict=torch.load(f))
+        # import ipdb; ipdb.set_trace()
+        # model.load_state_dict(state_dict=torch.load(f))
 
     model = model.actor
     model.as_dict = True
@@ -40,10 +41,10 @@ def main():
                         choices=['getout', 'threefish', 'loot', 'ecoinrun', 'atari'])
     parser.add_argument("-env", "--environment", help="environment of game to use",
                         required=True, action="store", dest="env",
-                        choices=['getout', 'getoutplus',
+                        choices=['getout', 'getoutplus', 'getout4en',
                                  'threefish', 'threefishcolor',
                                  'loot', 'lootcolor', 'lootplus',
-                                 'ecoinrun'])
+                                 'ecoinrun', 'freeway', 'kangaroo', 'asterix'])
     parser.add_argument("-r", "--rules", dest="rules", default=None,
                         required=False,
                         choices=['getout_human_assisted', 'getout_bs_top10', 'getout_bs_rf1',
@@ -51,7 +52,7 @@ def main():
                                  'threefish_human_assisted', 'threefishcolor', 'threefish_bs_top5', 'threefish_bs_rf3',
                                  'threefish_bs_rf1', 'threefish_redundant_actions',
                                  'loot_human_assisted', 'loot_bs_top5', 'loot_bs_rf3', 'loot_bs_rf1',
-                                 'loot_redundant_actions'
+                                 'loot_redundant_actions', 'freeway_bs_rf1', 'asterix_bs_rf1'
                                  ])
     parser.add_argument("-l", "--log", help="record the information of games", type=bool, default=False, dest="log")
     parser.add_argument("--log_file_name", help="the name of log file", required=False, dest='logfile')

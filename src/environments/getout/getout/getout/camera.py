@@ -12,9 +12,10 @@ class Camera:
         self.screen = Image.new('RGBA', (width, height))
         self.draw = ImageDraw(self.screen)
         self.zoom = zoom
+        self._bgcolor = (160, 160, 205)
 
     def start_render(self):
-        self.screen.paste((220, 220, 255), (0, 0, self.screen.size[0], self.screen.size[1]))
+        self.screen.paste(self._bgcolor, (0, 0, self.screen.size[0], self.screen.size[1]))
 
     def end_render(self):
         pass

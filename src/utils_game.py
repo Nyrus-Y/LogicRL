@@ -142,6 +142,7 @@ def render_getout(agent, args):
         action = []
         if not coin_jump.level.terminated:
             if args.alg == 'logic':
+                # import ipdb; ipdb.set_trace()
                 action, explaining = agent.act(coin_jump)
             elif args.alg == 'ppo':
                 action = agent.act(coin_jump)
@@ -306,7 +307,6 @@ def render_loot(agent, args):
     if args.log:
         log_f = open(args.logfile, "w+")
         writer = csv.writer(log_f)
-
         if args.alg == 'logic':
             head = ['episode', 'step', 'reward', 'average_reward', 'logic_state', 'probs']
             writer.writerow(head)
@@ -315,7 +315,6 @@ def render_loot(agent, args):
             writer.writerow(head)
 
     if agent == "human":
-
         ia = gym3.Interactive(env, info_key="rgb", height=768, width=768)
         all_summaries = run(ia, 20)
 
@@ -396,17 +395,42 @@ def render_atari(agent, args):
     # gamename = 
     from ocatari.vision.utils import mark_bb, make_darker
     import matplotlib.pyplot as plt
-    env = OCAtari(env_name="Freeway", render_mode="rgb_array")
-    i = 0
+    rdr_mode = "human" if args.render else "rgb_array"
+    env = OCAtari(env_name=args.env.capitalize(), render_mode=rdr_mode, mode="revised")
     obs = env.reset()
-    agent.nb_actions = env.nb_actions
-    while True:
-        action = agent.act(obs)
-        obs, reward, terminated, truncated, info = env.step(action)
-        rpr = env.render()
-        if i % 10 == 0:
-            for obj in env.objects:
-                mark_bb(rpr, obj.xywh, color=obj.rgb)
-            plt.imshow(rpr)
-            plt.show()
-        i += 1
+    # from pprint import pprint
+    # pprint(env.objects)
+    try:
+        agent.nb_actions = env.nb_actions
+    except:
+        pass
+    scores = []
+    nb_epi = 20
+    for epi in range(nb_epi):
+        total_r = 0
+        step = 0
+        print(f"Episode {epi}")
+        print(f"==========")        
+        while True:
+            # action = random.randint(0, env.nb_actions-1)
+            if args.alg == 'logic':
+                action, explaining = agent.act(env.objects)
+                print(action, explaining)
+            elif args.alg == 'random':
+                action = np.random.randint(env.nb_actions)
+            obs, reward, terminated, truncated, info = env.step(action)
+            total_r += reward
+            step += 1
+            # if step % 10 == 0:
+            #     import matplotlib.pyplot as plt
+            #     plt.imshow(env._get_obs())
+            #     plt.show()
+            if terminated:
+                print("episode: ", epi)
+                print("return: ", total_r)
+                scores.append(total_r)
+                env.reset()
+                step = 0
+                break
+    print(np.average(scores))
+        

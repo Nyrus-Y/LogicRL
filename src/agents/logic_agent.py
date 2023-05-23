@@ -1,19 +1,27 @@
+import os
+import pickle
 import random
+
 import torch
 import torch.nn as nn
-import pickle
-import os
 from torch.distributions import Categorical
+
 from nsfr.utils import get_nsfr_model
-from .MLPController.mlpthreefish import MLPThreefish
+
+from .MLPController.mlpatari import MLPAtari
 from .MLPController.mlpgetout import MLPGetout
 from .MLPController.mlploot import MLPLoot
-from .utils_getout import extract_logic_state_getout, preds_to_action_getout, action_map_getout, \
-    extract_neural_state_getout
-from .utils_threefish import extract_logic_state_threefish, preds_to_action_threefish, action_map_threefish, \
-    extract_neural_state_threefish
-from .utils_loot import extract_logic_state_loot, action_map_loot, extract_neural_state_loot, \
-    preds_to_action_loot
+from .MLPController.mlpthreefish import MLPThreefish
+from .utils_atari import (action_map_atari, extract_logic_state_atari,
+                          extract_neural_state_atari, preds_to_action_atari)
+from .utils_getout import (action_map_getout, extract_logic_state_getout,
+                           extract_neural_state_getout, preds_to_action_getout)
+from .utils_loot import (action_map_loot, extract_logic_state_loot,
+                         extract_neural_state_loot, preds_to_action_loot)
+from .utils_threefish import (action_map_threefish,
+                              extract_logic_state_threefish,
+                              extract_neural_state_threefish,
+                              preds_to_action_threefish)
 
 device = torch.device('cuda:0')
 
@@ -31,9 +39,13 @@ class NSFR_ActorCritic(nn.Module):
             self.critic = MLPGetout(out_size=1, logic=True)
         elif self.args.m == 'loot':
             self.critic = MLPLoot(out_size=1, logic=True)
+        elif self.args.m == 'atari':
+            self.critic = MLPAtari(out_size=1, logic=True)
         self.num_actions = len(self.prednames)
         self.uniform = Categorical(
             torch.tensor([1.0 / self.num_actions for _ in range(self.num_actions)], device="cuda"))
+        self.upprior = Categorical(
+            torch.tensor([0.9] + [0.1 / (self.num_actions-1) for _ in range(self.num_actions-1)], device="cuda"))
 
     def forward(self):
         raise NotImplementedError
@@ -54,7 +66,6 @@ class NSFR_ActorCritic(nn.Module):
                 action = action[0]
         # action = dist.sample()
         action_logprob = dist.log_prob(action)
-
         return action.detach(), action_logprob.detach()
 
     def evaluate(self, neural_state, logic_state, action):
@@ -92,6 +103,7 @@ class LogicPPO:
     def select_action(self, state, epsilon=0.0):
 
         # extract state for different games
+        # import ipdb; ipdb.set_trace()
         if self.args.m == 'getout':
             logic_state = extract_logic_state_getout(state, self.args)
             neural_state = extract_neural_state_getout(state, self.args)
@@ -101,12 +113,16 @@ class LogicPPO:
         elif self.args.m == 'loot':
             logic_state = extract_logic_state_loot(state, self.args)
             neural_state = extract_neural_state_loot(state, self.args)
+        elif self.args.m == 'atari':
+            logic_state = extract_logic_state_atari(state, self.args)
+            neural_state = extract_neural_state_atari(state, self.args)
 
         # select random action with epsilon probability and policy probiability with 1-epsilon
         with torch.no_grad():
             # state = torch.FloatTensor(state).to(device)
+            # import ipdb; ipdb.set_trace()
             action, action_logprob = self.policy_old.act(logic_state, epsilon=epsilon)
-
+        
         self.buffer.neural_states.append(neural_state)
         self.buffer.logic_states.append(logic_state)
         action = torch.squeeze(action)
@@ -123,6 +139,8 @@ class LogicPPO:
             action = action_map_threefish(action, self.args, self.prednames)
         elif self.args.m == 'loot':
             action = action_map_loot(action, self.args, self.prednames)
+        elif self.args.m == 'atari':
+            action = action_map_atari(action, self.args, self.prednames)
 
         return action
 
@@ -223,6 +241,8 @@ class LogicPlayer:
             action, explaining = self.threefish_actor(state)
         elif self.args.m == 'loot':
             action, explaining = self.loot_actor(state)
+        elif self.args.m == 'atari':
+            action, explaining = self.atari_actor(state)
         return action, explaining
 
     def get_probs(self):
@@ -240,6 +260,8 @@ class LogicPlayer:
             logic_state = extract_logic_state_threefish(state, self.args).squeeze(0)
         if self.args.m == 'loot':
             logic_state = extract_logic_state_loot(state, self.args).squeeze(0)
+        if self.args.m == 'atari':
+            logic_state = extract_logic_state_atari(state, self.args).squeeze(0)
         logic_state = logic_state.tolist()
         result = []
         for list in logic_state:
@@ -253,6 +275,15 @@ class LogicPlayer:
         prediction = torch.argmax(predictions).cpu().item()
         explaining = self.prednames[prediction]
         action = preds_to_action_getout(prediction, self.prednames)
+        return action, explaining
+
+    def atari_actor(self, atari_env):
+        # import ipdb; ipdb.set_trace()
+        extracted_state = extract_logic_state_atari(atari_env, self.args)
+        predictions = self.model(extracted_state)
+        prediction = torch.argmax(predictions).cpu().item()
+        explaining = self.prednames[prediction]
+        action = preds_to_action_atari(prediction, self.prednames)
         return action, explaining
 
     def threefish_actor(self, state):
